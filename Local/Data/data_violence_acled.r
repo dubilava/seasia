@@ -302,7 +302,7 @@ xy_dt <- merge(xy_acled_dt,xy_cereals_dt,all=T)
 xy_dt <- unique(xy_dt)
 xy <- as.character(xy_dt$xy)
 
-yearmo <- substr(as.character(seq(as.Date("2010-01-01"),as.Date("2021-12-31"),by="month")),1,7)
+yearmo <- substr(as.character(seq(as.Date("2010-01-01"),as.Date("2022-12-31"),by="month")),1,7)
 
 xy_yearmo <- CJ(xy,yearmo)
 xy_yearmo_dt <- unique(xy_yearmo)

@@ -314,31 +314,39 @@ acled_sum_dt$event_type <- as.factor(acled_sum_dt$event_type)
 acled_protests_dt <- acled_sum_dt[event_type %in% "Protests"]
 acled_violence_dt <- acled_sum_dt[event_type %in% "Violence against civilians"]
 acled_strategic_dt <- acled_sum_dt[event_type %in% "Strategic developments"]
-acled_explosion_dt <- acled_sum_dt[event_type %in% "Explosions/Remote violence"]
+# acled_explosion_dt <- acled_sum_dt[event_type %in% "Explosions/Remote violence"]
 acled_riots_dt <- acled_sum_dt[event_type %in% "Riots"]
-acled_battles_dt <- acled_sum_dt[event_type %in% "Battles"]
+# acled_battles_dt <- acled_sum_dt[event_type %in% "Battles"]
+acled_conflict_dt <- acled_sum_dt[event_type %in% c("Battles","Explosions/Remote violence")]
+# acled_unrest_dt <- acled_sum_dt[event_type %in% c("Protests","Riots")]
 
 acled_protests_all_dt <- merge(xy_yearmo,acled_protests_dt,by=c("xy","yearmo"),all.x=T)
 acled_violence_all_dt <- merge(xy_yearmo,acled_violence_dt,by=c("xy","yearmo"),all.x=T)
 acled_strategic_all_dt <- merge(xy_yearmo,acled_strategic_dt,by=c("xy","yearmo"),all.x=T)
-acled_explosion_all_dt <- merge(xy_yearmo,acled_explosion_dt,by=c("xy","yearmo"),all.x=T)
+# acled_explosion_all_dt <- merge(xy_yearmo,acled_explosion_dt,by=c("xy","yearmo"),all.x=T)
 acled_riots_all_dt <- merge(xy_yearmo,acled_riots_dt,by=c("xy","yearmo"),all.x=T)
-acled_battles_all_dt <- merge(xy_yearmo,acled_battles_dt,by=c("xy","yearmo"),all.x=T)
+# acled_battles_all_dt <- merge(xy_yearmo,acled_battles_dt,by=c("xy","yearmo"),all.x=T)
+acled_conflict_all_dt <- merge(xy_yearmo,acled_conflict_dt,by=c("xy","yearmo"),all.x=T)
+# acled_unrest_all_dt <- merge(xy_yearmo,acled_unrest_dt,by=c("xy","yearmo"),all.x=T)
 
 acled_protests_all_dt$event <- "protests"
 acled_violence_all_dt$event <- "violence"
 acled_strategic_all_dt$event <- "strategic"
-acled_explosion_all_dt$event <- "explosion"
+# acled_explosion_all_dt$event <- "explosion"
 acled_riots_all_dt$event <- "riots"
-acled_battles_all_dt$event <- "battles"
+# acled_battles_all_dt$event <- "battles"
+acled_conflict_all_dt$event <- "conflict"
+# acled_unrest_all_dt$event <- "unrest"
 
-acled_all_dt <- rbind(acled_protests_all_dt,acled_violence_all_dt,acled_strategic_all_dt,acled_explosion_all_dt,acled_riots_all_dt,acled_battles_all_dt)
+acled_all_dt <- rbind(acled_conflict_all_dt,acled_protests_all_dt,acled_riots_all_dt,acled_violence_all_dt,acled_strategic_all_dt)
 rm(acled_protests_all_dt)
 rm(acled_violence_all_dt)
 rm(acled_strategic_all_dt)
-rm(acled_explosion_all_dt)
+# rm(acled_explosion_all_dt)
 rm(acled_riots_all_dt)
-rm(acled_battles_all_dt)
+# rm(acled_battles_all_dt)
+rm(acled_conflict_all_dt)
+# rm(acled_unrest_all_dt)
 
 acled_all_dt$event_type <- NULL
 

@@ -24,12 +24,12 @@ southeastasia <- st_set_crs(southeastasia,"+proj=longlat +ellps=WGS84 +datum=WGS
 
 
 
-rice_a <- raster("SPAM/dataverse_files/area/spam2010V2r0_global_A_RICE_A.tif")
-rice_i <- raster("SPAM/dataverse_files/area/spam2010V2r0_global_A_RICE_I.tif")
-rice_r <- raster("SPAM/dataverse_files/area/spam2010V2r0_global_A_RICE_R.tif")
-rice_h <- raster("SPAM/dataverse_files/area/spam2010V2r0_global_A_RICE_H.tif")
-rice_l <- raster("SPAM/dataverse_files/area/spam2010V2r0_global_A_RICE_L.tif")
-rice_s <- raster("SPAM/dataverse_files/area/spam2010V2r0_global_A_RICE_S.tif")
+rice_a <- raster("SPAM/dataverse_files/spam2010V2r0_global_A_RICE_A.tif")
+rice_i <- raster("SPAM/dataverse_files/spam2010V2r0_global_A_RICE_I.tif")
+rice_r <- raster("SPAM/dataverse_files/spam2010V2r0_global_A_RICE_R.tif")
+rice_h <- raster("SPAM/dataverse_files/spam2010V2r0_global_A_RICE_H.tif")
+rice_l <- raster("SPAM/dataverse_files/spam2010V2r0_global_A_RICE_L.tif")
+rice_s <- raster("SPAM/dataverse_files/spam2010V2r0_global_A_RICE_S.tif")
 
 
 rice_a05 <- aggregate(rice_a,fact=12,fun=sum)

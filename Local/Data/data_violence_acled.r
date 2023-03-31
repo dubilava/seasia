@@ -318,6 +318,8 @@ acled_strategic_dt <- acled_sum_dt[event_type %in% "Strategic developments"]
 acled_riots_dt <- acled_sum_dt[event_type %in% "Riots"]
 # acled_battles_dt <- acled_sum_dt[event_type %in% "Battles"]
 acled_conflict_dt <- acled_sum_dt[event_type %in% c("Battles","Explosions/Remote violence")]
+acled_conflict_dt[,`:=`(event_type="Battles")]
+acled_conflict_dt <- acled_conflict_dt[,.(incidents=sum(incidents),fatalities=sum(fatalities)),by=.(xy,yearmo,year,mo,longitude,latitude,event_type)]
 # acled_unrest_dt <- acled_sum_dt[event_type %in% c("Protests","Riots")]
 
 acled_protests_all_dt <- merge(xy_yearmo,acled_protests_dt,by=c("xy","yearmo"),all.x=T)

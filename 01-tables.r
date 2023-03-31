@@ -251,10 +251,10 @@ c_riots <- impact(datasub_dt[event=="riots"])
 c_violence <- impact(datasub_dt[event=="violence"])
 
 ## estimated effect
-modelsummary(list(coef0_fe,coef1_fe,coef2_fe,coef4_fe),estimate="{estimate}{stars}",stars=c('*'=.1,'**'=.05,'***'=.01),gof_map=gm)
+modelsummary(list(coef0_fe,coef1_fe,coef2_fe,coef3_fe,coef4_fe),estimate="{estimate}{stars}",stars=c('*'=.1,'**'=.05,'***'=.01),gof_map=gm)
 
 ## calculated impact
-kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),conflict=c(c_conflict$descriptive,c_conflict$effect),protests=c(c_protests$descriptive,c_protests$effect),violence=c(c_violence$descriptive,c_violence$effect))))
+kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),conflict=c(c_conflict$descriptive,c_conflict$effect),protests=c(c_protests$descriptive,c_protests$effect),riots=c(c_riots$descriptive,c_riots$effect),violence=c(c_violence$descriptive,c_violence$effect))))
 
 
 # 01a - Check: balanced panel (2016:2022) ----

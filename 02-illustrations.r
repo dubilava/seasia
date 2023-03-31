@@ -97,7 +97,7 @@ kable_styling(kable(tab1))
 
 dataset_dt$event <- factor(dataset_dt$event,levels=unique(dataset_dt$event)[c(6,4,2,5,1,3)])
 
-tab2 <- dataset_dt[,.(obs=.N,indicence_mean=round(mean(incidents_dum),3),indicence_sd=round(sd(incidents_dum),3),indicents_mean=round(mean(incidents),3),indicents_sd=round(sd(incidents),3),indicents_min=round(min(incidents),3),indicents_max=round(max(incidents),3)),by=.(event)][c(6,4,2,5,1,3),]
+tab2 <- dataset_dt[,.(obs=.N,indicence_mean=round(mean(incidents_dum),3),indicence_sd=round(sd(incidents_dum),3),indicents_mean=round(mean(incidents),3),indicents_sd=round(sd(incidents),3),indicents_min=round(min(incidents),3),indicents_max=round(max(incidents),3)),by=.(event)]
 
 kable_styling(kable(tab2))
 
@@ -178,7 +178,7 @@ datasub_dt <- dataset_dt
 # datawide_dt[,`:=`(conflict=battles+explosion,date=as.Date(paste0(yearmo,"-01")))]
 
 
-conflict_dt <- dataset_dt[event %in% c("conflict","protests","violence"),.(incidents=sum(incidents)),by=.(xy,longitude,latitude,event)]
+conflict_dt <- dataset_dt[event %in% c("conflict","protests","riots","violence"),.(incidents=sum(incidents)),by=.(xy,longitude,latitude,event)]
 
 conflict_dt <- conflict_dt[incidents>0]
 
@@ -203,9 +203,9 @@ secities_sub <- secities_sub[order(-population,-city_population)]
 secities_sub <- secities_sub[capital %in% c("admin","primary")]
 
 
-countries_dt <- dataset_dt[event %in% c("conflict","protests","violence"),.(incidents=sum(incidents)),by=.(country,event)]
+countries_dt <- dataset_dt[event %in% c("conflict","protests","riots","violence"),.(incidents=sum(incidents)),by=.(country,event)]
 
-ccum_dt <- dataset_dt[event %in% c("conflict","protests","violence"),.(incidents=sum(incidents)),by=.(country)]
+ccum_dt <- dataset_dt[event %in% c("conflict","protests","riots","violence"),.(incidents=sum(incidents)),by=.(country)]
 
 ccum_dt <- ccum_dt[order(-incidents)]
 
@@ -215,14 +215,22 @@ countries_dt$country <- factor(countries_dt$country,levels=ccum_dt$country)
 ccum_dt[,`:=`(country_incidents=paste0(country," (",incidents,")"))]
 
 
-conflict_dt <- dcast(conflict_dt,xy+longitude+latitude~event)
+conflict_dt <- dcast(conflict_dt,xy+longitude+latitude~event,value.var="incidents")
 conflict_dt[is.na(conflict_dt)] <- 0
 
-conflict_dt[,`:=`(both=log(conflict+violence+protests))]
+# colnames(conflict_dt) <- c("xy","longitude","latitude","violence","protests","battles")
+
+conflict_dt[,`:=`(battles=conflict,unrest=protests+riots,comb=conflict+violence+protests+riots,both=log(conflict+violence+protests+riots))]
+
+
+countries_dt[,`:=`(event_new=ifelse(event%in%c("protests","riots"),"unrest",ifelse(event=="conflict","battles","violence")))]
+
+countries_dt <- countries_dt[,.(incidents=sum(incidents)),by=.(country,event=event_new)]
+
 
 gg_conflict <- ggplot(data = southeastasia) +
   geom_sf(color="gray",fill=NA,linewidth=.25)+
-  geom_scatterpie(data=conflict_dt,aes(x=longitude,y=latitude,r=both*.07),cols=c("conflict","violence","protests"),color="white",linewidth=.1)+
+  geom_scatterpie(data=conflict_dt,aes(x=longitude,y=latitude,r=both*.07),cols=c("battles","violence","unrest"),color="white",linewidth=.1)+
   scale_fill_manual(values=c("darkgray","indianred","goldenrod"))+
   geom_point(data=secities_sub[population>=2000000 & city_population>=1000000],aes(x=longitude,y=latitude),color="black",fill=NA,shape=21,size=2)+
   geom_text_repel(data=secities_sub[population>=2000000 & city_population>=1000000],aes(x=longitude,y=latitude,label=city))+
@@ -231,7 +239,7 @@ gg_conflict <- ggplot(data = southeastasia) +
   theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title = element_blank(),axis.text = element_blank(),legend.title = element_blank(),legend.text = element_text(hjust=0),legend.position = c(.5,.85))
 
 countries_dt$ylab <- 0
-countries_dt$event <- factor(countries_dt$event,levels=c("conflict","violence","protests"))
+countries_dt$event <- factor(countries_dt$event,levels=c("battles","violence","unrest"))
 
 gg_bars <- ggplot(countries_dt,aes(x=reorder(country,incidents),y=incidents))+
   geom_bar(aes(fill=event),stat="identity",color="white",linewidth=.25)+

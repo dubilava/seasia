@@ -111,13 +111,43 @@ tab3r <- datacomb_dt[yearmo=="2020-01",.(obs=.N,Crop_area_mean=round(mean(area_r
 kable_styling(kable(rbind(tab3a,tab3i,tab3r)))
 
 
+## A1: irrigation histogram ----
+
+datacomb_dt[,`:=`(prop_i=ifelse(area_i==0,0,area_i/area_spam))]
+dataset_dt[,`:=`(prop_i=ifelse(area_i==0,0,area_i/area_spam))]
+
+check_dt <- datacomb_dt[year==2020 & month=="Jan"]
+check_dt <- check_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
+
+check_dt[,.(proportion=mean(prop_i)),by=.(country)]
+
+mean(check_dt$area_spam)
+sd(check_dt$area_spam)
+min(check_dt$area_spam)
+max(check_dt$area_spam)
+
+gg <- ggplot(check_dt,aes(x=prop_i))+
+  geom_histogram(fill="steelblue",color="white",bins=20)+
+  labs(x="Proportion of Irrigated Croplands",y="Count")+
+  theme_paper()+
+  theme_classic()+
+  theme(axis.title = element_text(size=12),axis.text = element_text(size=10))
+
+ggsave("Figures/irrigated.png",gg,width=6.5,height=3.5,dpi="retina")
+
+
+
 # 01 - harvest calendar ----
+
+## F3: production map ----
 
 maps_dt <- datacomb_dt[year==2020]
 
+maps_dt[,`:=`(irrig=ifelse(prop_i>=.5,1,0))]
+
 maps_dt <- maps_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
 
-cal_dt <- maps_dt[season_rice==1 & Crop_Rice=="Rice",.(longitude,latitude,month,area_spam,area_i,area_r)]
+cal_dt <- maps_dt[season_rice==1 & Crop_Rice=="Rice",.(longitude,latitude,month,area_spam,area_i,area_r,irrig)]
 
 cal_dt[,`:=`(xy=paste(longitude,latitude,sep=","))]
 
@@ -138,6 +168,7 @@ fourseasons_col <- fourseasons(13)[c(13,2:12)]
 gg_map <- ggplot(data = southeastasia) +
   geom_sf(color="gray",fill=NA,size=.25)+
   geom_point(data=cal_dt,aes(x=longitude,y=latitude,size=area_spam,color=month))+
+  geom_point(data=cal_dt[irrig==1],aes(x=longitude,y=latitude,size=area_spam,color="black"),shape=1,size=3)+
   scale_size(range=c(.3,2.5),guide="none")+
   scale_color_manual(values=fourseasons_col,breaks=month.abb,guide="none")+
   theme_void()+
@@ -178,7 +209,9 @@ datasub_dt <- dataset_dt
 # datawide_dt[,`:=`(conflict=battles+explosion,date=as.Date(paste0(yearmo,"-01")))]
 
 
-conflict_dt <- dataset_dt[event %in% c("conflict","protests","riots","violence"),.(incidents=sum(incidents)),by=.(xy,longitude,latitude,event)]
+## F1: conflict map ----
+
+conflict_dt <- dataset_dt[event %in% c("conflict","violence","riots","protests"),.(incidents=sum(incidents)),by=.(xy,longitude,latitude,event)]
 
 conflict_dt <- conflict_dt[incidents>0]
 
@@ -255,11 +288,40 @@ gg_bars <- ggplot(countries_dt,aes(x=reorder(country,incidents),y=incidents))+
 aligned <- align_plots(gg_conflict,gg_bars,align="hv", axis="tblr")
 gg_maplegend <- ggdraw(aligned[[1]]) + draw_plot(aligned[[2]],x=.62,y=.60,width=.36,height=.36)
 
-gg_maplegend
-
 ggsave("Figures/map_conflict.png",gg_maplegend,width=6.5,height=5.5,dpi="retina",device="png")
 
 ggsave("Figures/map_conflict.eps",gg_maplegend,width=6.5,height=5.5,dpi="retina",device="eps")
+
+
+## F2: conflict time series ----
+
+conflict_ts <- dataset_dt[event %in% c("conflict","violence","riots","protests"),.(incidents=sum(incidents),locations=uniqueN(xy)),by=.(event,date=as.Date(paste0(yearmo,"-01")))]
+
+conflict_ts[,`:=`(rate=incidents/locations)]
+
+conflict_ts$event <- factor(conflict_ts$event,levels=c("conflict","violence","riots","protests"),labels=c("Battles and Explosions","Violence Against Civilians","Riots","Protests"))
+
+gg1 <- ggplot(conflict_ts,aes(x=date,y=rate,color=event,linetype=event))+
+  geom_line()+
+  scale_color_manual(values=c("darkgray","indianred","steelblue","goldenrod"))+
+  labs(x="Year",y="Incidents per cell")+
+  theme_classic()+
+  theme_paper()+
+  theme(legend.title=element_blank(),legend.position = c(.18,.82))
+
+gg2 <- ggplot(conflict_ts[,.(cells=mean(locations)),by=date],aes(x=date,y=cells))+
+  geom_col(fill="darkgray",color="white")+
+  scale_y_reverse()+
+  labs(x="",y="Cells")+
+  theme_classic()+
+  theme_paper()+
+  theme(axis.line = element_blank(),axis.ticks = element_blank(),axis.title.x = element_blank(),axis.text.x=element_blank())
+
+gg_comb <- plot_grid(gg1,gg2,ncol=1,align="hv",rel_heights = c(7,2))
+
+ggsave("Figures/ts_conflict.png",gg_comb,width=6.5,height=4.5,dpi="retina",device="png")
+
+ggsave("Figures/ts_conflict.eps",gg_comb,width=6.5,height=4.5,dpi="retina",device="eps")
 
 
 # #----------------------#

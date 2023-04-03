@@ -86,9 +86,9 @@ datacomb_dt <- merge(datacomb_dt,spam_dt,by=c("longitude","latitude"),all.x=T)
 dataset_dt <- merge(dataset_dt,spam_dt,by=c("longitude","latitude"),all.x=T)
 
 
-# datacomb_dt[,`:=`(prop_i=ifelse(area_i==0,0,area_i/area_spam))]
-# dataset_dt[,`:=`(prop_i=ifelse(area_i==0,0,area_i/area_spam))]
-# 
+datacomb_dt[,`:=`(prop_i=ifelse(area_i==0,0,area_i/area_spam))]
+dataset_dt[,`:=`(prop_i=ifelse(area_i==0,0,area_i/area_spam))]
+
 # check_dt <- datacomb_dt[year==2020 & month=="Jan"]
 # check_dt <- check_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
 # 
@@ -766,9 +766,9 @@ datasub_dt <- datasub_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric
 
 ## effect
 coef1_fe <- feols(incidents~area:seas+area:seas:irri+(area:seas+area:seas:irri):gsrain_stand | xy+yearmo, datasub_dt[event=="conflict"],vcov=~xy)
-coef2_fe <- feols(incidents~area:seas+area:seas:irri+(area:seas+area:seas:irri):gsrain_stand | xy+yearmo, datasub_dt[event=="protests"],vcov=~xy)
+coef2_fe <- feols(incidents~area:seas+area:seas:irri+(area:seas+area:seas:irri):gsrain_stand | xy+yearmo, datasub_dt[event=="violence"],vcov=~xy)
 coef3_fe <- feols(incidents~area:seas+area:seas:irri+(area:seas+area:seas:irri):gsrain_stand | xy+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
-coef4_fe <- feols(incidents~area:seas+area:seas:irri+(area:seas+area:seas:irri):gsrain_stand | xy+yearmo, datasub_dt[event=="violence"],vcov=~xy)
+coef4_fe <- feols(incidents~area:seas+area:seas:irri+(area:seas+area:seas:irri):gsrain_stand | xy+yearmo, datasub_dt[event=="protests"],vcov=~xy)
 
 
 ## impact
@@ -779,15 +779,15 @@ c_violence <- impact4(datasub_dt[event=="violence"])
 
 
 ## estimated effect
-modelsummary(list(coef0_fe,coef1_fe,coef2_fe,coef4_fe),estimate="{estimate}{stars}",stars=c('*'=.1,'**'=.05,'***'=.01),gof_map=gm)#,output="Tables/unbalanced.docx")
+modelsummary(list(coef0_fe,coef1_fe,coef2_fe,coef3_fe,coef4_fe),estimate="{estimate}{stars}",stars=c('*'=.1,'**'=.05,'***'=.01),gof_map=gm)#,output="Tables/unbalanced.docx")
 
 ## calculated impact
-kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),conflict=c(c_conflict$descriptive,c_conflict$effect),protests=c(c_protests$descriptive,c_protests$effect),violence=c(c_violence$descriptive,c_violence$effect))))
+kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),conflict=c(c_conflict$descriptive,c_conflict$effect),violence=c(c_violence$descriptive,c_violence$effect),riots=c(c_riots$descriptive,c_riots$effect),protests=c(c_protests$descriptive,c_protests$effect))))
 
 
 
 
-# conditional on conflict ----
+# 06 - conditional on battles ----
 
 impact6 <- function(x){
   r1 <- feols(incidents~area:seas+area:seas:conflict+conflict | xy+yearmo, data=x,vcov=~xy)
@@ -839,9 +839,9 @@ datasub_dt <- datasub_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric
 datasub_dt[,`:=`(conflict_mean=mean(conflict))]
 
 ## effect
-coef1_fe <- feols(incidents~area:seas+area:seas:conflict+conflict | xy+yearmo, datasub_dt[event=="protests"],vcov=~xy)
+coef1_fe <- feols(incidents~area:seas+area:seas:conflict+conflict | xy+yearmo, datasub_dt[event=="violence"],vcov=~xy)
 coef2_fe <- feols(incidents~area:seas+area:seas:conflict+conflict | xy+yearmo, datasub_dt[event=="riots"],vcov=~xy)
-coef3_fe <- feols(incidents~area:seas+area:seas:conflict+conflict | xy+yearmo, datasub_dt[event=="violence"],vcov=~xy)
+coef3_fe <- feols(incidents~area:seas+area:seas:conflict+conflict | xy+yearmo, datasub_dt[event=="protests"],vcov=~xy)
 
 
 ## impact
@@ -851,10 +851,10 @@ c_violence <- impact6(datasub_dt[event=="violence"])
 
 
 ## estimated effect
-modelsummary(list(coef1_fe,coef3_fe),estimate="{estimate}{stars}",stars=c('*'=.1,'**'=.05,'***'=.01),gof_map=gm)
+modelsummary(list(coef1_fe,coef2_fe,coef3_fe),estimate="{estimate}{stars}",stars=c('*'=.1,'**'=.05,'***'=.01),gof_map=gm)
 
 ## calculated impact
-kable_styling(kable(data.table(protests=c(c_protests$descriptive,c_protests$effect),violence=c(c_violence$descriptive,c_violence$effect))))
+kable_styling(kable(data.table(violence=c(c_violence$descriptive,c_violence$effect),riots=c(c_riots$descriptive,c_riots$effect),protests=c(c_protests$descriptive,c_protests$effect))))
 
 
 

@@ -62,7 +62,7 @@ impact <- function(x){
   h_est <- paste0(format(round(h_coef,1),nsmall=1),h_stars)
   h_std <- paste0("(",format(round(h_se,1),nsmall=1),")")
   
-  return(list(descriptive=c(incidents=round(m$incidents,2),cropland=round(m$cropland,2)),effect=c(h_est,h_std)))
+  return(list(descriptive=c(incidents=round(m$incidents,2),cropland=round(m$cropland,2)),effect=c(h_est,h_std),output=c(h_coef,h_se)))
 }
 
 
@@ -256,6 +256,26 @@ modelsummary(list(coef0_fe,coef1_fe,coef2_fe,coef3_fe,coef4_fe),estimate="{estim
 ## calculated impact
 kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),conflict=c(c_conflict$descriptive,c_conflict$effect),violence=c(c_violence$descriptive,c_violence$effect),riots=c(c_riots$descriptive,c_riots$effect),protests=c(c_protests$descriptive,c_protests$effect))))
 
+# plot impact
+dt <- data.table(combined=c_comb$output,battles=c_conflict$output,violence=c_violence$output,riots=c_riots$output,protests=c_protests$output)
+
+dt_cn <- colnames(dt)
+
+dt <- as.data.table(t(dt))
+
+colnames(dt) <- c("est","se")
+dt$event <- dt_cn
+
+dt$event <- factor(dt$event,levels=dt_cn[length(dt_cn):1])
+
+main_dt <- dt
+
+# ggplot(dt,aes(x=event,y=est))+
+#   geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se),linewidth=.8,width=NA)+
+#   geom_point(size=2)+
+#   coord_flip()+
+#   theme_classic()
+
 
 # 01a - Check: balanced panel (2016:2022) ----
 
@@ -395,7 +415,7 @@ impact1 <- function(x){
   p_est <- paste0(format(round(p_coef,1),nsmall=1),p_stars)
   p_std <- paste0("(",format(round(p_se,1),nsmall=1),")")
   
-  return(list(descriptive=c(incidents=round(m$incidents,2),cropland=round(m$cropland,2)),effect=c(h_est,h_std,p_est,p_std)))
+  return(list(descriptive=c(incidents=round(m$incidents,2),cropland=round(m$cropland,2)),effect=c(h_est,h_std,p_est,p_std),output=c(h_coef,h_se,p_coef,p_se)))
 }
 
 
@@ -447,6 +467,20 @@ modelsummary(list(coef0_fe,coef1_fe,coef2_fe,coef3_fe,coef4_fe),estimate="{estim
 kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),conflict=c(c_conflict$descriptive,c_conflict$effect),violence=c(c_violence$descriptive,c_violence$effect),riots=c(c_riots$descriptive,c_riots$effect),protests=c(c_protests$descriptive,c_protests$effect))))
 
 
+
+# plot impact
+dt <- data.table(combined=c_comb$output,battles=c_conflict$output,violence=c_violence$output,riots=c_riots$output,protests=c_protests$output)
+
+dt_cn <- colnames(dt)
+
+dt <- as.data.table(t(dt))
+
+colnames(dt) <- c("est1","se1","est2","se2")
+dt$event <- dt_cn
+
+dt$event <- factor(dt$event,levels=dt_cn[length(dt_cn):1])
+
+price_dt <- dt
 
 
 # 03 - Rainfall ----
@@ -540,7 +574,7 @@ impact2 <- function(x){
   p_est <- paste0(format(round(p_coef,1),nsmall=1),p_stars)
   p_std <- paste0("(",format(round(p_se,1),nsmall=1),")")
   
-  return(list(descriptive=c(incidents=round(m$incidents,2),cropland=round(m$cropland,2)),effect=c(h_est,h_std,p_est,p_std)))
+  return(list(descriptive=c(incidents=round(m$incidents,2),cropland=round(m$cropland,2)),effect=c(h_est,h_std,p_est,p_std),output=c(h_coef,h_se,p_coef,p_se)))
 }
 
 
@@ -594,7 +628,19 @@ modelsummary(list(coef0_fe,coef1_fe,coef2_fe,coef3_fe,coef4_fe),estimate="{estim
 kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),conflict=c(c_conflict$descriptive,c_conflict$effect),violence=c(c_violence$descriptive,c_violence$effect),riots=c(c_riots$descriptive,c_riots$effect),protests=c(c_protests$descriptive,c_protests$effect))))
 
 
+# plot impact
+dt <- data.table(combined=c_comb$output,battles=c_conflict$output,violence=c_violence$output,riots=c_riots$output,protests=c_protests$output)
 
+dt_cn <- colnames(dt)
+
+dt <- as.data.table(t(dt))
+
+colnames(dt) <- c("est1","se1","est2","se2")
+dt$event <- dt_cn
+
+dt$event <- factor(dt$event,levels=dt_cn[length(dt_cn):1])
+
+rain_dt <- dt
 
 
 # 04 - Prices/irrigation ----
@@ -637,7 +683,7 @@ impact5 <- function(x){
   h4_est <- paste0(format(round(h4_coef,1),nsmall=1),h4_stars)
   h4_std <- paste0("(",format(round(h4_se,1),nsmall=1),")")
   
-  return(list(descriptive=c(incidents=round(m$incidents,2),cropland=round(m$cropland,2)),effect=c(h1_est,h1_std,h2_est,h2_std,h3_est,h3_std,h4_est,h4_std)))
+  return(list(descriptive=c(incidents=round(m$incidents,2),cropland=round(m$cropland,2)),effect=c(h1_est,h1_std,h2_est,h2_std,h3_est,h3_std,h4_est,h4_std),output=c(h1_coef,h1_se,h2_coef,h2_se,h3_coef,h3_se,h4_coef,h4_se)))
 }
 
 ## combined effect ----
@@ -689,7 +735,19 @@ modelsummary(list(coef0_fe,coef1_fe,coef2_fe,coef3_fe,coef4_fe),estimate="{estim
 kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),conflict=c(c_conflict$descriptive,c_conflict$effect),violence=c(c_violence$descriptive,c_violence$effect),riots=c(c_riots$descriptive,c_riots$effect),protests=c(c_protests$descriptive,c_protests$effect))))
 
 
+# plot impact
+dt <- data.table(combined=c_comb$output,battles=c_conflict$output,violence=c_violence$output,riots=c_riots$output,protests=c_protests$output)
 
+dt_cn <- colnames(dt)
+
+dt <- as.data.table(t(dt))
+
+colnames(dt) <- c("est1","se1","est2","se2","est3","se3","est4","se4")
+dt$event <- dt_cn
+
+dt$event <- factor(dt$event,levels=dt_cn[length(dt_cn):1])
+
+irriprice_dt <- dt
 
 
 # 05 - Rainfall/irrigation ----
@@ -732,7 +790,7 @@ impact4 <- function(x){
   h4_est <- paste0(format(round(h4_coef,1),nsmall=1),h4_stars)
   h4_std <- paste0("(",format(round(h4_se,1),nsmall=1),")")
   
-  return(list(descriptive=c(incidents=round(m$incidents,2),cropland=round(m$cropland,2)),effect=c(h1_est,h1_std,h2_est,h2_std,h3_est,h3_std,h4_est,h4_std)))
+  return(list(descriptive=c(incidents=round(m$incidents,2),cropland=round(m$cropland,2)),effect=c(h1_est,h1_std,h2_est,h2_std,h3_est,h3_std,h4_est,h4_std),output=c(h1_coef,h1_se,h2_coef,h2_se,h3_coef,h3_se,h4_coef,h4_se)))
 }
 
 ## combined effect ----
@@ -785,6 +843,19 @@ modelsummary(list(coef0_fe,coef1_fe,coef2_fe,coef3_fe,coef4_fe),estimate="{estim
 kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),conflict=c(c_conflict$descriptive,c_conflict$effect),violence=c(c_violence$descriptive,c_violence$effect),riots=c(c_riots$descriptive,c_riots$effect),protests=c(c_protests$descriptive,c_protests$effect))))
 
 
+# plot impact
+dt <- data.table(combined=c_comb$output,battles=c_conflict$output,violence=c_violence$output,riots=c_riots$output,protests=c_protests$output)
+
+dt_cn <- colnames(dt)
+
+dt <- as.data.table(t(dt))
+
+colnames(dt) <- c("est1","se1","est2","se2","est3","se3","est4","se4")
+dt$event <- dt_cn
+
+dt$event <- factor(dt$event,levels=dt_cn[length(dt_cn):1])
+
+irrirain_dt <- dt
 
 
 # 06 - conditional on battles ----
@@ -813,7 +884,7 @@ impact6 <- function(x){
   h2_std <- paste0("(",format(round(h2_se,1),nsmall=1),")")
   
 
-  return(list(descriptive=c(incidents=round(m$incidents,2),cropland=round(m$cropland,2)),effect=c(h1_est,h1_std,h2_est,h2_std)))
+  return(list(descriptive=c(incidents=round(m$incidents,2),cropland=round(m$cropland,2)),effect=c(h1_est,h1_std,h2_est,h2_std),output=c(h1_coef,h1_se,h2_coef,h2_se)))
 }
 
 ## evens-specific effects ----
@@ -856,6 +927,24 @@ modelsummary(list(coef1_fe,coef2_fe,coef3_fe),estimate="{estimate}{stars}",stars
 ## calculated impact
 kable_styling(kable(data.table(violence=c(c_violence$descriptive,c_violence$effect),riots=c(c_riots$descriptive,c_riots$effect),protests=c(c_protests$descriptive,c_protests$effect))))
 
+
+
+# plot impact
+dt <- data.table(violence=c_violence$output,riots=c_riots$output,protests=c_protests$output)
+
+dt_cn <- colnames(dt)
+
+dt <- as.data.table(t(dt))
+
+colnames(dt) <- c("est1","se1","est2","se2")
+dt$event <- dt_cn
+
+dt$event <- factor(dt$event,levels=dt_cn[length(dt_cn):1])
+
+regime_dt <- dt
+
+
+save(main_dt,price_dt,rain_dt,irriprice_dt,irrirain_dt,regime_dt,file="estimates.RData")
 
 
 # commented out stuff ----

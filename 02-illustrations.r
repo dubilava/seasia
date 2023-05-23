@@ -208,6 +208,29 @@ datasub_dt <- dataset_dt
 # 
 # datawide_dt[,`:=`(conflict=battles+explosion,date=as.Date(paste0(yearmo,"-01")))]
 
+## descriptive stats ----
+
+# conflict_dt <- dataset_dt[event %in% c("conflict","violence","riots","protests"),.(incidents=sum(incidents)),by=.(xy,longitude,latitude,country,event,season_rice,date=as.Date(paste0(yearmo,"-01")))]
+# 
+# conflict_dt[incidents>50 & season_rice==1]
+# 
+# conflict_dt[country=="Indonesia" & event=="protests" & incidents>0 & season_rice==1]
+# 
+# conflict_dt[country=="Indonesia" & event=="protests" & incidents>0 & season_rice!=1]
+# 
+# harvest_dt <- conflict_dt[season_rice==1,.(incidents_at_harvest=mean(incidents)),by=.(xy,longitude,latitude,event)]
+# 
+# nonharv_dt <- conflict_dt[season_rice!=1,.(incidents_nonharvest=mean(incidents)),by=.(xy,longitude,latitude,event)]
+# 
+# compare_dt <- merge(harvest_dt,nonharv_dt,by=c("xy","longitude","latitude","event"))
+# 
+# compare_dt[,`:=`(conflict_dif=incidents_at_harvest-incidents_nonharvest)]
+# 
+# compare_dt[,.(incidents_at_harvest=mean(incidents_at_harvest),incidents_nonharvest=mean(incidents_nonharvest),conflict_dif=mean(conflict_dif)),by=event]
+# 
+# ggplot(compare_dt,aes(x=conflict_dif,color=event,fill=event))+
+#   stat_density(alpha=.5,position="identity",bw=.1)+
+#   coord_cartesian(xlim=c(-1,1))
 
 ## F1: conflict map ----
 

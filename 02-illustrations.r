@@ -160,7 +160,7 @@ country_dt <- datacomb_dt[yearmo=="2020-01",.(xy,country)]
 cal_dt <- merge(cal_dt,country_dt,by="xy")
 
 ## seasonal color scheme
-fourseasons <- colorRampPalette(colors=c("skyblue","seagreen","forestgreen","tan","indianred","goldenrod","darkgray","skyblue"),interpolate="spline")
+fourseasons <- colorRampPalette(colors=c("skyblue2","seagreen","forestgreen","tan1","indianred3","goldenrod2","skyblue2"),interpolate="spline")
 
 fourseasons_col <- fourseasons(13)[c(13,2:12)]
 
@@ -183,7 +183,7 @@ calsum_dt <- rbind(calsum_dt,data.table(month=no_months,Cells=0))
 calsum_dt <- calsum_dt[order(month)]
 calsum_dt$month <- factor(calsum_dt$month,levels=month.abb)
 
-
+# the map legend
 gg_legend <- ggplot(calsum_dt,aes(x=month,y=Cells,fill=month)) +
   geom_bar(stat="identity") +
   scale_fill_manual(values=fourseasons_col,guide="none") +
@@ -345,6 +345,8 @@ gg_comb <- plot_grid(gg1,gg2,ncol=1,align="hv",rel_heights = c(7,2))
 ggsave("Figures/ts_conflict.png",gg_comb,width=6.5,height=4.5,dpi="retina",device="png")
 
 ggsave("Figures/ts_conflict.eps",gg_comb,width=6.5,height=4.5,dpi="retina",device="eps")
+
+save(gg_map,gg_legend,gg_conflict,gg_bars,gg1,gg2,file="graphs.RData")
 
 
 # #----------------------#

@@ -906,6 +906,98 @@ dt$event <- factor(dt$event,levels=dt_cn[length(dt_cn):1])
 rain_dt <- dt
 
 
+# 03a - Check: drop one country at a time ----
+
+list_of_countries <- unique(datacomb_dt$country)
+
+lst <- list()
+
+for(i in 1:length(list_of_countries)){
+  
+  datasub_dt <- datacomb2_dt
+  datasub_dt[,`:=`(area=area_spam,seas=rice_m)]
+  
+  datasub_dt <- datasub_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>2014)]
+  
+  datasub_dt <- datasub_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>2015)]
+  
+  datasub_dt <- datasub_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>2017)]
+  
+  datasub_dt <- datasub_dt[country!=list_of_countries[i]]
+  
+  ## effect
+  coef0_fe <- feols(incidents~area:seas+area:seas:gsrain_stand | xy+yearmo, datasub_dt,vcov=~xy)
+  
+  ## impact
+  c_comb <- impact2(datasub_dt)
+  
+  
+  ## evens-specific effects ----
+  
+  datasub_dt <- dataset2_dt
+  datasub_dt[,`:=`(area=area_spam,seas=rice_m)]
+  
+  datasub_dt <- datasub_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>2014)]
+  
+  datasub_dt <- datasub_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>2015)]
+  
+  datasub_dt <- datasub_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>2017)]
+  
+  datasub_dt <- datasub_dt[country!=list_of_countries[i]]
+  
+  ## effect
+  coef1_fe <- feols(incidents~area:seas+area:seas:gsrain_stand | xy+yearmo, datasub_dt[event=="conflict"],vcov=~xy)
+  coef2_fe <- feols(incidents~area:seas+area:seas:gsrain_stand | xy+yearmo, datasub_dt[event=="violence"],vcov=~xy)
+  coef3_fe <- feols(incidents~area:seas+area:seas:gsrain_stand | xy+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
+  coef4_fe <- feols(incidents~area:seas+area:seas:gsrain_stand | xy+yearmo, datasub_dt[event=="protests"],vcov=~xy)
+  
+  
+  ## impact
+  c_conflict <- impact2(datasub_dt[event=="conflict"])
+  c_protests <- impact2(datasub_dt[event=="protests"])
+  c_riots <- impact2(datasub_dt[event=="riots"])
+  c_violence <- impact2(datasub_dt[event=="violence"])
+  
+  dt <- data.table(combined=c_comb$output,battles=c_conflict$output,violence=c_violence$output,riots=c_riots$output,protests=c_protests$output)
+  
+  dt_cn <- colnames(dt)
+  
+  dt <- as.data.table(t(dt))
+  dt <- rbind(dt[,.(est=V1,se=V2)],dt[,.(est=V3,se=V4)])
+  
+  dt$regime <- rep(c("normal","extreme"),each=5)
+  
+  dt$event <- rep(dt_cn,2)
+  
+  dt$event <- factor(dt$event,levels=dt_cn[length(dt_cn):1])
+  
+  dt$country <- list_of_countries[i]
+  
+  lst[[i]] <- dt
+  
+}
+
+dropone_dt <- Reduce(rbind,lst)
+
+dropone_dt[,`:=`(col=ifelse(est/se > 1.96,"coral",ifelse(est/se < -1.96,"steelblue","darkgray")))]
+
+dropone_dt$event <- factor(dropone_dt$event,levels=unique(dropone_dt$event))
+
+gg_dropone <- ggplot(dropone_dt,aes(x=country,y=est,linetype=regime))+
+  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se),linewidth=.5,width=NA,color=dropone_dt$col)+
+  geom_point(size=1.5,color=dropone_dt$col)+
+  facet_grid(.~event)+
+  coord_flip()+
+  labs(title="",x="",y="Estimated impact (%) relative to the baseline")+
+  theme_paper()+
+  theme(axis.text.x=element_text(size=7),axis.text.y=element_text(hjust=0,size=9),panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"))
+
+ggsave("Figures/dropacountry_rain.png",gg_dropone,width=6.5,height=4.5,dpi="retina",device="png")
+
+ggsave("Figures/dropacountry_rain.eps",gg_dropone,width=6.5,height=4.5,dpi="retina",device="eps")
+
+
+
 # 04 - Prices/irrigation ----
 
 impact5 <- function(x){

@@ -20,25 +20,34 @@ gc()
 
 "%!in%" <- Negate("%in%")
 
-theme_paper <- function(){
-  theme_classic+theme(
-    panel.background=element_rect(fill="white",color=NA),
-    plot.background=element_rect(fill="white",color=NA),
-    panel.grid=element_blank(),
-    plot.title=element_text(size=12,colour="gray20",family="sans"),
-    axis.title=element_text(size=11,colour="black",family="sans"),
-    axis.text=element_text(size=9,colour="black",family="sans",margin=margin(t=1,r=1,b=1,l=1)),
-    axis.line.x=element_line(colour="gray20"),
-    axis.line.y=element_line(colour="gray20"),
-    axis.ticks=element_line(colour="gray20"),
-    legend.position="none",
-    legend.title=element_blank(),
-    legend.text=element_text(size=10,colour="black",family="sans"),
-    legend.key.size=unit(.75,'lines'),
-    legend.background=element_rect(fill="transparent",color=NA),
-    strip.background=element_blank(),
-    strip.text=element_text(size=11,colour="gray20",family="sans",face="bold",margin=margin(.1,0,.1,0,"cm"))
-  )
+theme_paper <- function(base_size=12,border=F){
+  theme_foundation(base_size=base_size) +
+    theme(
+      line = element_line(linetype=1,colour="black"),
+      rect = element_rect(linetype=0,colour=NA),
+      text = element_text(colour="black"),
+      panel.grid = element_line(colour=NULL,linetype=3,linewidth=.3),
+      panel.grid.major = element_line(colour="darkgray"),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor = element_blank(),
+      plot.title=element_text(colour="black",hjust=0,size=rel(1.1)),
+      plot.caption = element_text(size=rel(0.7),colour="slategray",hjust=0,margin=margin(t=5,r=1,b=1,l=1)),
+      plot.margin=unit(c(0.25,0.25,0.25,0.25),"lines"),
+      axis.text = element_text(size=rel(0.9),margin=margin(t=1,r=1,b=1,l=1)),
+      axis.text.x = element_text(colour = NULL),
+      axis.text.y = element_text(colour = NULL),
+      axis.ticks = element_blank(),
+      axis.line = element_line(),
+      axis.line.y = element_blank(),
+      legend.background=element_rect(fill="transparent",color=NA),
+      legend.position="none",
+      legend.title=element_blank(),
+      legend.text=element_text(size=rel(0.9),colour="slategray"),
+      legend.key = element_rect(fill="transparent"),
+      legend.key.size=unit(.75,'lines'),
+      strip.background=element_blank(),
+      strip.text=element_text(size=rel(.8),colour="slategray",margin=margin(.1,0,.1,0,"cm"))
+    )
 }
 
 
@@ -66,10 +75,10 @@ datacomb_dt <- merge(datacomb_dt,spam_dt,by=c("longitude","latitude"),all.x=T)
 dataset_dt <- merge(dataset_dt,spam_dt,by=c("longitude","latitude"),all.x=T)
 
 
-## drop the countries with virtually no conflict
-datacomb_dt <- datacomb_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
-
-dataset_dt <- dataset_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
+# ## drop the countries with virtually no conflict
+# datacomb_dt <- datacomb_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
+# 
+# dataset_dt <- dataset_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
 
 
 ## delete time-frames with no available conflict data
@@ -117,7 +126,7 @@ datacomb_dt[,`:=`(prop_i=ifelse(area_i==0,0,area_i/area_spam))]
 dataset_dt[,`:=`(prop_i=ifelse(area_i==0,0,area_i/area_spam))]
 
 check_dt <- datacomb_dt[year==2020 & month=="Jan"]
-check_dt <- check_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
+# check_dt <- check_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
 
 check_dt[,.(proportion=mean(prop_i)),by=.(country)]
 
@@ -130,7 +139,6 @@ gg <- ggplot(check_dt,aes(x=prop_i))+
   geom_histogram(fill="steelblue",color="white",bins=20)+
   labs(x="Proportion of Irrigated Croplands",y="Count")+
   theme_paper()+
-  theme_classic()+
   theme(axis.title = element_text(size=12),axis.text = element_text(size=10))
 
 ggsave("Figures/irrigated.png",gg,width=6.5,height=3.5,dpi="retina")
@@ -145,7 +153,7 @@ maps_dt <- datacomb_dt[year==2020]
 
 maps_dt[,`:=`(irrig=ifelse(prop_i>=.5,1,0))]
 
-maps_dt <- maps_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
+# maps_dt <- maps_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
 
 cal_dt <- maps_dt[season_rice==1 & Crop_Rice=="Rice",.(longitude,latitude,month,area_spam,area_i,area_r,irrig)]
 
@@ -234,7 +242,7 @@ datasub_dt <- dataset_dt
 
 ## F1: conflict map ----
 
-conflict_dt <- dataset_dt[event %in% c("conflict","violence","riots","protests"),.(incidents=sum(incidents)),by=.(xy,longitude,latitude,event)]
+conflict_dt <- dataset_dt[event %in% c("conflict","violence","riots","protests"),.(incidents=sum(incidents)),by=.(country,xy,longitude,latitude,event)]
 
 conflict_dt <- conflict_dt[incidents>0]
 
@@ -271,7 +279,7 @@ countries_dt$country <- factor(countries_dt$country,levels=ccum_dt$country)
 ccum_dt[,`:=`(country_incidents=paste0(country," (",incidents,")"))]
 
 
-conflict_dt <- dcast(conflict_dt,xy+longitude+latitude~event,value.var="incidents")
+conflict_dt <- dcast(conflict_dt,country+xy+longitude+latitude~event,value.var="incidents")
 conflict_dt[is.na(conflict_dt)] <- 0
 
 # colnames(conflict_dt) <- c("xy","longitude","latitude","violence","protests","battles")
@@ -295,7 +303,7 @@ gg_conflict <- ggplot(data = southeastasia) +
   theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title = element_blank(),axis.text = element_blank(),legend.title = element_blank(),legend.text = element_text(hjust=0),legend.position = c(.5,.85))
 
 countries_dt$ylab <- 0
-countries_dt$event <- factor(countries_dt$event,levels=c("battles","violence","unrest"))
+countries_dt$event <- factor(countries_dt$event,levels=c("battles","violence","unrest"),labels=c("Battles","Violence","Unrest"))
 
 gg_bars <- ggplot(countries_dt,aes(x=reorder(country,incidents),y=incidents))+
   geom_bar(aes(fill=event),stat="identity",color="white",linewidth=.25)+
@@ -322,21 +330,19 @@ conflict_ts <- dataset_dt[event %in% c("conflict","violence","riots","protests")
 
 conflict_ts[,`:=`(rate=incidents/locations)]
 
-conflict_ts$event <- factor(conflict_ts$event,levels=c("conflict","violence","riots","protests"),labels=c("Battles and Explosions","Violence Against Civilians","Riots","Protests"))
+conflict_ts$event <- factor(conflict_ts$event,levels=c("conflict","violence","riots","protests"),labels=c("Battles","Violence","Riots","Protests"))
 
 gg1 <- ggplot(conflict_ts,aes(x=date,y=rate,color=event,linetype=event))+
   geom_line()+
   scale_color_manual(values=c("darkgray","indianred","steelblue","goldenrod"))+
   labs(x="Year",y="Incidents per cell")+
-  theme_classic()+
   theme_paper()+
-  theme(legend.title=element_blank(),legend.position = c(.18,.82))
+  theme(legend.title=element_blank(),legend.position = "top")
 
 gg2 <- ggplot(conflict_ts[,.(cells=mean(locations)),by=date],aes(x=date,y=cells))+
   geom_col(fill="darkgray",color="white")+
   scale_y_reverse()+
   labs(x="",y="Cells")+
-  theme_classic()+
   theme_paper()+
   theme(axis.line = element_blank(),axis.ticks = element_blank(),axis.title.x = element_blank(),axis.text.x=element_blank())
 
@@ -347,212 +353,5 @@ ggsave("Figures/ts_conflict.png",gg_comb,width=6.5,height=4.5,dpi="retina",devic
 ggsave("Figures/ts_conflict.eps",gg_comb,width=6.5,height=4.5,dpi="retina",device="eps")
 
 save(gg_map,gg_legend,gg_conflict,gg_bars,gg1,gg2,file="graphs.RData")
-
-
-# #----------------------#
-# #--  Harvest Season  --#
-# #----------------------#
-# 
-# datasrt_dt <- dataset_dt[year==2020]
-# datasrt_dt <- datasrt_dt[season_srt %in% 1]
-# datasrt_dt <- datasrt_dt[,.(xy,country,harvest_srt=month,crop,area=max_area,season_srt)]
-# datasrt_dt$season_srt <- NULL
-# datasrt_dt <- unique(datasrt_dt)
-# 
-# datamid_dt <- dataset_dt[year==2020]
-# datamid_dt <- datamid_dt[season %in% 1]
-# datamid_dt <- datamid_dt[,.(xy,country,harvest_mid=month,crop,area=max_area,season)]
-# datamid_dt$season <- NULL
-# datamid_dt <- unique(datamid_dt)
-# 
-# dataend_dt <- dataset_dt[year==2020]
-# dataend_dt <- dataend_dt[season_end %in% 1]
-# dataend_dt <- dataend_dt[,.(xy,country,harvest_end=month,crop,area=max_area,season_end)]
-# dataend_dt$season_end <- NULL
-# dataend_dt <- unique(dataend_dt)
-# 
-# datahs_dt <- merge(datasrt_dt,dataend_dt,by=c("xy","country","crop","area"))
-# datahs_dt <- merge(datamid_dt,datahs_dt,by=c("xy","country","crop","area"))
-# 
-# datahs_dt$harvest_srt <- factor(datahs_dt$harvest_srt,levels=c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"))
-# datahs_dt$harvest_mid <- factor(datahs_dt$harvest_mid,levels=c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"))
-# datahs_dt$harvest_end <- factor(datahs_dt$harvest_end,levels=c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"))
-# 
-# country_xy_dt <- datahs_dt[,.(xy,country,crop,area,harvest_srt,harvest_mid,harvest_end)]
-# country_xy_dt <- unique(country_xy_dt)
-# 
-# country_dt <- country_xy_dt[,.(gridcells=.N,area=mean(area)),by=.(country,crop,harvest_srt,harvest_mid,harvest_end)]
-# 
-# country <- as.character(country_dt$country)
-# month=c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
-# 
-# country_month <- CJ(country,month)
-# country_month_dt <- unique(country_month)
-# 
-# country_month_dt <- merge(country_dt,country_month_dt,by=c("country"),allow.cartesian=T)
-# 
-# country_month_dt <- country_month_dt[order(country,crop,-gridcells,month)]
-# 
-# country_month_dt$month <- factor(country_month_dt$month,levels=c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"))
-# country_month_dt$crop <- factor(country_month_dt$crop,levels=c("Maize","Sorghum","Wheat","Rice"))
-# 
-# # adjust instances when the starting and ending months are 'backwards'
-# country_month_dt[,`:=`(m_dif=as.numeric(as.Date(paste("2020",harvest_end,"01",sep="-"),format="%Y-%b-%d")-as.Date(paste("2020",harvest_srt,"01",sep="-"),format="%Y-%b-%d")))]
-# 
-# temp_dt <- country_month_dt[m_dif<0]
-# 
-# temp1_dt <- temp_dt
-# temp1_dt$harvest_end <- "Dec"
-# temp2_dt <- temp_dt
-# temp2_dt$harvest_srt <- "Jan"
-# 
-# dbl_dt <- rbind(temp1_dt,temp2_dt)
-# 
-# country_month_dt <- rbind(country_month_dt[m_dif>=0],dbl_dt)
-# country_month_dt$m_dif <- NULL
-# 
-# 
-# gg_hs_white <- ggplot(country_month_dt,aes(x=month,y=crop))+
-#   geom_linerange(aes(xmin=harvest_srt,xmax=harvest_end,size=gridcells,color=crop,alpha=area))+
-#   geom_point(aes(x=harvest_mid,y=crop,size=gridcells,color=crop,alpha=area),shape=21)+
-#   facet_wrap(~country,nrow=10)+
-#   scale_color_manual(values=c("forestgreen","indianred","goldenrod","steelblue"))+
-#   scale_alpha(range=c(.05,.35))+
-#   scale_size(range=c(.5,3.5))+
-#   scale_x_discrete(labels=c("Jan" = "J","Feb" = "F","Mar" = "M","Apr" = "A","May" = "M","Jun" = "J","Jul" = "J","Aug" = "A","Sep" = "S","Oct" = "O","Nov" = "N","Dec" = "D"))+
-#   labs(x="Months",y="Crops")+
-#   theme_classic()+
-#   theme_white()+
-#   theme(strip.text=element_text(size=8,colour="gray55",family="sans",face="bold",margin=margin(.1,0,.1,0,"cm")))
-# 
-# ggsave("Figures/harvestseasons.png",gg_hs_white,width=6.5,height=7.5,dpi=200)
-# 
-# country_sub <- unique(country_month_dt$country)[seq(1,45,4)]
-# 
-# gg_hs_white <- ggplot(country_month_dt[country %in% country_sub],aes(x=month,y=crop))+
-#   geom_linerange(aes(xmin=harvest_srt,xmax=harvest_end,size=gridcells,color=crop,alpha=area))+
-#   geom_point(aes(x=harvest_mid,y=crop,size=gridcells,color=crop,alpha=area),shape=21)+
-#   facet_wrap(~country,ncol=4)+
-#   scale_color_manual(values=c("forestgreen","indianred","goldenrod","steelblue"))+
-#   scale_alpha(range=c(.05,.35))+
-#   scale_size(range=c(.5,3.5))+
-#   scale_x_discrete(labels=c("Jan" = "J","Feb" = "F","Mar" = "M","Apr" = "A","May" = "M","Jun" = "J","Jul" = "J","Aug" = "A","Sep" = "S","Oct" = "O","Nov" = "N","Dec" = "D"))+
-#   labs(x="Months",y="Crops")+
-#   theme_classic()+
-#   theme_white()
-# 
-# gg_hs_black <- ggplot(country_month_dt[country %in% country_sub],aes(x=month,y=crop))+
-#   geom_linerange(aes(xmin=harvest_srt,xmax=harvest_end,size=gridcells,color=crop,alpha=area))+
-#   geom_point(aes(x=harvest_mid,y=crop,size=gridcells,color=crop,alpha=area),shape=21)+
-#   facet_wrap(~country,ncol=4)+
-#   scale_color_manual(values=c("forestgreen","indianred","goldenrod","steelblue"))+
-#   scale_alpha(range=c(.05,.35))+
-#   scale_size(range=c(.5,3.5))+
-#   scale_x_discrete(labels=c("Jan" = "J","Feb" = "F","Mar" = "M","Apr" = "A","May" = "M","Jun" = "J","Jul" = "J","Aug" = "A","Sep" = "S","Oct" = "O","Nov" = "N","Dec" = "D"))+
-#   labs(x="Months",y="Crops")+
-#   theme_classic()+
-#   theme_black()
-# 
-# ggsave("Presentation/harvestseasons_sub.png",gg_hs_white,width=6.5,height=3.5,dpi="retina")
-# ggsave("Online/harvestseasons_sub.png",gg_hs_black,width=6.5,height=3.5,dpi="retina")
-# 
-# #----------------------#
-# #--  Growing Season  --#
-# #----------------------#
-# 
-# dataharv_dt <- datacomb_dt[year==2020]
-# dataharv_dt <- dataharv_dt[season %in% 1]
-# dataharv_dt <- dataharv_dt[,.(xy,country,harvest=month,crop,area=max_area,season)]
-# dataharv_dt$season <- NULL
-# dataharv_dt <- unique(dataharv_dt)
-# 
-# dataplant_dt <- datacomb_dt[year==2020]
-# dataplant_dt <- dataplant_dt[planted %in% 1]
-# dataplant_dt <- dataplant_dt[,.(xy,country,plant=month,crop,area=max_area,planted)]
-# dataplant_dt$planted <- NULL
-# dataplant_dt <- unique(dataplant_dt)
-# 
-# datags_dt <- merge(dataplant_dt,dataharv_dt,by=c("xy","country","crop","area"))
-# 
-# datags_dt$plant <- factor(datags_dt$plant,levels=c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"))
-# datags_dt$harvest <- factor(datags_dt$harvest,levels=c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"))
-# 
-# country_xy_dt <- datags_dt[,.(xy,country,crop,area,plant,harvest)]
-# country_xy_dt <- unique(country_xy_dt)
-# 
-# country_dt <- country_xy_dt[,.(gridcells=.N,area=mean(area)),by=.(country,crop,plant,harvest)]
-# 
-# country <- as.character(country_dt$country)
-# month=c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
-# 
-# country_month <- CJ(country,month)
-# country_month_dt <- unique(country_month)
-# 
-# country_month_dt <- merge(country_dt,country_month_dt,by=c("country"),allow.cartesian=T)
-# 
-# country_month_dt <- country_month_dt[order(country,crop,-gridcells,month)]
-# 
-# country_month_dt$month <- factor(country_month_dt$month,levels=c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"))
-# country_month_dt$crop <- factor(country_month_dt$crop,levels=c("Maize","Sorghum","Wheat","Rice"))
-# 
-# # adjust instances when the starting and ending months are 'backwards'
-# country_month_dt[,`:=`(m_dif=as.numeric(as.Date(paste("2020",harvest,"01",sep="-"),format="%Y-%b-%d")-as.Date(paste("2020",plant,"01",sep="-"),format="%Y-%b-%d")))]
-# 
-# temp_dt <- country_month_dt[m_dif<0]
-# 
-# temp1_dt <- temp_dt
-# temp1_dt$harvest <- "Dec"
-# temp2_dt <- temp_dt
-# temp2_dt$plant <- "Jan"
-# 
-# dbl_dt <- rbind(temp1_dt,temp2_dt)
-# 
-# country_month_dt <- rbind(country_month_dt[m_dif>=0],dbl_dt)
-# country_month_dt$m_dif <- NULL
-# 
-# country_month_dt <- country_month_dt[order(country,crop)]
-# 
-# gg_gs_white <- ggplot(country_month_dt,aes(x=month,y=crop))+
-#   geom_linerange(aes(xmin=plant,xmax=harvest,size=gridcells,color=crop,alpha=area))+
-#   facet_wrap(~ country,nrow=10)+
-#   scale_color_manual(values=c("forestgreen","indianred","goldenrod","steelblue"))+
-#   scale_alpha(range=c(.05,.35))+
-#   scale_size(range=c(.5,3.5))+
-#   scale_x_discrete(labels=c("Jan" = "J","Feb" = "F","Mar" = "M","Apr" = "A","May" = "M","Jun" = "J","Jul" = "J","Aug" = "A","Sep" = "S","Oct" = "O","Nov" = "N","Dec" = "D"))+
-#   labs(x="Months",y="Crops")+
-#   theme_classic()+
-#   theme_white()+
-#   theme(strip.text=element_text(size=8,colour="gray55",family="sans",face="bold",margin=margin(.1,0,.1,0,"cm")))
-# 
-# ggsave("Figures/growingseasons.png",gg_gs_white,width=6.5,height=7.5,dpi=200)
-# 
-# 
-# gg_gs_white <- ggplot(country_month_dt[country %in% country_sub],aes(x=month,y=crop))+
-#   geom_linerange(aes(xmin=plant,xmax=harvest,size=gridcells,color=crop,alpha=area))+
-#   facet_wrap(~ country,ncol=4)+
-#   scale_color_manual(values=c("forestgreen","indianred","goldenrod","steelblue"))+
-#   scale_alpha(range=c(.05,.35))+
-#   scale_size(range=c(.5,3.5))+
-#   scale_x_discrete(labels=c("Jan" = "J","Feb" = "F","Mar" = "M","Apr" = "A","May" = "M","Jun" = "J","Jul" = "J","Aug" = "A","Sep" = "S","Oct" = "O","Nov" = "N","Dec" = "D"))+
-#   labs(x="Months",y="Crops")+
-#   theme_classic()+
-#   theme_white()
-# 
-# gg_gs_black <- ggplot(country_month_dt[country %in% country_sub],aes(x=month,y=crop))+
-#   geom_linerange(aes(xmin=plant,xmax=harvest,size=gridcells,color=crop,alpha=area))+
-#   facet_wrap(~ country,ncol=4)+
-#   scale_color_manual(values=c("forestgreen","indianred","goldenrod","steelblue"))+
-#   scale_alpha(range=c(.05,.35))+
-#   scale_size(range=c(.5,3.5))+
-#   scale_x_discrete(labels=c("Jan" = "J","Feb" = "F","Mar" = "M","Apr" = "A","May" = "M","Jun" = "J","Jul" = "J","Aug" = "A","Sep" = "S","Oct" = "O","Nov" = "N","Dec" = "D"))+
-#   labs(x="Months",y="Crops")+
-#   theme_classic()+
-#   theme_black()
-# 
-# ggsave("Presentation/growingseasons_sub.png",gg_gs_white,width=6.5,height=3.5,dpi="retina")
-# ggsave("Online/growingseasons_sub.png",gg_gs_black,width=6.5,height=3.5,dpi="retina")
-
-
-
 
 

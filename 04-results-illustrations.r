@@ -60,11 +60,11 @@ theme_guess <- function(base_size=12,base_family="sans",title_family="sans",bord
 ## load the map of se asia
 load("estimates.RData")
 
-
+main_dt[,`:=`(col=ifelse(est/se > 1.96,"coral",ifelse(est/se < -1.96,"steelblue","darkgray")))]
 
 gg_main <- ggplot(main_dt,aes(x=event,y=est))+
-  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se),linewidth=.8,width=NA)+
-  geom_point(size=2)+
+  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se),linewidth=.8,width=NA,color=main_dt$col)+
+  geom_point(size=2,color=main_dt$col)+
   coord_flip()+
   labs(title="",x="Conflict Type",y="Estimated impact (%) relative to the baseline")+
   theme_guess()+

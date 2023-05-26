@@ -55,13 +55,24 @@ theme_paper <- function(base_size=12,border=F){
 
 "%!in%" <- Negate("%in%")
 
+
+## load the map of se asia
+load("Local/Data/acled_seasia.RData")
+
+countries <- unique(acled_dt$country)
+
+southeastasia <- ne_countries(country=unique(acled_dt$country),returnclass="sf",scale="large")
+southeastasia <- st_set_crs(southeastasia,"+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+
+
+
 pstars <- function(ps){
   p_stars <- ifelse(ps<.01,"***",ifelse(ps<.05,"**",ifelse(ps<.1,"*","")))
   return(p_stars)
 }
 
 impact <- function(x){
-  r <- feols(incidents~area:seas | xy+yearmo, data=x,vcov=~xy)
+  r <- feols(incidents~area:seas | xy+yearmo, data=x,vcov=conley(200,distance="spherical")~longitude+latitude)
   
   m <- x[area>0,.(incidents=mean(incidents),cropland=mean(area))]
   
@@ -228,7 +239,8 @@ dataset_dt$event <- factor(dataset_dt$event,levels=c("conflict","protests","riot
 # datacomb_dt[country=="Myanmar" & year==2021 & rice_m==1]
 
 datasub_dt <- datacomb_dt
-datasub_dt[,`:=`(area=area_spam,seas=rice_m)]#harvest_season
+datasub_dt[,`:=`(area=area_spam,seas=rice_m)]#ifelse(rice_s==1 | rice_m==1 | rice_e==1,1,0))]#harvest_season
+
 
 datasub_dt <- datasub_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>2014)]
 
@@ -237,7 +249,7 @@ datasub_dt <- datasub_dt[country!="Philippines" | (country=="Philippines" & as.n
 datasub_dt <- datasub_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>2017)]
 
 ## effect
-coef0_fe <- feols(incidents~area:seas | xy+yearmo, datasub_dt,vcov=~xy)
+coef0_fe <- feols(incidents~area:seas+seas | xy+yearmo, datasub_dt,vcov=~xy)
 
 ## impact
 c_comb <- impact(datasub_dt)
@@ -246,7 +258,7 @@ c_comb <- impact(datasub_dt)
 ## evens-specific effects ----
 
 datasub_dt <- dataset_dt
-datasub_dt[,`:=`(area=area_spam,seas=rice_m)]#harvest_season
+datasub_dt[,`:=`(area=area_spam,seas=rice_m)]#ifelse(rice_s==1 | rice_m==1 | rice_e==1,1,0))]#harvest_season
 
 datasub_dt <- datasub_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>2014)]
 
@@ -518,6 +530,115 @@ gg_dropone <- ggplot(dropone_dt,aes(x=country,y=est))+
 ggsave("Figures/dropacountry.png",gg_dropone,width=6.5,height=4.5,dpi="retina",device="png")
 
 ggsave("Figures/dropacountry.eps",gg_dropone,width=6.5,height=4.5,dpi="retina",device="eps")
+
+
+
+# 01e - Check: fixed effects ----
+
+impact1e <- function(x,n){
+  r <- feols(incidents~area:seas | sw(xy+yearmo,xy+year+mo,xy+year,xy+mo,xy), data=x,vcov=~xy)
+  
+  m <- x[area>0,.(incidents=mean(incidents),cropland=mean(area))]
+  
+  s <- 100*m$cropland/m$incidents
+  
+  lst <- list()
+  
+  for(i in 1:n){
+    
+    h_coef <- round(r[[i]]$coeftable["area:seas","Estimate"]*s,1)
+    
+    h_se <- round(r[[i]]$coeftable["area:seas","Std. Error"]*s,1)
+    
+    h_stars <- pstars(r[[i]]$coeftable["area:seas","Pr(>|t|)"])
+    
+    h_est <- paste0(format(round(h_coef,1),nsmall=1),h_stars)
+    h_std <- paste0("(",format(round(h_se,1),nsmall=1),")")
+    
+    lst[[i]] <- c(h_coef,h_se,paste(r[[i]]$fixef_vars,collapse=', '))
+    
+  }
+  
+  coef_dt <- as.data.table(Reduce(rbind,lst))
+  colnames(coef_dt) <- c("impact","se","fe")
+  
+  return(coef_dt)
+}
+  
+  ## combined effect ----
+  datasub_dt <- datacomb_dt
+  datasub_dt[,`:=`(area=area_spam,seas=rice_m)]#harvest_season
+  
+  datasub_dt <- datasub_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>2014)]
+  
+  datasub_dt <- datasub_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>2015)]
+  
+  datasub_dt <- datasub_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>2017)]
+  
+  ## effect
+  coef0_fe <- feols(incidents~area:seas | sw(xy+yearmo,xy+year+mo,xy+year,xy+mo,xy), datasub_dt,vcov=~xy)
+  
+  ## impact
+  c_comb <- impact1e(datasub_dt,5)
+  c_comb$event <- "Combined"
+  
+  ## event-specific effects ----
+  datasub_dt <- dataset_dt
+  datasub_dt[,`:=`(area=area_spam,seas=rice_m)]#harvest_season
+  
+  datasub_dt <- datasub_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>2014)]
+  
+  datasub_dt <- datasub_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>2015)]
+  
+  datasub_dt <- datasub_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>2017)]
+  
+  # datasub_dt <- datasub_dt[country!=list_of_countries[i]]
+  
+  ## effect
+  coef1_fe <- feols(incidents~area:seas | sw(xy+yearmo,xy+year+mo,xy+year,xy+mo,xy), datasub_dt[event=="conflict"],vcov=~xy)
+  coef2_fe <- feols(incidents~area:seas | sw(xy+yearmo,xy+year+mo,xy+year,xy+mo,xy), datasub_dt[event=="violence"],vcov=~xy)
+  coef3_fe <- feols(incidents~area:seas | sw(xy+yearmo,xy+year+mo,xy+year,xy+mo,xy), datasub_dt[event=="riots" ],vcov=~xy)
+  coef4_fe <- feols(incidents~area:seas | sw(xy+yearmo,xy+year+mo,xy+year,xy+mo,xy), datasub_dt[event=="protests"],vcov=~xy)
+  
+  ## impact
+  c_conflict <- impact1e(datasub_dt[event=="conflict"],5)
+  c_violence <- impact1e(datasub_dt[event=="violence"],5)
+  c_riots <- impact1e(datasub_dt[event=="riots"],5)
+  c_protests <- impact1e(datasub_dt[event=="protests"],5)
+  
+  c_conflict$event <- "Battles"
+  c_violence$event <- "Violence"
+  c_riots$event <- "Riots"
+  c_protests$event <- "Protests"
+  
+  dt <- data.table(rbind(c_comb,c_conflict,c_violence,c_riots,c_protests))
+  
+  dt$impact <- as.numeric(dt$impact)
+  dt$se <- as.numeric(dt$se)
+  
+  dt[,`:=`(col=ifelse(impact/se > 1.96,"coral",ifelse(impact/se < -1.96,"steelblue","darkgray")))]
+  
+  # dt_cn <- colnames(dt)
+  # 
+  # dt <- as.data.table(t(dt))
+  # 
+  # colnames(dt) <- c("est","se")
+  # dt$event <- dt_cn
+  
+  dt$event <- factor(dt$event,levels=unique(dt$event)[1:5])
+  dt$fe <- factor(dt$fe,levels=unique(dt$fe)[1:5])
+
+  gg_fe <- ggplot(dt,aes(x=fe,y=impact,group=fe))+
+    geom_errorbar(aes(ymin=impact-1.96*se,ymax=impact+1.96*se),linewidth=.5,width=NA,color=dt$col)+
+    geom_point(size=1.5,color=dt$col)+
+    facet_wrap(.~event,ncol=1)+
+    labs(title="",x="Fixed Effects",y="Estimated impact (%) relative to the baseline")+
+    theme_paper()+
+    theme(axis.text.x=element_text(size=7),axis.text.y=element_text(hjust=0,size=9))
+  
+  ggsave("Figures/fe.png",gg_fe,width=6.5,height=6.5,dpi="retina",device="png")
+  
+  ggsave("Figures/fe.eps",gg_fe,width=6.5,height=6.5,dpi="retina",device="eps")
 
 
 # 02 - Prices ----
@@ -983,9 +1104,18 @@ dropone_dt[,`:=`(col=ifelse(est/se > 1.96,"coral",ifelse(est/se < -1.96,"steelbl
 
 dropone_dt$event <- factor(dropone_dt$event,levels=unique(dropone_dt$event))
 
-gg_dropone <- ggplot(dropone_dt,aes(x=country,y=est,linetype=regime))+
-  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se),linewidth=.5,width=NA,color=dropone_dt$col)+
-  geom_point(size=1.5,color=dropone_dt$col)+
+gg_dropone_n <- ggplot(dropone_dt[regime=="normal"],aes(x=country,y=est))+
+  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se),linewidth=.5,width=NA,color=dropone_dt[regime=="normal"]$col)+
+  geom_point(size=1.5,color=dropone_dt[regime=="normal"]$col)+
+  facet_grid(.~event)+
+  coord_flip()+
+  labs(title="",x="",y="Estimated impact (%) relative to the baseline")+
+  theme_paper()+
+  theme(axis.text.x=element_text(size=7),axis.text.y=element_text(hjust=0,size=9),panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"))
+
+gg_dropone_e <- ggplot(dropone_dt[regime=="extreme"],aes(x=country,y=est))+
+  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se),linewidth=.5,width=NA,color=dropone_dt[regime=="extreme"]$col)+
+  geom_point(size=1.5,color=dropone_dt[regime=="extreme"]$col)+
   facet_grid(.~event)+
   coord_flip()+
   labs(title="",x="",y="Estimated impact (%) relative to the baseline")+

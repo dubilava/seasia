@@ -121,8 +121,8 @@ dataset_dt[,`:=`(Rice_dum=ifelse(Rice_area>.01,1,0),Area_dum=ifelse(Crop_area>.0
 
 dataset_dt$event <- factor(dataset_dt$event,levels=c("protests","riots","violence","strategic","explosion","battles"))
 
-datacomb_dt <- datacomb_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
-dataset_dt <- dataset_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
+# datacomb_dt <- datacomb_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
+# dataset_dt <- dataset_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
 
 
 # main effect: unbalanced panel ----
@@ -180,3 +180,6 @@ modelsummary(list(coef0_fe,coef6_fe,coef5_fe,coef3_fe,coef1_fe,coef2_fe,coef4_fe
 
 ## calculated impact
 kable_styling(kable(data.table(comb=c_comb$effect,battles=c_battles$effect,explosion=c_explosion$effect,violence=c_violence$effect,protests=c_protests$effect,riots=c_riots$effect,strategic=c_strategic$effect)))
+
+
+

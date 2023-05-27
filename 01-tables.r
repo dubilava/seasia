@@ -1057,6 +1057,94 @@ dt$event <- factor(dt$event,levels=dt_cn[length(dt_cn):1])
 regime_dt <- dt
 
 
+# 04d - Check: drop one country at a time ----
+
+list_of_countries <- unique(datacomb_dt$country)
+
+lst <- list()
+
+for(i in 1:length(list_of_countries)){
+  
+  datasub_dt <- dataset_dt
+  
+  datawide_dt <- datasub_dt[event=="conflict",.(longitude,latitude,xy,yearmo,conflict=incidents)]
+  
+  datasub_dt <- merge(datasub_dt,datawide_dt,by=c("longitude","latitude","xy","yearmo"),all.x=T)
+  
+  datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
+  
+  datasub_dt <- datasub_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>2014)]
+  
+  datasub_dt <- datasub_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>2015)]
+  
+  datasub_dt <- datasub_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>2017)]
+  
+  datasub_dt <- datasub_dt[country!=list_of_countries[i]]
+  
+  datasub_dt[,`:=`(conflict_mean=mean(conflict))]
+  
+  ## effect
+  coef1_fe <- feols(incidents~area:seas+area:seas:conflict+conflict | xy+yearmo, datasub_dt[event=="violence"],vcov=~xy)
+  coef2_fe <- feols(incidents~area:seas+area:seas:conflict+conflict | xy+yearmo, datasub_dt[event=="riots"],vcov=~xy)
+  coef3_fe <- feols(incidents~area:seas+area:seas:conflict+conflict | xy+yearmo, datasub_dt[event=="protests"],vcov=~xy)
+  
+  ## impact
+  c_protests <- impact4(datasub_dt[event=="protests"])
+  c_riots <- impact4(datasub_dt[event=="riots"])
+  c_violence <- impact4(datasub_dt[event=="violence"])
+  
+  dt <- data.table(violence=c_violence$output,riots=c_riots$output,protests=c_protests$output)
+  
+  dt_cn <- colnames(dt)
+  
+  dt <- as.data.table(t(dt))
+  
+  dt1 <- dt[,.(V1,V2)]
+  colnames(dt1) <- c("est","se")
+  dt1$event <- dt_cn
+  dt1$regime <- "peace"
+  
+  dt2 <- dt[,.(V3,V4)]
+  colnames(dt2) <- c("est","se")
+  dt2$event <- dt_cn
+  dt2$regime <- "war"
+  
+  dt <- rbind(dt1,dt2)
+  
+  dt$event <- factor(dt$event,levels=dt_cn[length(dt_cn):1])
+  
+  dt$country <- list_of_countries[i]
+  
+  lst[[i]] <- dt
+  
+}
+
+dropone_dt <- Reduce(rbind,lst)
+dropone_dt <- dropone_dt[order(country)]
+
+dropone_dt[,`:=`(col=ifelse(est/se > 1.96,"coral",ifelse(est/se < -1.96,"steelblue","darkgray")))]
+
+dropone_dt$regime <- factor(dropone_dt$regime,levels=unique(dropone_dt$regime))
+
+dropone_dt$event <- factor(dropone_dt$event,levels=unique(dropone_dt$event))
+
+dropone_dt$country <- factor(dropone_dt$country,levels=unique(dropone_dt$country)[length(unique(dropone_dt$country)):1])
+
+gg_dropone <- ggplot(dropone_dt,aes(x=country,y=est))+
+  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se),linewidth=.3,width=NA,color=dropone_dt$col)+
+  geom_point(size=1,color=dropone_dt$col)+
+  facet_grid(.~regime+event)+
+  coord_flip()+
+  labs(title="",x="",y="Estimated impact (%) relative to the baseline")+
+  theme_paper()+
+  theme(axis.text.x=element_text(size=7),axis.text.y=element_text(hjust=0,size=9),panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"),strip.text = element_text(size=8))
+
+
+ggsave("Figures/dropacountry_war.png",gg_dropone,width=6.5,height=4.5,dpi="retina",device="png")
+
+ggsave("Figures/dropacountry_war.eps",gg_dropone,width=6.5,height=4.5,dpi="retina",device="eps")
+
+
 # save(main_dt,price_dt,rain_dt,irriprice_dt,irrirain_dt,regime_dt,file="estimates.RData")
 
 

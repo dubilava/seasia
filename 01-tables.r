@@ -429,9 +429,6 @@ for(i in 1:length(list_of_countries)){
   
   datasub_dt <- datasub_dt[country!=list_of_countries[i]]
   
-  ## effect
-  coef0_fe <- feols(incidents~area:seas | xy+yearmo, datasub_dt,vcov=~xy)
-  
   ## impact
   c_comb <- impact1(datasub_dt)
   
@@ -446,12 +443,6 @@ for(i in 1:length(list_of_countries)){
   datasub_dt <- datasub_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>2017)]
   
   datasub_dt <- datasub_dt[country!=list_of_countries[i]]
-  
-  ## effect
-  coef1_fe <- feols(incidents~area:seas | xy+yearmo, datasub_dt[event=="conflict"],vcov=~xy)
-  coef2_fe <- feols(incidents~area:seas | xy+yearmo, datasub_dt[event=="violence"],vcov=~xy)
-  coef3_fe <- feols(incidents~area:seas | xy+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
-  coef4_fe <- feols(incidents~area:seas | xy+yearmo, datasub_dt[event=="protests"],vcov=~xy)
   
   ## impact
   c_conflict <- impact1(datasub_dt[event=="conflict"])
@@ -479,15 +470,17 @@ for(i in 1:length(list_of_countries)){
 dropone_dt <- Reduce(rbind,lst)
 dropone_dt <- dropone_dt[order(country)]
 
-dropone_dt[,`:=`(col=ifelse(est/se > 1.96,"coral",ifelse(est/se < -1.96,"steelblue","darkgray")))]
+dropone_dt[,`:=`(col1=ifelse(est/se > 1.96,"coral",ifelse(est/se < -1.96,"steelblue","darkgray")))]
+dropone_dt[,`:=`(col2=ifelse(est/se > 1.645,"coral",ifelse(est/se < -1.645,"steelblue","darkgray")))]
 
 dropone_dt$event <- factor(dropone_dt$event,levels=unique(dropone_dt$event))
 
 dropone_dt$country <- factor(dropone_dt$country,levels=unique(dropone_dt$country)[length(unique(dropone_dt$country)):1])
 
 gg_dropone <- ggplot(dropone_dt,aes(x=country,y=est))+
-  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se),linewidth=.5,width=NA,color=dropone_dt$col)+
-  geom_point(size=1.5,color=dropone_dt$col)+
+  geom_errorbar(aes(ymin=est-1.645*se,ymax=est+1.645*se),linewidth=2,width=NA,color=dropone_dt$col2,alpha=.75)+
+  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se),linewidth=.7,width=NA,color=dropone_dt$col1)+
+  geom_point(size=1.5,shape=21,color=dropone_dt$col2,fill="white",stroke=1)+
   facet_grid(.~event)+
   coord_flip()+
   labs(title="",x="",y="Estimated impact (%) relative to the baseline")+
@@ -859,10 +852,10 @@ datasub_dt <- datasub_dt[country!="Philippines" | (country=="Philippines" & as.n
 datasub_dt <- datasub_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>2017)]
 
 ## effect
-coef1_fe <- feols(incidents~area:seas+area:seas:gsrain_stand | xy+yearmo, datasub_dt[event=="conflict"],vcov=~xy)
-coef2_fe <- feols(incidents~area:seas+area:seas:gsrain_stand | xy+yearmo, datasub_dt[event=="violence"],vcov=~xy)
-coef3_fe <- feols(incidents~area:seas+area:seas:gsrain_stand | xy+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
-coef4_fe <- feols(incidents~area:seas+area:seas:gsrain_stand | xy+yearmo, datasub_dt[event=="protests"],vcov=~xy)
+coef1_fe <- feols(incidents~area:seas+area:seas:gsrain_stand | xy+yearmo+country^seas, datasub_dt[event=="conflict"],vcov=~xy)
+coef2_fe <- feols(incidents~area:seas+area:seas:gsrain_stand | xy+yearmo+country^seas, datasub_dt[event=="violence"],vcov=~xy)
+coef3_fe <- feols(incidents~area:seas+area:seas:gsrain_stand | xy+yearmo+country^seas, datasub_dt[event=="riots" ],vcov=~xy)
+coef4_fe <- feols(incidents~area:seas+area:seas:gsrain_stand | xy+yearmo+country^seas, datasub_dt[event=="protests"],vcov=~xy)
 
 
 ## impact

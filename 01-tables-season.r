@@ -126,9 +126,9 @@ kable_styling(kable(rbind(tab3a,tab3i,tab3r)))
 
 sub_dt <- datacomb_dt[yearmo=="2020-01"]
 
-gg_area <- ggplot(sub_dt,aes(x=area_spam))+
+gg_area <- ggplot(sub_dt,aes(x=area_spam*100000))+
   geom_histogram(bins=20,fill="coral",color="white")+
-  labs(x="Cropland area (100,000 ha)",y="Count")+
+  labs(x="Cropland area (ha)",y="Count")+
   theme_paper()
 
 ggsave("Figures/area.png",gg_area,width=6.5,height=3.5,dpi="retina")
@@ -142,14 +142,22 @@ gg_irri <- ggplot(sub_dt,aes(x=prop_i))+
 ggsave("Figures/irri.png",gg_area,width=6.5,height=3.5,dpi="retina")
 
 
-gg_scatter <- ggplot(sub_dt,aes(x=(area_spam),y=prop_i))+
+color_palette <- colorRampPalette(colors=c("indianred","coral","goldenrod","forestgreen","seagreen","steelblue"),interpolate="spline")
+
+sample_of_colors <- color_palette(20)[seq(2,20,2)]
+
+sample_of_shapes <- c(21,22,24,21,22,24,21,22,24,21)
+
+gg_scatter <- ggplot(sub_dt,aes(x=log(area_spam*100000),y=prop_i))+
   geom_point(aes(color=country,fill=country,shape=country),size=1.5,stroke=.8,alpha=.65)+
-  scale_colour_manual(values=c("indianred","steelblue","goldenrod","seagreen","dimgray","indianred","steelblue","goldenrod","seagreen","dimgray"))+
-  scale_fill_manual(values=c("indianred","steelblue","goldenrod","seagreen","dimgray","indianred","steelblue","goldenrod","seagreen","dimgray"))+
-  scale_shape_manual(values=c(21,24,22,25,21,24,22,25,21,22))+
-  labs(x="Cropland area (100,000 ha), log-scale",y="Proportion of Irrigated Croplands")+
+  scale_colour_manual(values=sample_of_colors)+
+  scale_fill_manual(values=sample_of_colors)+
+  scale_shape_manual(values=sample_of_shapes)+
+  labs(x="Cropland area (ha), natural log",y="Proportion of Irrigated Croplands")+
   theme_paper()+
   theme(legend.position="top")
+
+gg_scatter
 
 ggsave("Figures/scatter.png",gg_scatter,width=6.5,height=5.5,dpi="retina")
 

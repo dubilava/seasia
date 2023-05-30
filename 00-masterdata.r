@@ -201,11 +201,11 @@ dataset_dt[,`:=`(gsrain_stand=standardize(gsrain,ln=F)),by=.(xy,event)]
 
 
 
-datacomb_dt <- datacomb_dt[,.(country,longitude,latitude,xy,year,mo,yearmo,month,incidents,fatalities,harvest_month=rice_m,harvest_season,area_spam,area_i,area_r,area_h,area_l,area_s,area_hi,area_lo,prop_i)]
+datacomb_dt <- datacomb_dt[,.(country,longitude,latitude,xy,year,mo,yearmo,month,incidents,fatalities,harvest_month=rice_m,harvest_season,area_spam,area_i,area_r,area_h,area_l,area_s,area_hi,area_lo,prop_i,rain,gsrain_stand)]
 
 datacomb_dt <- datacomb_dt[order(country,longitude,latitude,year,mo)]
 
-dataset_dt <- dataset_dt[,.(country,longitude,latitude,xy,year,mo,yearmo,month,event,incidents,fatalities,harvest_month=rice_m,harvest_season,area_spam,area_i,area_r,area_h,area_l,area_s,area_hi,area_lo,prop_i)]
+dataset_dt <- dataset_dt[,.(country,longitude,latitude,xy,year,mo,yearmo,month,event,incidents,fatalities,harvest_month=rice_m,harvest_season,area_spam,area_i,area_r,area_h,area_l,area_s,area_hi,area_lo,prop_i,rain,gsrain_stand)]
 
 dataset_dt <- dataset_dt[order(country,longitude,latitude,event,year,mo)]
 

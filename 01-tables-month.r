@@ -82,32 +82,6 @@ load("masterdata.RData")
 
 
 
-gg_area <- ggplot(datasub_dt[year==2020 & mo=="01"],aes(x=area_spam))+
-  geom_histogram(bins=20,fill="coral",color="white")+
-  labs(x="Cropland area (100,000 ha)",y="Count")+
-  theme_paper()
-
-ggsave("Figures/area.png",gg_area,width=6.5,height=3.5,dpi="retina")
-
-
-
-gg_irri <- ggplot(datasub_dt[year==2020 & mo=="01"],aes(x=prop_i))+
-  geom_histogram(bins=20,fill="steelblue",color="white")+
-  labs(x="Proportion of irrigated croplands",y="Count")+
-  theme_paper()
-
-ggsave("Figures/irri.png",gg_area,width=6.5,height=3.5,dpi="retina")
-
-
-gg_scatter <- ggplot(datasub_dt[year==2020 & mo=="01"],aes(x=area_spam,y=prop_i))+
-  geom_point(aes(color=country,fill=country),shape=21,size=1.5,stroke=.8,alpha=.65)+
-  scale_colour_brewer(palette="Set3")+
-  scale_fill_brewer(palette="Set3")+
-  labs(x="Cropland area (100,000 ha)",y="Proportion of Irrigated Croplands")+
-  theme_paper()+
-  theme(legend.position="top")
-
-ggsave("Figures/scatter.png",gg_scatter,width=6.5,height=5.5,dpi="retina")
 
 
 # 01 - main effect ----

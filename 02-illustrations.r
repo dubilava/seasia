@@ -23,7 +23,7 @@ gc()
 theme_paper <- function(base_size=12,border=F){
   theme_foundation(base_size=base_size) +
     theme(
-      line = element_line(linetype=1,colour="black"),
+      line = element_line(linetype=1,linewidth=.4,colour="dimgray"),
       rect = element_rect(linetype=0,colour=NA),
       text = element_text(colour="black"),
       panel.grid = element_line(colour=NULL,linetype=3,linewidth=.3),
@@ -33,80 +33,69 @@ theme_paper <- function(base_size=12,border=F){
       plot.title=element_text(colour="black",hjust=0,size=rel(1.1)),
       plot.caption = element_text(size=rel(0.7),colour="slategray",hjust=0,margin=margin(t=5,r=1,b=1,l=1)),
       plot.margin=unit(c(0.25,0.25,0.25,0.25),"lines"),
-      axis.text = element_text(size=rel(0.9),margin=margin(t=1,r=1,b=1,l=1)),
+      axis.title = element_text(size=rel(0.9),margin=margin(t=2,r=2,b=2,l=2)),
+      axis.text = element_text(size=rel(0.8),margin=margin(t=1,r=1,b=1,l=1)),
       axis.text.x = element_text(colour = NULL),
       axis.text.y = element_text(colour = NULL),
       axis.ticks = element_blank(),
-      axis.line = element_line(),
+      axis.line = element_line(linetype=1,linewidth=.2,colour="black"),
       axis.line.y = element_blank(),
       legend.background=element_rect(fill="transparent",color=NA),
       legend.position="none",
       legend.title=element_blank(),
-      legend.text=element_text(size=rel(0.9),colour="slategray"),
+      legend.text=element_text(size=rel(0.8),colour="black"),
       legend.key = element_rect(fill="transparent"),
       legend.key.size=unit(.75,'lines'),
       strip.background=element_blank(),
-      strip.text=element_text(size=rel(.8),colour="slategray",margin=margin(.1,0,.1,0,"cm"))
+      strip.text=element_text(size=rel(.9),colour="slategray",margin=margin(2,0,8,0))
     )
 }
 
-
 # data management ----
 
-## load the map of se asia
-load("Local/Data/acled_seasia.RData")
+## load the main dataset
+load("masterdata.RData")
 
-countries <- unique(acled_dt$country)
+countries <- unique(datacomb_dt$country)
 
-southeastasia <- ne_countries(country=unique(acled_dt$country),returnclass="sf",scale="large")
+southeastasia <- ne_countries(country=countries,returnclass="sf",scale="large")
 southeastasia <- st_set_crs(southeastasia,"+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
 
 
-## load the main dataset and the new production dataset
-load("Local/Data/data_violence_acled.RData")
-load("Local/Data/spam.RData")
+datacomb_dt <- datacomb_dt[country!="Brunei" | (country=="Brunei" & as.numeric(as.character(year))>=2020)]
 
-colnames(spam_dt)[1:2] <- c("longitude","latitude")
+datacomb_dt <- datacomb_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>=2015)]
 
-spam_dt[,`:=`(area_spam=area_spam/100000,area_i=area_i/100000,area_r=area_r/100000,area_h=area_h/100000,area_l=area_l/100000,area_s=area_s/100000)]
+datacomb_dt <- datacomb_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>=2018)]
 
-datacomb_dt <- merge(datacomb_dt,spam_dt,by=c("longitude","latitude"),all.x=T)
+datacomb_dt <- datacomb_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>=2016)]
 
-dataset_dt <- merge(dataset_dt,spam_dt,by=c("longitude","latitude"),all.x=T)
+datacomb_dt <- datacomb_dt[country!="Timor-Leste" | (country=="Timor-Leste" & as.numeric(as.character(year))>=2020)]
 
 
-# ## drop the countries with virtually no conflict
-# datacomb_dt <- datacomb_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
-# 
-# dataset_dt <- dataset_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
 
+dataset_dt <- dataset_dt[country!="Brunei" | (country=="Brunei" & as.numeric(as.character(year))>=2020)]
 
-## delete time-frames with no available conflict data
-datacomb_dt <- datacomb_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>2014)]
+dataset_dt <- dataset_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>=2015)]
 
-datacomb_dt <- datacomb_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>2015)]
+dataset_dt <- dataset_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>=2018)]
 
-datacomb_dt <- datacomb_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>2017)]
+dataset_dt <- dataset_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>=2016)]
 
-
-dataset_dt <- dataset_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>2014)]
-
-dataset_dt <- dataset_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>2015)]
-
-dataset_dt <- dataset_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>2017)]
+dataset_dt <- dataset_dt[country!="Timor-Leste" | (country=="Timor-Leste" & as.numeric(as.character(year))>=2020)]
 
 
 ## some descriptive stats
 datacomb_dt[,.(incidents=sum(incidents)),by=.(country)]
 datacomb_dt[yearmo=="2020-01",.(cells=.N),by=.(country)]
 
-tab1 <- datacomb_dt[,.(obs=.N,indicence_mean=round(mean(incidents_dum),3),indicence_sd=round(sd(incidents_dum),3),indicents_mean=round(mean(incidents),3),indicents_sd=round(sd(incidents),3),indicents_min=round(min(incidents),3),indicents_max=round(max(incidents),3))]
+tab1 <- datacomb_dt[,.(obs=.N,indicence_mean=round(mean(ifelse(incidents>0,1,0)),3),indicence_sd=round(sd(ifelse(incidents>0,1,0)),3),indicents_mean=round(mean(incidents),3),indicents_sd=round(sd(incidents),3),indicents_min=round(min(incidents),3),indicents_max=round(max(incidents),3))]
 
 kable_styling(kable(tab1))
 
 dataset_dt$event <- factor(dataset_dt$event,levels=unique(dataset_dt$event)[c(6,4,2,5,1,3)])
 
-tab2 <- dataset_dt[,.(obs=.N,indicence_mean=round(mean(incidents_dum),3),indicence_sd=round(sd(incidents_dum),3),indicents_mean=round(mean(incidents),3),indicents_sd=round(sd(incidents),3),indicents_min=round(min(incidents),3),indicents_max=round(max(incidents),3)),by=.(event)]
+tab2 <- dataset_dt[,.(obs=.N,indicence_mean=round(mean(ifelse(incidents>0,1,0)),3),indicence_sd=round(sd(ifelse(incidents>0,1,0)),3),indicents_mean=round(mean(incidents),3),indicents_sd=round(sd(incidents),3),indicents_min=round(min(incidents),3),indicents_max=round(max(incidents),3)),by=.(event)]
 
 kable_styling(kable(tab2))
 
@@ -153,9 +142,7 @@ maps_dt <- datacomb_dt[year==2020]
 
 maps_dt[,`:=`(irrig=ifelse(prop_i>=.5,1,0))]
 
-# maps_dt <- maps_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
-
-cal_dt <- maps_dt[season_rice==1 & Crop_Rice=="Rice",.(longitude,latitude,month,area_spam,area_i,area_r,irrig)]
+cal_dt <- maps_dt[harvest_month==1,.(longitude,latitude,month,area_spam,area_i,area_r,irrig)]
 
 cal_dt[,`:=`(xy=paste(longitude,latitude,sep=","))]
 
@@ -168,10 +155,9 @@ country_dt <- datacomb_dt[yearmo=="2020-01",.(xy,country)]
 cal_dt <- merge(cal_dt,country_dt,by="xy")
 
 ## seasonal color scheme
-fourseasons <- colorRampPalette(colors=c("skyblue2","seagreen","forestgreen","tan1","indianred3","goldenrod2","skyblue2"),interpolate="spline")
+fourseasons <- colorRampPalette(colors=c("skyblue2","seagreen","coral","indianred","goldenrod","skyblue2"),interpolate="spline")
 
 fourseasons_col <- fourseasons(13)[c(13,2:12)]
-
 
 gg_map <- ggplot(data = southeastasia) +
   geom_sf(color="gray",fill=NA,size=.25)+
@@ -211,34 +197,6 @@ ggsave("Figures/map_harvest_main.eps",gg_maplegend,width=6.5,height=5.5,dpi="ret
 # 02 - conflict ----
 
 datasub_dt <- dataset_dt
-
-# datawide_dt <- dcast(datasub_dt[,.(longitude,latitude,xy,country,yearmo,event,incidents)],longitude+latitude+xy+country+yearmo~event)
-# 
-# datawide_dt[,`:=`(conflict=battles+explosion,date=as.Date(paste0(yearmo,"-01")))]
-
-## descriptive stats ----
-
-# conflict_dt <- dataset_dt[event %in% c("conflict","violence","riots","protests"),.(incidents=sum(incidents)),by=.(xy,longitude,latitude,country,event,season_rice,date=as.Date(paste0(yearmo,"-01")))]
-# 
-# conflict_dt[incidents>50 & season_rice==1]
-# 
-# conflict_dt[country=="Indonesia" & event=="protests" & incidents>0 & season_rice==1]
-# 
-# conflict_dt[country=="Indonesia" & event=="protests" & incidents>0 & season_rice!=1]
-# 
-# harvest_dt <- conflict_dt[season_rice==1,.(incidents_at_harvest=mean(incidents)),by=.(xy,longitude,latitude,event)]
-# 
-# nonharv_dt <- conflict_dt[season_rice!=1,.(incidents_nonharvest=mean(incidents)),by=.(xy,longitude,latitude,event)]
-# 
-# compare_dt <- merge(harvest_dt,nonharv_dt,by=c("xy","longitude","latitude","event"))
-# 
-# compare_dt[,`:=`(conflict_dif=incidents_at_harvest-incidents_nonharvest)]
-# 
-# compare_dt[,.(incidents_at_harvest=mean(incidents_at_harvest),incidents_nonharvest=mean(incidents_nonharvest),conflict_dif=mean(conflict_dif)),by=event]
-# 
-# ggplot(compare_dt,aes(x=conflict_dif,color=event,fill=event))+
-#   stat_density(alpha=.5,position="identity",bw=.1)+
-#   coord_cartesian(xlim=c(-1,1))
 
 ## F1: conflict map ----
 
@@ -281,8 +239,6 @@ ccum_dt[,`:=`(country_incidents=paste0(country," (",incidents,")"))]
 
 conflict_dt <- dcast(conflict_dt,country+xy+longitude+latitude~event,value.var="incidents")
 conflict_dt[is.na(conflict_dt)] <- 0
-
-# colnames(conflict_dt) <- c("xy","longitude","latitude","violence","protests","battles")
 
 conflict_dt[,`:=`(battles=conflict,unrest=protests+riots,comb=conflict+violence+protests+riots,both=log(conflict+violence+protests+riots))]
 
@@ -330,14 +286,14 @@ conflict_ts <- dataset_dt[event %in% c("conflict","violence","riots","protests")
 
 conflict_ts[,`:=`(rate=incidents/locations)]
 
-conflict_ts$event <- factor(conflict_ts$event,levels=c("conflict","violence","riots","protests"),labels=c("Battles","Violence","Riots","Protests"))
+conflict_ts$event <- factor(conflict_ts$event,levels=c("conflict","violence","riots","protests"),labels=c("battles","violence","riots","protests"))
 
 gg1 <- ggplot(conflict_ts,aes(x=date,y=rate,color=event,linetype=event))+
   geom_line()+
   scale_color_manual(values=c("darkgray","indianred","steelblue","goldenrod"))+
   labs(x="Year",y="Incidents per cell")+
   theme_paper()+
-  theme(legend.title=element_blank(),legend.position = "top")
+  theme(legend.position = "top")
 
 gg2 <- ggplot(conflict_ts[,.(cells=mean(locations)),by=date],aes(x=date,y=cells))+
   geom_col(fill="darkgray",color="white")+
@@ -346,7 +302,7 @@ gg2 <- ggplot(conflict_ts[,.(cells=mean(locations)),by=date],aes(x=date,y=cells)
   theme_paper()+
   theme(axis.line = element_blank(),axis.ticks = element_blank(),axis.title.x = element_blank(),axis.text.x=element_blank())
 
-gg_comb <- plot_grid(gg1,gg2,ncol=1,align="hv",rel_heights = c(7,2))
+gg_comb <- plot_grid(gg1,gg2,ncol=1,align="hv",axis="lr",rel_heights = c(7,2))
 
 ggsave("Figures/ts_conflict.png",gg_comb,width=6.5,height=4.5,dpi="retina",device="png")
 

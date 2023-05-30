@@ -53,12 +53,11 @@ theme_paper <- function(base_size=10,border=F){
 
 "%!in%" <- Negate("%in%")
 
-
+# these bits are for tables
 pstars <- function(ps){
   p_stars <- ifelse(ps<.01,"***",ifelse(ps<.05,"**",ifelse(ps<.1,"*","")))
   return(p_stars)
 }
-
 
 f1 <- function(x) format(round(x,3),big.mark=",")
 f2 <- function(x) format(round(x,0),big.mark=",")
@@ -66,17 +65,95 @@ gm <- list(list("raw"="nobs","clean"="Obs.","fmt"=f2),
            list("raw"="r.squared","clean"="R2","fmt"=f1))
 
 
-## load the map of se asia
-load("Local/Data/acled_seasia.RData")
+## load the main dataset
+load("masterdata.RData")
 
-countries <- unique(acled_dt$country)
+countries <- unique(datacomb_dt$country)
 
-southeastasia <- ne_countries(country=unique(acled_dt$country),returnclass="sf",scale="large")
+southeastasia <- ne_countries(country=,returnclass="sf",scale="large")
 southeastasia <- st_set_crs(southeastasia,"+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
 
 
-## load the main data
-load("masterdata.RData")
+# 00 - descriptive stats ----
+
+datacomb_dt <- datacomb_dt[country!="Brunei" | (country=="Brunei" & as.numeric(as.character(year))>=2020)]
+
+datacomb_dt <- datacomb_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>=2015)]
+
+datacomb_dt <- datacomb_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>=2018)]
+
+datacomb_dt <- datacomb_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>=2016)]
+
+datacomb_dt <- datacomb_dt[country!="Timor-Leste" | (country=="Timor-Leste" & as.numeric(as.character(year))>=2020)]
+
+
+
+dataset_dt <- dataset_dt[country!="Brunei" | (country=="Brunei" & as.numeric(as.character(year))>=2020)]
+
+dataset_dt <- dataset_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>=2015)]
+
+dataset_dt <- dataset_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>=2018)]
+
+dataset_dt <- dataset_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>=2016)]
+
+dataset_dt <- dataset_dt[country!="Timor-Leste" | (country=="Timor-Leste" & as.numeric(as.character(year))>=2020)]
+
+
+
+datacomb_dt[,.(incidents=sum(incidents)),by=.(country)]
+datacomb_dt[yearmo=="2020-01",.(cells=.N),by=.(country)]
+
+tab1 <- datacomb_dt[,.(obs=.N,indicence_mean=round(mean(ifelse(incidents>0,1,0)),3),indicence_sd=round(sd(ifelse(incidents>0,1,0)),3),indicents_mean=round(mean(incidents),3),indicents_sd=round(sd(incidents),3),indicents_min=round(min(incidents),3),indicents_max=round(max(incidents),3))]
+
+kable_styling(kable(tab1))
+
+dataset_dt$event <- factor(dataset_dt$event,levels=unique(dataset_dt$event)[c(1,4,3,2,5)])
+
+
+tab2 <- dataset_dt[,.(obs=.N,indicence_mean=round(mean(ifelse(incidents>0,1,0)),3),indicence_sd=round(sd(ifelse(incidents>0,1,0)),3),indicents_mean=round(mean(incidents),3),indicents_sd=round(sd(incidents),3),indicents_min=round(min(incidents),3),indicents_max=round(max(incidents),3)),by=.(event)]
+
+kable_styling(kable(tab2))
+
+
+tab3a <- datacomb_dt[yearmo=="2020-01",.(obs=.N,Crop_area_mean=round(mean(area_spam),3),Crop_area_sd=round(sd(area_spam),3),Crop_area_min=round(min(area_spam),3),Crop_area_max=round(max(area_spam),3))]
+
+tab3i <- datacomb_dt[yearmo=="2020-01",.(obs=.N,Crop_area_mean=round(mean(area_i),3),Crop_area_sd=round(sd(area_i),3),Crop_area_min=round(min(area_i),3),Crop_area_max=round(max(area_i),3))]
+
+tab3r <- datacomb_dt[yearmo=="2020-01",.(obs=.N,Crop_area_mean=round(mean(area_r),3),Crop_area_sd=round(sd(area_r),3),Crop_area_min=round(min(area_r),3),Crop_area_max=round(max(area_r),3))]
+
+kable_styling(kable(rbind(tab3a,tab3i,tab3r)))
+
+
+sub_dt <- datacomb_dt[yearmo=="2020-01"]
+
+gg_area <- ggplot(sub_dt,aes(x=area_spam))+
+  geom_histogram(bins=20,fill="coral",color="white")+
+  labs(x="Cropland area (100,000 ha)",y="Count")+
+  theme_paper()
+
+ggsave("Figures/area.png",gg_area,width=6.5,height=3.5,dpi="retina")
+
+
+gg_irri <- ggplot(sub_dt,aes(x=prop_i))+
+  geom_histogram(bins=20,fill="steelblue",color="white")+
+  labs(x="Proportion of irrigated croplands",y="Count")+
+  theme_paper()
+
+ggsave("Figures/irri.png",gg_area,width=6.5,height=3.5,dpi="retina")
+
+
+gg_scatter <- ggplot(sub_dt,aes(x=(area_spam),y=prop_i))+
+  geom_point(aes(color=country,fill=country,shape=country),size=1.5,stroke=.8,alpha=.65)+
+  scale_colour_manual(values=c("indianred","steelblue","goldenrod","seagreen","dimgray","indianred","steelblue","goldenrod","seagreen","dimgray"))+
+  scale_fill_manual(values=c("indianred","steelblue","goldenrod","seagreen","dimgray","indianred","steelblue","goldenrod","seagreen","dimgray"))+
+  scale_shape_manual(values=c(21,24,22,25,21,24,22,25,21,22))+
+  labs(x="Cropland area (100,000 ha), log-scale",y="Proportion of Irrigated Croplands")+
+  theme_paper()+
+  theme(legend.position="top")
+
+ggsave("Figures/scatter.png",gg_scatter,width=6.5,height=5.5,dpi="retina")
+
+
 
 # 01 - main effect ----
 
@@ -103,28 +180,15 @@ impact1 <- function(x){
 datasub_dt <- datacomb_dt
 datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
 
-datasub_dt <- datasub_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>2014)]
-
-datasub_dt <- datasub_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>2015)]
-
-datasub_dt <- datasub_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>2017)]
-
 ## effect
 coef0_fe <- feols(incidents~area:seas | xy+yearmo, datasub_dt,vcov=~xy)
 
 ## impact
 c_comb <- impact1(datasub_dt)
 
-
 ## event-specific effects ----
 datasub_dt <- dataset_dt
 datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
-
-datasub_dt <- datasub_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>2014)]
-
-datasub_dt <- datasub_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>2015)]
-
-datasub_dt <- datasub_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>2017)]
 
 ## effect
 coef1_fe <- feols(incidents~area:seas | xy+yearmo, datasub_dt[event=="conflict"],vcov=~xy)

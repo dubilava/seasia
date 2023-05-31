@@ -26,6 +26,7 @@ theme_paper <- function(base_size=10,border=F){
       line = element_line(linetype=1,linewidth=.4,colour="dimgray"),
       rect = element_rect(linetype=0,colour=NA),
       text = element_text(colour="black"),
+      panel.background=element_rect(fill="white",color=NA),
       panel.grid = element_line(colour=NULL,linetype=3,linewidth=.3),
       panel.grid.major = element_line(colour="darkgray"),
       panel.grid.major.x = element_blank(),
@@ -104,23 +105,26 @@ tab3r <- datacomb_dt[yearmo=="2020-01",.(obs=.N,Crop_area_mean=round(mean(area_r
 
 kable_styling(kable(rbind(tab3a,tab3i,tab3r)))
 
+# some graphs
+sub_dt <- datacomb_dt[yearmo=="2020-01",.(area=area_spam,irri=prop_i,country)]
 
-sub_dt <- datacomb_dt[yearmo=="2020-01"]
+sum_dt <- datacomb_dt[,.(incidents=mean(incidents),area=mean(area_spam),irri=mean(ifelse(prop_i>=.5,1,0))),by=.(xy,country)]
+sum_dt[,irri:=ifelse(irri==1,"irrigated","rainfed")]
 
-gg_area <- ggplot(sub_dt,aes(x=area_spam*100000))+
+gg_area <- ggplot(sub_dt,aes(x=area*100000))+
   geom_histogram(bins=20,fill="coral",color="white")+
   labs(x="Cropland area (ha)",y="Count")+
   theme_paper()
 
-ggsave("Figures/area.png",gg_area,width=6.5,height=3.5,dpi="retina")
+ggsave("Figures/area.png",gg_area,width=6.5,height=4.0,dpi="retina")
 
 
-gg_irri <- ggplot(sub_dt,aes(x=prop_i))+
+gg_irri <- ggplot(sub_dt,aes(x=irri))+
   geom_histogram(bins=20,fill="steelblue",color="white")+
   labs(x="Proportion of irrigated croplands",y="Count")+
   theme_paper()
 
-ggsave("Figures/irri.png",gg_area,width=6.5,height=3.5,dpi="retina")
+ggsave("Figures/irri.png",gg_area,width=6.5,height=4.0,dpi="retina")
 
 
 color_palette <- colorRampPalette(colors=c("indianred","coral","goldenrod","forestgreen","seagreen","steelblue","dimgray"),interpolate="spline")
@@ -129,7 +133,7 @@ sample_of_colors <- color_palette(16)[seq(2,16,2)]
 
 sample_of_shapes <- c(21:24,21:24)
 
-gg_scatter <- ggplot(sub_dt,aes(x=log(area_spam*100000),y=prop_i))+
+gg_scatter <- ggplot(sub_dt,aes(x=log(area*100000),y=irri))+
   geom_point(aes(color=country,fill=country,shape=country),size=1.5,stroke=.5,alpha=.6,na.rm=T)+
   scale_colour_manual(values=sample_of_colors)+
   scale_fill_manual(values=sample_of_colors)+
@@ -139,6 +143,26 @@ gg_scatter <- ggplot(sub_dt,aes(x=log(area_spam*100000),y=prop_i))+
   theme(legend.position="top")
 
 ggsave("Figures/scatter.png",gg_scatter,width=6.5,height=5.5,dpi="retina")
+
+
+gg_cor <- ggplot(sum_dt,aes(x=log(area*100000),y=log(incidents),shape=irri,color=irri))+
+  geom_point(size=1.5,stroke=.5,na.rm=T)+
+  scale_shape_manual(values=c(16,1))+
+  scale_color_manual(values=c("steelblue","indianred"))+
+  labs(x="Cropland area (ha, natural log)",y="Average number of conflict incidents (natural log)")+
+  theme_paper()+
+  theme(legend.position="top")
+
+gg_den <- ggplot(sum_dt,aes(x=log(incidents),color=irri))+
+  geom_density(na.rm=T)+
+  scale_color_manual(values=c("steelblue","indianred"))+
+  labs(x="",y="Density")+
+  coord_flip(ylim=c(0,.2))+
+  theme_paper()
+
+gg_comb <- plot_grid(gg_cor,gg_den,ncol=2,align="hv",axis="tb",rel_widths=c(3,1))
+
+ggsave("Figures/cor.png",gg_comb,width=6.5,height=4.0,dpi="retina")
 
 
 

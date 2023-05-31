@@ -14,31 +14,13 @@ gc()
 
 "%!in%" <- Negate("%in%")
 
-xy2cty = function(points,continent=NULL,country=NULL){
-  countries_sf <- ne_countries(scale="large",returnclass="sf",continent=continent,country=country)
-  points_sf <- st_as_sf(sp::SpatialPoints(points))
-  points_sf <- st_set_crs(points_sf,"+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
-  countries_sf <- st_set_crs(countries_sf, "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
-  indices <- st_join(points_sf,countries_sf,join=st_intersects,left=T)
-  countries <- indices$name
-  coords <- as.data.table(st_coordinates(indices))
-  colnames(coords) <- colnames(points)
-  return(list(countries,coords))
-}
-
 getmode <- function(v) {
   uniqv <- na.omit(unique(v))
   uniqv[which.max(tabulate(match(v, uniqv)))]
 }
 
-# load the map of se asia
 load("acled_seasia.RData")
-# load("ged_seasia.RData")
 load("calendar.RData")
-# load("yields.RData")
-
-# southeastasia <- ne_countries(country=unique(acled_dt$country),returnclass="sf",scale="large")
-# southeastasia <- st_set_crs(southeastasia,"+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
 
 
 # acled ----
@@ -56,20 +38,6 @@ acled_dt$mo <- as.factor(substr(acled_dt$event_date,6,7))
 # acled_dt <- acled_dt[event_date >= "2010-01-01" & event_date <= "2021-12-31"]
 acled_dt <- acled_dt[geo_precision %in% c(1,2)]
 
-
-# sub_dt <- acled_dt[,.(incidents=.N),by=.(yearmo,year,mo,country)]
-# 
-# sub_dt[,`:=`(date=as.Date(paste0(yearmo,"-01")))]
-# 
-# for(i in 1:10){
-#   sub2_dt <- sub_dt[country==unique(sub_dt$country)[i]]
-#   gg <- ggplot(sub2_dt,aes(x=date,y=incidents))+
-#     geom_line()+
-#     labs(title=unique(sub2_dt$country))
-#   plot(gg)
-# }
-
-
 acled_sum_dt <- acled_dt[,.(incidents=.N,fatalities=sum(fatalities)),by=.(yearmo,year,mo,longitude,latitude,event_type)]
 
 acled_sum_dt <- acled_sum_dt[order(year,mo,longitude,latitude)]
@@ -83,8 +51,6 @@ crops_dt <- crops_dt[,.(x,y,Crop,Max_area,Crop_Rice,Rice_area)]
 
 crops_dt$latitude <- as.numeric(crops_dt$y)
 crops_dt$longitude <- as.numeric(crops_dt$x)
-
-# crops_dt[,`:=` (Rice_dum=1)] 
 
 crops_dt$xy <- as.factor(paste(crops_dt$longitude,crops_dt$latitude,sep=","))
 
@@ -313,42 +279,27 @@ acled_sum_dt$event_type <- as.factor(acled_sum_dt$event_type)
 
 acled_protests_dt <- acled_sum_dt[event_type %in% "Protests"]
 acled_violence_dt <- acled_sum_dt[event_type %in% "Violence against civilians"]
-acled_strategic_dt <- acled_sum_dt[event_type %in% "Strategic developments"]
-# acled_explosion_dt <- acled_sum_dt[event_type %in% "Explosions/Remote violence"]
 acled_riots_dt <- acled_sum_dt[event_type %in% "Riots"]
-# acled_battles_dt <- acled_sum_dt[event_type %in% "Battles"]
-acled_conflict_dt <- acled_sum_dt[event_type %in% c("Battles","Explosions/Remote violence")]
-acled_conflict_dt[,`:=`(event_type="Battles")]
-acled_conflict_dt <- acled_conflict_dt[,.(incidents=sum(incidents),fatalities=sum(fatalities)),by=.(xy,yearmo,year,mo,longitude,latitude,event_type)]
-# acled_unrest_dt <- acled_sum_dt[event_type %in% c("Protests","Riots")]
+acled_battles_dt <- acled_sum_dt[event_type %in% c("Battles","Explosions/Remote violence")]
+acled_battles_dt[,`:=`(event_type="Battles")]
+acled_battles_dt <- acled_battles_dt[,.(incidents=sum(incidents),fatalities=sum(fatalities)),by=.(xy,yearmo,year,mo,longitude,latitude,event_type)]
 
 acled_protests_all_dt <- merge(xy_yearmo,acled_protests_dt,by=c("xy","yearmo"),all.x=T)
 acled_violence_all_dt <- merge(xy_yearmo,acled_violence_dt,by=c("xy","yearmo"),all.x=T)
-acled_strategic_all_dt <- merge(xy_yearmo,acled_strategic_dt,by=c("xy","yearmo"),all.x=T)
-# acled_explosion_all_dt <- merge(xy_yearmo,acled_explosion_dt,by=c("xy","yearmo"),all.x=T)
 acled_riots_all_dt <- merge(xy_yearmo,acled_riots_dt,by=c("xy","yearmo"),all.x=T)
-# acled_battles_all_dt <- merge(xy_yearmo,acled_battles_dt,by=c("xy","yearmo"),all.x=T)
-acled_conflict_all_dt <- merge(xy_yearmo,acled_conflict_dt,by=c("xy","yearmo"),all.x=T)
-# acled_unrest_all_dt <- merge(xy_yearmo,acled_unrest_dt,by=c("xy","yearmo"),all.x=T)
+acled_battles_all_dt <- merge(xy_yearmo,acled_battles_dt,by=c("xy","yearmo"),all.x=T)
 
 acled_protests_all_dt$event <- "protests"
 acled_violence_all_dt$event <- "violence"
-acled_strategic_all_dt$event <- "strategic"
-# acled_explosion_all_dt$event <- "explosion"
 acled_riots_all_dt$event <- "riots"
-# acled_battles_all_dt$event <- "battles"
-acled_conflict_all_dt$event <- "conflict"
-# acled_unrest_all_dt$event <- "unrest"
+acled_battles_all_dt$event <- "battles"
 
-acled_all_dt <- rbind(acled_conflict_all_dt,acled_protests_all_dt,acled_riots_all_dt,acled_violence_all_dt,acled_strategic_all_dt)
+acled_all_dt <- rbind(acled_battles_all_dt,acled_violence_all_dt,acled_riots_all_dt,acled_protests_all_dt)
+
 rm(acled_protests_all_dt)
-rm(acled_violence_all_dt)
-rm(acled_strategic_all_dt)
-# rm(acled_explosion_all_dt)
 rm(acled_riots_all_dt)
-# rm(acled_battles_all_dt)
-rm(acled_conflict_all_dt)
-# rm(acled_unrest_all_dt)
+rm(acled_violence_all_dt)
+rm(acled_battles_all_dt)
 
 acled_all_dt$event_type <- NULL
 
@@ -373,80 +324,16 @@ aggregate_dt <- acled_crop_dt[,.(incidents=sum(incidents)),by=.(xy,longitude,lat
 
 aggregate_dt <- aggregate_dt[order(xy,longitude,latitude)]
 
-aggregate_dt$country <- xy2cty(aggregate_dt[,.(longitude,latitude)])[[1]]
+# aggregate_dt$country <- xy2cty(aggregate_dt[,.(longitude,latitude)])[[1]]
 
-# # detect missing countries
-# missing_pts <- unique(aggregate_dt[is.na(country)][,.(longitude,latitude)])
-# 
-# # jitter 1
-# jitmat <- matrix(nrow=nrow(missing_pts),ncol=10)
-# 
-# for(i in 1:10){
-#   set.seed(i)
-#   jitterred_pts <- data.table(apply(missing_pts,2,jitter,amount=1))
-#   
-#   jitmat[,i] <- xy2cty(jitterred_pts)[[1]]
-# }
-# 
-# missing <- apply(jitmat,1,getmode)
-# 
-# temp_dt <- data.table(xy=unique(aggregate_dt[is.na(country)]$xy),missing=missing)
-# 
-# aggregate_dt <- merge(aggregate_dt,temp_dt,by="xy",all.x=T)
-# 
-# aggregate_dt[is.na(country)]$country <- aggregate_dt[is.na(country)]$missing
-# 
-# aggregate_dt$missing <- NULL
-# 
-# # detect remaining missing countries
-# missing_pts <- unique(aggregate_dt[is.na(country)][,.(longitude,latitude)])
-# 
-# # jitter 2
-# jitmat <- matrix(nrow=nrow(missing_pts),ncol=20)
-# 
-# for(i in 1:20){
-#   set.seed(i)
-#   jitterred_pts <- data.table(apply(missing_pts,2,jitter,amount=2))
-#   
-#   jitmat[,i] <- xy2cty(jitterred_pts)[[1]]
-# }
-# 
-# missing <- apply(jitmat,1,getmode)
-# 
-# 
-# temp_dt <- data.table(xy=unique(aggregate_dt[is.na(country)]$xy),missing=missing)
-# 
-# aggregate_dt <- merge(aggregate_dt,temp_dt,by="xy",all.x=T)
-# 
-# aggregate_dt[is.na(country)]$country <- aggregate_dt[is.na(country)]$missing
-# 
-# aggregate_dt$missing <- NULL
-# 
-# 
-# # detect further remaining missing countries
-# missing_pts <- unique(aggregate_dt[is.na(country)][,.(longitude,latitude)])
-# 
-# # jitter 3
-# jitmat <- matrix(nrow=nrow(missing_pts),ncol=30)
-# 
-# for(i in 1:30){
-#   set.seed(i)
-#   jitterred_pts <- data.table(apply(missing_pts,2,jitter,amount=3))
-#   
-#   jitmat[,i] <- xy2cty(jitterred_pts)[[1]]
-# }
-# 
-# missing <- apply(jitmat,1,getmode)
-# 
-# 
-# temp_dt <- data.table(xy=unique(aggregate_dt[is.na(country)]$xy),missing=missing)
-# 
-# aggregate_dt <- merge(aggregate_dt,temp_dt,by="xy",all.x=T)
-# 
-# aggregate_dt[is.na(country)]$country <- aggregate_dt[is.na(country)]$missing
-# 
-# aggregate_dt$missing <- NULL
 
+points_sf <- st_as_sf(aggregate_dt[,.(longitude,latitude)],coords=c("longitude","latitude"),crs=st_crs("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
+
+countries_sf <- ne_countries(scale="large",returnclass="sf",continent="Asia")
+countries_sf <- st_set_crs(countries_sf,st_crs("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
+
+indices <- st_join(points_sf,countries_sf,join=st_intersects,left=T)
+aggregate_dt$country <- indices$name
 
 aggregate_dt$incidents <- NULL
 
@@ -483,20 +370,23 @@ dataset_dt$planting2 <- as.factor(dataset_dt$planting2)
 dataset_dt$planting_rice <- as.factor(dataset_dt$planting_rice)
 dataset_dt$planting2_rice <- as.factor(dataset_dt$planting2_rice)
 
-
 dataset_dt <- dataset_dt[order(country,longitude,latitude,yearmo)]
 
-# some finishing touches
-area_trs <- .01
-
-dataset_dt[,`:=` (incidents_dum=ifelse(incidents>0,1,0),area_dum=ifelse(Crop_area>=area_trs,1,0))]
-
-dataset_dt[,`:=` (trend=as.numeric(as.factor(yearmo)))]
-
-
 ## aggregate events into the single category
-datacomb_dt <- dataset_dt[,.(incidents=sum(incidents),fatalities=sum(fatalities)),by=.(xy,longitude,latitude,country,year,yearmo,mo,month,trend,Crop,Crop_Rice,Max_area,Crop_area,Rice_area,Rice_harvest_srt,Rice.2_harvest_srt,Maize_harvest_srt,Maize.2_harvest_srt,Rice_harvest_mid,Rice.2_harvest_mid,Maize_harvest_mid,Maize.2_harvest_mid,Rice_harvest_end,Rice.2_harvest_end,Maize_harvest_end,Maize.2_harvest_end,Rice_plant_srt,Rice.2_plant_srt,Maize_plant_srt,Maize.2_plant_srt,Rice_plant_mid,Rice.2_plant_mid,Maize_plant_mid,Maize.2_plant_mid,Rice_plant_end,Rice.2_plant_end,Maize_plant_end,Maize.2_plant_end,season,season2,season_rice,season2_rice,planting,planting2,planting_rice,planting2_rice,area_dum)]
+datacomb_dt <- dataset_dt[,.(incidents=sum(incidents),fatalities=sum(fatalities)),by=.(xy,longitude,latitude,country,year,yearmo,mo,month,Crop,Crop_Rice,Max_area,Crop_area,Rice_area,Rice_harvest_srt,Rice.2_harvest_srt,Maize_harvest_srt,Maize.2_harvest_srt,Rice_harvest_mid,Rice.2_harvest_mid,Maize_harvest_mid,Maize.2_harvest_mid,Rice_harvest_end,Rice.2_harvest_end,Maize_harvest_end,Maize.2_harvest_end,Rice_plant_srt,Rice.2_plant_srt,Maize_plant_srt,Maize.2_plant_srt,Rice_plant_mid,Rice.2_plant_mid,Maize_plant_mid,Maize.2_plant_mid,Rice_plant_end,Rice.2_plant_end,Maize_plant_end,Maize.2_plant_end,season,season2,season_rice,season2_rice,planting,planting2,planting_rice,planting2_rice)]
 
-datacomb_dt[,`:=` (incidents_dum=ifelse(incidents>0,1,0))]
+## drop years in countries for which acled data are unavailable
+dataset_dt <- dataset_dt[country!="Brunei" | (country=="Brunei" & as.numeric(as.character(year))>=2020)]
+dataset_dt <- dataset_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>=2015)]
+dataset_dt <- dataset_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>=2018)]
+dataset_dt <- dataset_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>=2016)]
+dataset_dt <- dataset_dt[country!="Timor-Leste" | (country=="Timor-Leste" & as.numeric(as.character(year))>=2020)]
 
-save(dataset_dt,datacomb_dt,file="data_violence_acled.RData")
+
+datacomb_dt <- datacomb_dt[country!="Brunei" | (country=="Brunei" & as.numeric(as.character(year))>=2020)]
+datacomb_dt <- datacomb_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>=2015)]
+datacomb_dt <- datacomb_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>=2018)]
+datacomb_dt <- datacomb_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>=2016)]
+datacomb_dt <- datacomb_dt[country!="Timor-Leste" | (country=="Timor-Leste" & as.numeric(as.character(year))>=2020)]
+
+save(dataset_dt,datacomb_dt,file="agconflict.RData")

@@ -139,13 +139,25 @@ rain_dt <- rain_dt[,.(year=as.factor(year),mo=as.factor(mo),longitude=x,latitude
 datacomb_dt <- merge(datacomb_dt,rain_dt,by=c("year","mo","longitude","latitude"),all.x=T)
 dataset_dt <- merge(dataset_dt,rain_dt,by=c("year","mo","longitude","latitude"),all.x=T)
 
+battles_dt <- dataset_dt[event=="battles",.(year,mo,longitude,latitude,conflict=incidents)]
+
+datacomb_dt <- merge(datacomb_dt,battles_dt,by=c("year","mo","longitude","latitude"),all.x=T)
+dataset_dt <- merge(dataset_dt,battles_dt,by=c("year","mo","longitude","latitude"),all.x=T)
+
 season_dt <- datacomb_dt[,.(longitude,latitude,mo,Rice_plant_mid,season_rice)]
 season_dt <- unique(season_dt)
 
 datarain_dt <- merge(rain_dt,season_dt,by=c("longitude","latitude","mo"),all.x=T)
 datarain_dt[is.na(rain)]$rain <- 0
 
-subset_dt <- unique(datarain_dt)
+dataconf_dt <- merge(battles_dt,season_dt,by=c("longitude","latitude","mo"),all.x=T)
+
+subrain_dt <- unique(datarain_dt)
+subconf_dt <- unique(dataconf_dt)
+
+subset_dt <- merge(subrain_dt,subconf_dt,by=c("longitude","latitude","year","mo","Rice_plant_mid","season_rice"),all=T)
+
+subset_dt[is.na(conflict)]$conflict <- 0
 
 # number of months in the growing season
 subset_dt[,`:=`(gsm=ifelse(as.numeric(as.character(season_rice))-as.numeric(as.character(Rice_plant_mid))<0,12-(as.numeric(as.character(season_rice))-as.numeric(as.character(Rice_plant_mid))+12),12-(as.numeric(as.character(season_rice))-as.numeric(as.character(Rice_plant_mid)))))]
@@ -175,7 +187,7 @@ submerge_dt$dif <- submerge_dt$gsm-submerge_dt$backward
 
 subseason_dt <- submerge_dt[dif >= 0]
 
-subseason_dt <- subseason_dt[,.(gsrain=sum(rain)),by=.(longitude,latitude,myr)]
+subseason_dt <- subseason_dt[,.(gsrain=sum(rain),gsconflict=sum(conflict)),by=.(longitude,latitude,myr)]
 
 subseason_dt <- merge(submerge_dt,subseason_dt,by=c("longitude","latitude","myr"),all.x=T)
 
@@ -185,23 +197,25 @@ subseason_dt$gsm <- NULL
 subseason_dt$backward <- NULL
 subseason_dt$dif <- NULL
 
-datacomb_dt <- merge(datacomb_dt,subseason_dt,by=c("longitude","latitude","year","mo","Rice_plant_mid","season_rice","rain"),all.x=T)
+datacomb_dt <- merge(datacomb_dt,subseason_dt,by=c("longitude","latitude","year","mo","Rice_plant_mid","season_rice","rain","conflict"),all.x=T)
 datacomb_dt[is.na(gsrain)]$gsrain <- 0
+datacomb_dt[is.na(gsconflict)]$gsconflict <- 0
 
-datacomb_dt[,`:=`(gsrain_stand=standardize(gsrain,ln=F),rain_stand=standardize(rain,ln=F)),by=.(xy)]
+datacomb_dt[,`:=`(gsrain_stand=standardize(gsrain,ln=F),rain_stand=standardize(rain,ln=F),gsconflict_stand=standardize(gsconflict,ln=F),conflict_stand=standardize(conflict,ln=F)),by=.(xy)]
 
-dataset_dt <- merge(dataset_dt,subseason_dt,by=c("longitude","latitude","year","mo","Rice_plant_mid","season_rice","rain"),all.x=T)
+dataset_dt <- merge(dataset_dt,subseason_dt,by=c("longitude","latitude","year","mo","Rice_plant_mid","season_rice","rain","conflict"),all.x=T)
 dataset_dt[is.na(gsrain)]$gsrain <- 0
+dataset_dt[is.na(gsconflict)]$gsconflict <- 0
 
-dataset_dt[,`:=`(gsrain_stand=standardize(gsrain,ln=F),rain_stand=standardize(rain,ln=F)),by=.(xy,event)]
+dataset_dt[,`:=`(gsrain_stand=standardize(gsrain,ln=F),rain_stand=standardize(rain,ln=F),gsconflict_stand=standardize(gsconflict,ln=F),conflict_stand=standardize(conflict,ln=F)),by=.(xy,event)]
 
 
 
-datacomb_dt <- datacomb_dt[,.(country,longitude,latitude,xy,year,mo,yearmo,month,incidents,fatalities,harvest_month=rice_m,harvest_season,area_spam,area_i,area_r,area_h,area_l,area_s,area_hi,area_lo,prop_i,rain,gsrain,rain_stand,gsrain_stand)]
+datacomb_dt <- datacomb_dt[,.(country,longitude,latitude,xy,year,mo,yearmo,month,incidents,fatalities,harvest_month=rice_m,harvest_season,area_spam,area_i,area_r,area_h,area_l,area_s,area_hi,area_lo,prop_i,rain,conflict,gsrain,gsconflict,rain_stand,conflict_stand,gsrain_stand,gsconflict_stand)]
 
 datacomb_dt <- datacomb_dt[order(country,longitude,latitude,year,mo)]
 
-dataset_dt <- dataset_dt[,.(country,longitude,latitude,xy,year,mo,yearmo,month,event,incidents,fatalities,harvest_month=rice_m,harvest_season,area_spam,area_i,area_r,area_h,area_l,area_s,area_hi,area_lo,prop_i,rain,gsrain,rain_stand,gsrain_stand)]
+dataset_dt <- dataset_dt[,.(country,longitude,latitude,xy,year,mo,yearmo,month,event,incidents,fatalities,harvest_month=rice_m,harvest_season,area_spam,area_i,area_r,area_h,area_l,area_s,area_hi,area_lo,prop_i,rain,conflict,gsrain,gsconflict,rain_stand,conflict_stand,gsrain_stand,gsconflict_stand)]
 
 dataset_dt <- dataset_dt[order(country,longitude,latitude,event,year,mo)]
 

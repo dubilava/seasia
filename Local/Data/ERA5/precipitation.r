@@ -20,16 +20,14 @@ gc()
 "%!in%" <- Negate("%in%")
 
 ## load the map of se asia
-load("acled_seasia.RData")
+load("masterdata.RData")
 
-countries <- unique(acled_dt$country)
+countries <- c(unique(datacomb_dt$country),"Singapore")
 
-southeastasia <- ne_countries(country=unique(acled_dt$country),returnclass="sf",scale="large")
+southeastasia <- ne_countries(country=countries,returnclass="sf",scale="large")
 southeastasia <- st_set_crs(southeastasia,"+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
 
-# africa <- ne_countries(continent = "africa",returnclass = "sf")
-
-era5_nc <- brick("ERA5/era5prec.nc")
+era5_nc <- brick("Local/Data/ERA5/era5prec.nc")
 
 lst <- vector("list",nlayers(era5_nc))
 
@@ -39,7 +37,7 @@ res(rain_extent) <- c(1,1)
 for(i in 1:nlayers(era5_nc)){
   
   rain01 <- subset(era5_nc,i)
-  rain02 <- aggregate(rain01,fact=4,fun=sum)
+  rain02 <- aggregate(rain01,fact=4,fun=mean)
   rain03 <- resample(x=rain02,y=rain_extent,method="ngb")
   
   raster_mask <- mask(rain03,southeastasia)
@@ -83,5 +81,5 @@ for(i in 1:nrow(yrs_dt)){
 rain_dt <- Reduce(rbind,rain_ls)
 
 
-save(rain_dt,file="precipitation_new.RData")
+save(rain_dt,file="Local/Data/precipitation_mean.RData")
 

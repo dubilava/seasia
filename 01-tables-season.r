@@ -165,6 +165,8 @@ gg_comb <- plot_grid(gg_cor,gg_den,ncol=2,align="hv",axis="tb",rel_widths=c(3,1)
 ggsave("Figures/cor.png",gg_comb,width=6.5,height=4.0,dpi="retina")
 
 
+ggplot(datacomb_dt[country=="Vietnam"][xy==unique(xy)[20]],aes(x=as.Date(paste0(yearmo,"-01")),y=rain,group=1))+
+  geom_line()
 
 # 01 - main effect ----
 
@@ -687,12 +689,6 @@ impact3 <- function(x){
 datasub_dt <- datacomb_dt
 datasub_dt[,`:=`(area=area_spam,seas=harvest_season,irri=prop_i)]
 
-datasub_dt <- datasub_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>2014)]
-
-datasub_dt <- datasub_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>2015)]
-
-datasub_dt <- datasub_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>2017)]
-
 ## effect
 coef0_fe <- feols(incidents~area:seas+area:seas:irri+(area:seas+area:seas:irri):gsrain_stand | xy+yearmo, datasub_dt,vcov=~xy)
 
@@ -780,18 +776,19 @@ impact4 <- function(x){
 
 datasub_dt <- dataset_dt
 
-datawide_dt <- datasub_dt[event=="battles",.(longitude,latitude,xy,yearmo,conflict=incidents)]
+datawide_dt <- datasub_dt[event=="battles",.(longitude,latitude,xy,yearmo,battles=incidents)]
 
 datasub_dt <- merge(datasub_dt,datawide_dt,by=c("longitude","latitude","xy","yearmo"),all.x=T)
 
 datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
 
 datasub_dt[,`:=`(conflict_mean=mean(conflict))]
+datasub_dt[,`:=`(battles_mean=mean(battles))]
 
 ## effect
-coef1_fe <- feols(incidents~area:seas+area:seas:conflict+conflict | xy+yearmo, datasub_dt[event=="violence"],vcov=~xy)
-coef2_fe <- feols(incidents~area:seas+area:seas:conflict+conflict | xy+yearmo, datasub_dt[event=="riots"],vcov=~xy)
-coef3_fe <- feols(incidents~area:seas+area:seas:conflict+conflict | xy+yearmo, datasub_dt[event=="protests"],vcov=~xy)
+coef1_fe <- feols(incidents~area:seas+area:seas:gsconflict | xy+yearmo, datasub_dt[event=="violence"],vcov=~xy)
+coef2_fe <- feols(incidents~area:seas+area:seas:gsconflict | xy+yearmo, datasub_dt[event=="riots"],vcov=~xy)
+coef3_fe <- feols(incidents~area:seas+area:seas:gsconflict | xy+yearmo, datasub_dt[event=="protests"],vcov=~xy)
 
 
 ## impact

@@ -20,7 +20,7 @@ gc()
 
 "%!in%" <- Negate("%in%")
 
-theme_paper <- function(base_size=12,border=F){
+theme_paper <- function(base_size=11,border=F){
   theme_foundation(base_size=base_size) +
     theme(
       line = element_line(linetype=1,linewidth=.4,colour="dimgray"),
@@ -62,27 +62,9 @@ southeastasia <- ne_countries(country=countries,returnclass="sf",scale="large")
 southeastasia <- st_set_crs(southeastasia,"+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
 
 
-datacomb_dt <- datacomb_dt[country!="Brunei" | (country=="Brunei" & as.numeric(as.character(year))>=2020)]
-
-datacomb_dt <- datacomb_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>=2015)]
-
-datacomb_dt <- datacomb_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>=2018)]
-
-datacomb_dt <- datacomb_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>=2016)]
-
-datacomb_dt <- datacomb_dt[country!="Timor-Leste" | (country=="Timor-Leste" & as.numeric(as.character(year))>=2020)]
-
-
-
-dataset_dt <- dataset_dt[country!="Brunei" | (country=="Brunei" & as.numeric(as.character(year))>=2020)]
-
-dataset_dt <- dataset_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>=2015)]
-
-dataset_dt <- dataset_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>=2018)]
-
-dataset_dt <- dataset_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>=2016)]
-
-dataset_dt <- dataset_dt[country!="Timor-Leste" | (country=="Timor-Leste" & as.numeric(as.character(year))>=2020)]
+## drop Brunei and Timor-Leste
+datacomb_dt <- datacomb_dt[country %!in% c("Brunei","Timor-Leste")]
+dataset_dt <- dataset_dt[country %!in% c("Brunei","Timor-Leste")]
 
 
 ## some descriptive stats
@@ -160,7 +142,7 @@ fourseasons <- colorRampPalette(colors=c("skyblue2","seagreen","coral","indianre
 fourseasons_col <- fourseasons(13)[c(13,2:12)]
 
 gg_map <- ggplot(data = southeastasia) +
-  geom_sf(color="gray",fill=NA,size=.25)+
+  geom_sf(color="gray",fill=NA,linewidth=.25)+
   geom_point(data=cal_dt,aes(x=longitude,y=latitude,size=area_spam,color=month))+
   geom_point(data=cal_dt[irrig==1],aes(x=longitude,y=latitude,size=area_spam,color="black"),shape=1,size=3)+
   scale_size(range=c(.3,2.5),guide="none")+
@@ -200,7 +182,7 @@ datasub_dt <- dataset_dt
 
 ## F1: conflict map ----
 
-conflict_dt <- dataset_dt[event %in% c("conflict","violence","riots","protests"),.(incidents=sum(incidents)),by=.(country,xy,longitude,latitude,event)]
+conflict_dt <- dataset_dt[event %in% c("battles","violence","riots","protests"),.(incidents=sum(incidents)),by=.(country,xy,longitude,latitude,event)]
 
 conflict_dt <- conflict_dt[incidents>0]
 
@@ -225,9 +207,9 @@ secities_sub <- secities_sub[order(-population,-city_population)]
 secities_sub <- secities_sub[capital %in% c("admin","primary")]
 
 
-countries_dt <- dataset_dt[event %in% c("conflict","protests","riots","violence"),.(incidents=sum(incidents)),by=.(country,event)]
+countries_dt <- dataset_dt[event %in% c("battles","protests","riots","violence"),.(incidents=sum(incidents)),by=.(country,event)]
 
-ccum_dt <- dataset_dt[event %in% c("conflict","protests","riots","violence"),.(incidents=sum(incidents)),by=.(country)]
+ccum_dt <- dataset_dt[event %in% c("battles","protests","riots","violence"),.(incidents=sum(incidents)),by=.(country)]
 
 ccum_dt <- ccum_dt[order(-incidents)]
 
@@ -240,17 +222,17 @@ ccum_dt[,`:=`(country_incidents=paste0(country," (",incidents,")"))]
 conflict_dt <- dcast(conflict_dt,country+xy+longitude+latitude~event,value.var="incidents")
 conflict_dt[is.na(conflict_dt)] <- 0
 
-conflict_dt[,`:=`(battles=conflict,unrest=protests+riots,comb=conflict+violence+protests+riots,both=log(conflict+violence+protests+riots))]
+conflict_dt[,`:=`(battles=battles,unrest=protests+riots,comb=battles+violence+protests+riots,both=log(battles+violence+protests+riots))]
 
 
-countries_dt[,`:=`(event_new=ifelse(event%in%c("protests","riots"),"unrest",ifelse(event=="conflict","battles","violence")))]
+countries_dt[,`:=`(event_new=ifelse(event%in%c("protests","riots"),"unrest",ifelse(event=="battles","battles","violence")))]
 
 countries_dt <- countries_dt[,.(incidents=sum(incidents)),by=.(country,event=event_new)]
 
 
 gg_conflict <- ggplot(data = southeastasia) +
   geom_sf(color="gray",fill=NA,linewidth=.25)+
-  geom_scatterpie(data=conflict_dt,aes(x=longitude,y=latitude,r=both*.07),cols=c("battles","violence","unrest"),color="white",linewidth=.1)+
+  geom_scatterpie(data=conflict_dt,aes(x=longitude,y=latitude,r=both*.07),cols=c("battles","violence","unrest"),color="white",size=.02)+
   scale_fill_manual(values=c("darkgray","indianred","goldenrod"))+
   geom_point(data=secities_sub[population>=2000000 & city_population>=1000000],aes(x=longitude,y=latitude),color="black",fill=NA,shape=21,size=2)+
   geom_text_repel(data=secities_sub[population>=2000000 & city_population>=1000000],aes(x=longitude,y=latitude,label=city))+
@@ -259,7 +241,7 @@ gg_conflict <- ggplot(data = southeastasia) +
   theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title = element_blank(),axis.text = element_blank(),legend.title = element_blank(),legend.text = element_text(hjust=0),legend.position = c(.5,.85))
 
 countries_dt$ylab <- 0
-countries_dt$event <- factor(countries_dt$event,levels=c("battles","violence","unrest"),labels=c("Battles","Violence","Unrest"))
+countries_dt$event <- factor(countries_dt$event,levels=c("battles","violence","unrest"))
 
 gg_bars <- ggplot(countries_dt,aes(x=reorder(country,incidents),y=incidents))+
   geom_bar(aes(fill=event),stat="identity",color="white",linewidth=.25)+
@@ -282,11 +264,11 @@ ggsave("Figures/map_conflict.eps",gg_maplegend,width=6.5,height=5.5,dpi="retina"
 
 ## F2: conflict time series ----
 
-conflict_ts <- dataset_dt[event %in% c("conflict","violence","riots","protests"),.(incidents=sum(incidents),locations=uniqueN(xy)),by=.(event,date=as.Date(paste0(yearmo,"-01")))]
+conflict_ts <- dataset_dt[event %in% c("battles","violence","riots","protests"),.(incidents=sum(incidents),locations=uniqueN(xy)),by=.(event,date=as.Date(paste0(yearmo,"-01")))]
 
 conflict_ts[,`:=`(rate=incidents/locations)]
 
-conflict_ts$event <- factor(conflict_ts$event,levels=c("conflict","violence","riots","protests"),labels=c("battles","violence","riots","protests"))
+conflict_ts$event <- factor(conflict_ts$event,levels=c("battles","violence","riots","protests"))
 
 gg1 <- ggplot(conflict_ts,aes(x=date,y=rate,color=event,linetype=event))+
   geom_line()+

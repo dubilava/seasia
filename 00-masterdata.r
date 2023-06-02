@@ -121,8 +121,81 @@ dataset_dt[,`:=`(area_hi=area_i+area_h,area_lo=area_l+area_s)]
 dataset_dt$event <- factor(dataset_dt$event,levels=unique(dataset_dt$event))
 
 
-## rainfall ----
+list_of_periods <- unique(datacomb_dt$yearmo)
 
+# datacomb
+lst <- list()
+
+for(i in 1:length(list_of_periods)){
+  
+  sub_dt <- datacomb_dt[yearmo==list_of_periods[i],.(longitude,latitude,incidents)]
+  sub_pt <- st_as_sf(sub_dt,coords=c("latitude","longitude"),remove=F)
+  agg_pt <- aggregate(sub_pt,sub_pt,FUN=sum,join=function(x,y) st_is_within_distance(x,y,dist=1))
+  
+  coords <- st_coordinates(agg_pt)
+  
+  agg_dt <- data.table(agg_pt)
+  agg_dt[,`:=`(longitude=coords[,2],latitude=coords[,1])]
+  agg_dt$geometry <- NULL
+  agg_dt$yearmo <- list_of_periods[i]
+  
+  lst[[i]] <- agg_dt
+  
+  print(i)
+  
+}
+
+neighbours_dt <- Reduce(rbind,lst)
+
+colnames(neighbours_dt)[3] <- "incidents_n"
+
+datacomb_dt <- merge(datacomb_dt,neighbours_dt,by=c("longitude","latitude","yearmo"))
+
+# dataset
+
+list_of_events <- unique(dataset_dt$event)
+
+evt <- list()
+
+for(j in 1:length(list_of_events)){
+  
+  lst <- list()
+  
+  for(i in 1:length(list_of_periods)){
+    
+    sub_dt <- dataset_dt[yearmo==list_of_periods[i] & event==list_of_events[j],.(longitude,latitude,incidents)]
+    sub_pt <- st_as_sf(sub_dt,coords=c("latitude","longitude"),remove=F)
+    agg_pt <- aggregate(sub_pt,sub_pt,FUN=sum,join=function(x,y) st_is_within_distance(x,y,dist=1))
+    
+    coords <- st_coordinates(agg_pt)
+    
+    agg_dt <- data.table(agg_pt)
+    agg_dt[,`:=`(longitude=coords[,2],latitude=coords[,1])]
+    agg_dt$geometry <- NULL
+    agg_dt$yearmo <- list_of_periods[i]
+    
+    lst[[i]] <- agg_dt
+    
+  }
+  
+  neighbours_dt <- Reduce(rbind,lst)
+  
+  neighbours_dt$event <- list_of_events[j]
+  
+  evt[[j]] <- neighbours_dt
+  
+  print(j)
+  
+}
+
+eventneighbours_dt <- Reduce(rbind,evt)
+
+colnames(eventneighbours_dt)[3] <- "incidents_n"
+
+dataset_dt <- merge(dataset_dt,eventneighbours_dt,by=c("longitude","latitude","yearmo","event"))
+
+
+## rainfall ----
 
 standardize <- function(x,ln=TRUE){
   if(ln==T){
@@ -139,7 +212,7 @@ rain_dt <- rain_dt[,.(year=as.factor(year),mo=as.factor(mo),longitude=x,latitude
 datacomb_dt <- merge(datacomb_dt,rain_dt,by=c("year","mo","longitude","latitude"),all.x=T)
 dataset_dt <- merge(dataset_dt,rain_dt,by=c("year","mo","longitude","latitude"),all.x=T)
 
-battles_dt <- dataset_dt[event=="battles",.(year,mo,longitude,latitude,conflict=incidents)]
+battles_dt <- dataset_dt[event=="battles",.(year,mo,longitude,latitude,conflict=incidents,conflict_n=incidents_n)]
 
 datacomb_dt <- merge(datacomb_dt,battles_dt,by=c("year","mo","longitude","latitude"),all.x=T)
 dataset_dt <- merge(dataset_dt,battles_dt,by=c("year","mo","longitude","latitude"),all.x=T)
@@ -158,6 +231,7 @@ subconf_dt <- unique(dataconf_dt)
 subset_dt <- merge(subrain_dt,subconf_dt,by=c("longitude","latitude","year","mo","Rice_plant_mid","season_rice"),all=T)
 
 subset_dt[is.na(conflict)]$conflict <- 0
+subset_dt[is.na(conflict_n)]$conflict_n <- 0
 
 # number of months in the growing season
 subset_dt[,`:=`(gsm=ifelse(as.numeric(as.character(season_rice))-as.numeric(as.character(Rice_plant_mid))<0,12-(as.numeric(as.character(season_rice))-as.numeric(as.character(Rice_plant_mid))+12),12-(as.numeric(as.character(season_rice))-as.numeric(as.character(Rice_plant_mid)))))]
@@ -187,37 +261,55 @@ submerge_dt$dif <- submerge_dt$gsm-submerge_dt$backward
 
 subseason_dt <- submerge_dt[dif >= 0]
 
-subseason_dt <- subseason_dt[,.(gsrain=sum(rain),gsconflict=sum(conflict)),by=.(longitude,latitude,myr)]
+subseason_dt <- subseason_dt[,.(gsrain=sum(rain),gsconflict=sum(conflict),gsconflict_n=sum(conflict_n)),by=.(longitude,latitude,myr)]
 
 subseason_dt <- merge(submerge_dt,subseason_dt,by=c("longitude","latitude","myr"),all.x=T)
 
 subseason_dt <- subseason_dt[year%in%2010:2022]
+
 subseason_dt$myr <- NULL
 subseason_dt$gsm <- NULL
 subseason_dt$backward <- NULL
 subseason_dt$dif <- NULL
 
-datacomb_dt <- merge(datacomb_dt,subseason_dt,by=c("longitude","latitude","year","mo","Rice_plant_mid","season_rice","rain","conflict"),all.x=T)
+datacomb_dt <- merge(datacomb_dt,subseason_dt,by=c("longitude","latitude","year","mo","Rice_plant_mid","season_rice","rain","conflict","conflict_n"),all.x=T)
 datacomb_dt[is.na(gsrain)]$gsrain <- 0
 datacomb_dt[is.na(gsconflict)]$gsconflict <- 0
+datacomb_dt[is.na(gsconflict)]$gsconflict_n <- 0
 
-datacomb_dt[,`:=`(gsrain_stand=standardize(gsrain,ln=F),rain_stand=standardize(rain,ln=F),gsconflict_stand=standardize(gsconflict,ln=F),conflict_stand=standardize(conflict,ln=F)),by=.(xy)]
+datacomb_dt[,`:=`(rain_stand=standardize(rain,ln=F),gsrain_stand=standardize(gsrain,ln=F),conflict_stand=standardize(conflict,ln=F),gsconflict_stand=standardize(gsconflict,ln=F),conflict_n_stand=standardize(conflict_n,ln=F),gsconflict_n_stand=standardize(gsconflict_n,ln=F)),by=.(xy)]
 
-dataset_dt <- merge(dataset_dt,subseason_dt,by=c("longitude","latitude","year","mo","Rice_plant_mid","season_rice","rain","conflict"),all.x=T)
+datacomb_dt[is.na(conflict_stand)]$conflict_stand <- 0
+datacomb_dt[is.na(gsconflict_stand)]$gsconflict_stand <- 0
+datacomb_dt[is.na(conflict_n_stand)]$conflict_n_stand <- 0
+datacomb_dt[is.na(gsconflict_n_stand)]$gsconflict_n_stand <- 0
+
+dataset_dt <- merge(dataset_dt,subseason_dt,by=c("longitude","latitude","year","mo","Rice_plant_mid","season_rice","rain","conflict","conflict_n"),all.x=T)
 dataset_dt[is.na(gsrain)]$gsrain <- 0
 dataset_dt[is.na(gsconflict)]$gsconflict <- 0
+dataset_dt[is.na(gsconflict_n)]$gsconflict_n <- 0
 
-dataset_dt[,`:=`(gsrain_stand=standardize(gsrain,ln=F),rain_stand=standardize(rain,ln=F),gsconflict_stand=standardize(gsconflict,ln=F),conflict_stand=standardize(conflict,ln=F)),by=.(xy,event)]
+dataset_dt[,`:=`(rain_stand=standardize(rain,ln=F),gsrain_stand=standardize(gsrain,ln=F),conflict_stand=standardize(conflict,ln=F),gsconflict_stand=standardize(gsconflict,ln=F),conflict_n_stand=standardize(conflict_n,ln=F),gsconflict_n_stand=standardize(gsconflict_n,ln=F)),by=.(xy,event)]
+
+dataset_dt[is.na(conflict_stand)]$conflict_stand <- 0
+dataset_dt[is.na(gsconflict_stand)]$gsconflict_stand <- 0
+dataset_dt[is.na(conflict_n_stand)]$conflict_n_stand <- 0
+dataset_dt[is.na(gsconflict_n_stand)]$gsconflict_n_stand <- 0
 
 
-
-datacomb_dt <- datacomb_dt[,.(country,longitude,latitude,xy,year,mo,yearmo,month,incidents,fatalities,harvest_month=rice_m,harvest_season,area_spam,area_i,area_r,area_h,area_l,area_s,area_hi,area_lo,prop_i,rain,conflict,gsrain,gsconflict,rain_stand,conflict_stand,gsrain_stand,gsconflict_stand)]
+datacomb_dt <- datacomb_dt[,.(country,longitude,latitude,xy,year,mo,yearmo,month,incidents,fatalities,harvest_month=rice_m,harvest_season,area_spam,area_i,area_r,area_h,area_l,area_s,area_hi,area_lo,prop_i,conflict,conflict_n,gsconflict,gsconflict_n,conflict_stand,conflict_n_stand,gsconflict_stand,gsconflict_n_stand,rain,gsrain,rain_stand,gsrain_stand)]
 
 datacomb_dt <- datacomb_dt[order(country,longitude,latitude,year,mo)]
 
-dataset_dt <- dataset_dt[,.(country,longitude,latitude,xy,year,mo,yearmo,month,event,incidents,fatalities,harvest_month=rice_m,harvest_season,area_spam,area_i,area_r,area_h,area_l,area_s,area_hi,area_lo,prop_i,rain,conflict,gsrain,gsconflict,rain_stand,conflict_stand,gsrain_stand,gsconflict_stand)]
+dataset_dt <- dataset_dt[,.(country,longitude,latitude,xy,year,mo,yearmo,month,event,incidents,fatalities,harvest_month=rice_m,harvest_season,area_spam,area_i,area_r,area_h,area_l,area_s,area_hi,area_lo,prop_i,conflict,conflict_n,gsconflict,gsconflict_n,conflict_stand,conflict_n_stand,gsconflict_stand,gsconflict_n_stand,rain,gsrain,rain_stand,gsrain_stand)]
 
 dataset_dt <- dataset_dt[order(country,longitude,latitude,event,year,mo)]
 
 save(datacomb_dt,dataset_dt,file="masterdata.RData")
+
+
+
+
+
+
 

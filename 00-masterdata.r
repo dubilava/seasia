@@ -46,12 +46,12 @@ dataset_dt[,`:=`(prop_i=ifelse(area_i==0,0,area_i/area_spam))]
 
 ## combined ----
 
-### harvest months ----
-datacomb_dt[,`:=`(harvest=ifelse(season==1 | season2==1,1,0),harvest_rice=ifelse(season_rice==1 | season2_rice==1,1,0))]
-
 ### planting months ----
 datacomb_dt[,`:=`(plant=ifelse(planting==1 | planting2==1,1,0),plant_rice=ifelse(planting_rice==1 | planting2_rice==1,1,0))]
 
+
+### harvest months ----
+datacomb_dt[,`:=`(harvest=ifelse(season==1 | season2==1,1,0),harvest_rice=ifelse(season_rice==1 | season2_rice==1,1,0))]
 
 ### growing season (rice, main) ----
 datacomb_dt[,`:=`(rice_p=ifelse(Rice_plant_mid==1,1,0),rice_h=ifelse(Rice_harvest_mid==1,1,0))]
@@ -63,6 +63,16 @@ datacomb_dt[,`:=`(rice_growing_season=cumsum(rice_p-rice_h)),by=.(xy)]
 datacomb_dt[,`:=`(rice_growing_season=rice_growing_season+rice_h)]
 
 
+### planting season (rice, main) ----
+datacomb_dt[,`:=`(rice_ps=ifelse(Rice_plant_srt==1,1,0),rice_pm=ifelse(Rice_plant_mid==1,1,0),rice_pe=ifelse(Rice_plant_end==1,1,0))]
+
+datacomb_dt[yearmo==min(yearmo) & as.numeric(as.character(Rice_plant_srt))>1 & as.numeric(as.character(Rice_plant_end))>as.numeric(as.character(Rice_plant_srt))]$rice_ps <- 1
+
+datacomb_dt[,`:=`(rice_plant_season=cumsum(rice_ps-rice_pe)),by=.(xy)]
+
+datacomb_dt[,`:=`(rice_plant_season=rice_plant_season+rice_pe)]
+
+
 ### harvest season (rice, main) ----
 datacomb_dt[,`:=`(rice_s=ifelse(Rice_harvest_srt==1,1,0),rice_m=ifelse(Rice_harvest_mid==1,1,0),rice_e=ifelse(Rice_harvest_end==1,1,0))]
 
@@ -72,10 +82,10 @@ datacomb_dt[,`:=`(rice_harvest_season=cumsum(rice_s-rice_e)),by=.(xy)]
 
 datacomb_dt[,`:=`(rice_harvest_season=rice_harvest_season+rice_e)]
 
-### harvest season ----
-datacomb_dt[,`:=`(harvest_season=ifelse(Crop_Rice=="Rice",rice_harvest_season,0),growing_season=ifelse(Crop_Rice=="Rice",rice_growing_season,0))]
+### finalizing the seasons ----
+datacomb_dt[,`:=`(harvest_season=ifelse(Crop_Rice=="Rice",rice_harvest_season,0),growing_season=ifelse(Crop_Rice=="Rice",rice_growing_season,0),plant_season=ifelse(Crop_Rice=="Rice",rice_plant_season,0))]
 
-datacomb_dt[,`:=`(harvest_season=ifelse(harvest_season==2,1,harvest_season))]
+datacomb_dt[,`:=`(harvest_season=ifelse(harvest_season==2,1,harvest_season),plant_season=ifelse(plant_season==2,1,plant_season))]
 
 
 
@@ -97,6 +107,15 @@ dataset_dt[,`:=`(rice_growing_season=cumsum(rice_p-rice_h)),by=.(xy)]
 
 dataset_dt[,`:=`(rice_growing_season=rice_growing_season+rice_h)]
 
+### plant season (rice, main) ----
+dataset_dt[,`:=`(rice_ps=ifelse(Rice_plant_srt==1,1,0),rice_pm=ifelse(Rice_plant_mid==1,1,0),rice_pe=ifelse(Rice_plant_end==1,1,0))]
+
+dataset_dt[yearmo==min(yearmo) & as.numeric(as.character(Rice_plant_srt))>1 & as.numeric(as.character(Rice_plant_end))>as.numeric(as.character(Rice_plant_srt))]$rice_ps <- 1
+
+dataset_dt[,`:=`(rice_plant_season=cumsum(rice_ps-rice_pe)),by=.(xy,event)]
+
+dataset_dt[,`:=`(rice_plant_season=rice_plant_season+rice_pe)]
+
 ### harvest season (rice, main) ----
 dataset_dt[,`:=`(rice_s=ifelse(Rice_harvest_srt==1,1,0),rice_m=ifelse(Rice_harvest_mid==1,1,0),rice_e=ifelse(Rice_harvest_end==1,1,0))]
 
@@ -107,10 +126,10 @@ dataset_dt[,`:=`(rice_harvest_season=cumsum(rice_s-rice_e)),by=.(xy,event)]
 dataset_dt[,`:=`(rice_harvest_season=rice_harvest_season+rice_e)]
 
 
-### harvest season ----
-dataset_dt[,`:=`(harvest_season=ifelse(Crop_Rice=="Rice",rice_harvest_season,0),growing_season=ifelse(Crop_Rice=="Rice",rice_growing_season,0))]
+### finalizing the seasons ----
+dataset_dt[,`:=`(harvest_season=ifelse(Crop_Rice=="Rice",rice_harvest_season,0),growing_season=ifelse(Crop_Rice=="Rice",rice_growing_season,0),plant_season=ifelse(Crop_Rice=="Rice",rice_plant_season,0))]
 
-dataset_dt[,`:=`(harvest_season=ifelse(harvest_season==2,1,harvest_season))]
+dataset_dt[,`:=`(harvest_season=ifelse(harvest_season==2,1,harvest_season),plant_season=ifelse(plant_season==2,1,plant_season))]
 
 
 ## finishing touches ----
@@ -297,19 +316,15 @@ dataset_dt[is.na(conflict_n_stand)]$conflict_n_stand <- 0
 dataset_dt[is.na(gsconflict_n_stand)]$gsconflict_n_stand <- 0
 
 
-datacomb_dt <- datacomb_dt[,.(country,longitude,latitude,xy,year,mo,yearmo,month,incidents,fatalities,harvest_month=rice_m,harvest_season,area_spam,area_i,area_r,area_h,area_l,area_s,area_hi,area_lo,prop_i,conflict,conflict_n,gsconflict,gsconflict_n,conflict_stand,conflict_n_stand,gsconflict_stand,gsconflict_n_stand,rain,gsrain,rain_stand,gsrain_stand)]
+datacomb_dt <- datacomb_dt[,.(country,longitude,latitude,xy,year,mo,yearmo,month,incidents,fatalities,harvest_month=rice_m,harvest_season,plant_month=rice_pm,plant_season,area_spam,area_i,area_r,area_h,area_l,area_s,area_hi,area_lo,prop_i,conflict,conflict_n,gsconflict,gsconflict_n,conflict_stand,conflict_n_stand,gsconflict_stand,gsconflict_n_stand,rain,gsrain,rain_stand,gsrain_stand)]
 
 datacomb_dt <- datacomb_dt[order(country,longitude,latitude,year,mo)]
 
-dataset_dt <- dataset_dt[,.(country,longitude,latitude,xy,year,mo,yearmo,month,event,incidents,fatalities,harvest_month=rice_m,harvest_season,area_spam,area_i,area_r,area_h,area_l,area_s,area_hi,area_lo,prop_i,conflict,conflict_n,gsconflict,gsconflict_n,conflict_stand,conflict_n_stand,gsconflict_stand,gsconflict_n_stand,rain,gsrain,rain_stand,gsrain_stand)]
+dataset_dt <- dataset_dt[,.(country,longitude,latitude,xy,year,mo,yearmo,month,event,incidents,fatalities,harvest_month=rice_m,harvest_season,plant_month=rice_pm,plant_season,area_spam,area_i,area_r,area_h,area_l,area_s,area_hi,area_lo,prop_i,conflict,conflict_n,gsconflict,gsconflict_n,conflict_stand,conflict_n_stand,gsconflict_stand,gsconflict_n_stand,rain,gsrain,rain_stand,gsrain_stand)]
 
 dataset_dt <- dataset_dt[order(country,longitude,latitude,event,year,mo)]
 
 save(datacomb_dt,dataset_dt,file="masterdata.RData")
-
-
-
-
 
 
 

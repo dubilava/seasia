@@ -30,6 +30,7 @@ theme_paper <- function(base_size=11,border=F){
       panel.grid.major = element_line(colour="darkgray"),
       panel.grid.major.x = element_blank(),
       panel.grid.minor = element_blank(),
+      plot.background=element_rect(fill="white",color=NA),
       plot.title=element_text(colour="black",hjust=0,size=rel(1.1)),
       plot.caption = element_text(size=rel(0.7),colour="slategray",hjust=0,margin=margin(t=5,r=1,b=1,l=1)),
       plot.margin=unit(c(0.25,0.25,0.25,0.25),"lines"),
@@ -149,7 +150,7 @@ gg_map <- ggplot(data = southeastasia) +
   scale_color_manual(values=fourseasons_col,breaks=month.abb,guide="none")+
   theme_void()+
   guides(color = guide_legend(override.aes = list(size = 2)))+
-  theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title = element_blank(),axis.text = element_blank(),legend.position = "none")
+  theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title = element_blank(),axis.text = element_blank(),legend.position = "none",plot.background=element_rect(fill="white",color=NA))
 
 calsum_dt <- cal_dt[,.(Cells=.N),by=.(month)]
 no_months <- month.abb[month.abb %!in% as.character(calsum_dt$month)]
@@ -232,13 +233,13 @@ countries_dt <- countries_dt[,.(incidents=sum(incidents)),by=.(country,event=eve
 
 gg_conflict <- ggplot(data = southeastasia) +
   geom_sf(color="gray",fill=NA,linewidth=.25)+
-  geom_scatterpie(data=conflict_dt,aes(x=longitude,y=latitude,r=both*.07),cols=c("battles","violence","unrest"),color="white",size=.02)+
+  geom_scatterpie(data=conflict_dt,aes(x=longitude,y=latitude,r=both*.07),cols=c("battles","violence","unrest"),color="white",size=.05)+
   scale_fill_manual(values=c("darkgray","indianred","goldenrod"))+
   geom_point(data=secities_sub[population>=2000000 & city_population>=1000000],aes(x=longitude,y=latitude),color="black",fill=NA,shape=21,size=2)+
   geom_text_repel(data=secities_sub[population>=2000000 & city_population>=1000000],aes(x=longitude,y=latitude,label=city))+
   scale_size(range=c(.3,3.5))+
   theme_void()+
-  theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title = element_blank(),axis.text = element_blank(),legend.title = element_blank(),legend.text = element_text(hjust=0),legend.position = c(.5,.85))
+  theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title = element_blank(),axis.text = element_blank(),legend.title = element_blank(),legend.text = element_text(hjust=0),legend.position = c(.5,.85),plot.background=element_rect(fill="white",color=NA))
 
 countries_dt$ylab <- 0
 countries_dt$event <- factor(countries_dt$event,levels=c("battles","violence","unrest"))
@@ -264,7 +265,7 @@ ggsave("Figures/map_conflict.eps",gg_maplegend,width=6.5,height=5.5,dpi="retina"
 
 ## F2: conflict time series ----
 
-conflict_ts <- dataset_dt[event %in% c("battles","violence","riots","protests"),.(incidents=sum(incidents),locations=uniqueN(xy)),by=.(event,date=as.Date(paste0(yearmo,"-01")))]
+conflict_ts <- dataset_dt[,.(incidents=sum(incidents),locations=uniqueN(xy)),by=.(event,date=as.Date(paste0(yearmo,"-01")))]
 
 conflict_ts[,`:=`(rate=incidents/locations)]
 
@@ -289,6 +290,37 @@ gg_comb <- plot_grid(gg1,gg2,ncol=1,align="hv",axis="lr",rel_heights = c(7,2))
 ggsave("Figures/ts_conflict.png",gg_comb,width=6.5,height=4.5,dpi="retina",device="png")
 
 ggsave("Figures/ts_conflict.eps",gg_comb,width=6.5,height=4.5,dpi="retina",device="eps")
+
+save(gg_map,gg_legend,gg_conflict,gg_bars,gg1,gg2,file="graphs.RData")
+
+
+temp_dt <- datacomb_dt[(country!="Myanmar" & as.numeric(as.character(year))%!in%c(2021,2022)) | (country=="Myanmar" & as.numeric(as.character(year))%!in%c(2021,2022)) | (country!="Myanmar" & as.numeric(as.character(year))%in%c(2021,2022))]
+
+conflict_ts <- dataset_dt[(country!="Myanmar" & as.numeric(as.character(year))%!in%c(2021,2022)) | (country=="Myanmar" & as.numeric(as.character(year))%!in%c(2021,2022)) | (country!="Myanmar" & as.numeric(as.character(year))%in%c(2021,2022)),.(incidents=sum(incidents),locations=uniqueN(xy)),by=.(event,date=as.Date(paste0(yearmo,"-01")))]
+
+conflict_ts[,`:=`(rate=incidents/locations)]
+
+conflict_ts$event <- factor(conflict_ts$event,levels=c("battles","violence","riots","protests"))
+
+gg1 <- ggplot(conflict_ts,aes(x=date,y=rate,color=event,linetype=event))+
+  geom_line()+
+  scale_color_manual(values=c("darkgray","indianred","steelblue","goldenrod"))+
+  labs(x="Year",y="Incidents per cell")+
+  theme_paper()+
+  theme(legend.position = "top")
+
+gg2 <- ggplot(conflict_ts[,.(cells=mean(locations)),by=date],aes(x=date,y=cells))+
+  geom_col(fill="darkgray",color="white")+
+  scale_y_reverse()+
+  labs(x="",y="Cells")+
+  theme_paper()+
+  theme(axis.line = element_blank(),axis.ticks = element_blank(),axis.title.x = element_blank(),axis.text.x=element_blank())
+
+gg_comb <- plot_grid(gg1,gg2,ncol=1,align="hv",axis="lr",rel_heights = c(7,2))
+
+ggsave("Figures/ts_conflict_myanmar.png",gg_comb,width=6.5,height=4.5,dpi="retina",device="png")
+
+ggsave("Figures/ts_conflict_myanmar.eps",gg_comb,width=6.5,height=4.5,dpi="retina",device="eps")
 
 save(gg_map,gg_legend,gg_conflict,gg_bars,gg1,gg2,file="graphs.RData")
 

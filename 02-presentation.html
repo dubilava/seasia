@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Agricultural Shocks and Social Conflict in Southeast Asia</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="David Ubilava" />
+    <script src="libs/header-attrs-2.19/header-attrs.js"></script>
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Agricultural Shocks and Social Conflict in Southeast Asia
+]
+.subtitle[
+## 18th Australasian Development Economics Workshop
+]
+.author[
+### David Ubilava
+]
+.date[
+### University of Sydney
+]
+
+---
+
+
+
+
+
+# Do harvest-time agricultural shocks affect conflict?
+
+.right-column[
+
+Conflicts happen... everywhere and all the time. 
+
+But in some places and at certain times more of them happen.
+
+We focus on low- and middle-income countries of Southeast Asia, where agriculture employs and pays large shares of population, and ask the question:
+
+&gt; Do harvest-time agricultural shocks lead to changes in forms of conflict?
+
+]
+
+
+---
+
+
+# They amplify violence and (maybe) reduce protests
+
+.right-column[
+
+The answer to the research question is hardly unequivocal.
+
+Relative to the rest of the year, at harvest time we observe:
+- four-to-eight percent increase in violence against civilians
+- up to ten percent decrease in protests*
+- excess rain during the growing season mitigates the effects
+- the results are mainly driven by rainfed locations
+
+`$$\\[.5in]$$`
+
+*sensitive to data subsetting.
+
+]
+
+
+---
+
+
+
+# Conflicts happen all across Southeast Asia
+
+.left-half[
+
+From the [ACLED Project](https://acleddata.com/), over 70 thousand incidents of: 
+- &lt;span style="color:dimgray"&gt;**battles**&lt;/span&gt;, 
+- &lt;span style="color:dimgray"&gt;**explosions/remote violence**&lt;/span&gt;, 
+- &lt;span style="color:indianred"&gt;**violence against civilians**&lt;/span&gt;, 
+- &lt;span style="color:goldenrod"&gt;**riots**&lt;/span&gt;, and 
+- &lt;span style="color:goldenrod"&gt;**protests**&lt;/span&gt; 
+
+observed over the 2010-2022 period.
+
+]
+
+.right-half[
+![Conflict across space](Figures/map_conflict.png)
+]
+
+---
+
+
+# Conflicts happen all the time in Southeast Asia
+
+.pull-left[
+
+Unbalanced panel of eight countries.
+
+For most countries, the data are available from 2010 onward, except for:
+
+- Indonesia (2015-)
+- Philippines (2016-)
+- Malaysia (2018-)
+
+]
+
+.pull-right[
+![Conflict over time](Figures/ts_conflict.png)
+]
+
+---
+
+
+# Rice is cultivated across all of Southeast Asia
+
+.left-half[
+
+From IFPRI's [Spatial Production Allocation Model](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/PRFF8V) (SPAM) and [Monfreda et al. (2008)](https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2007GB002947),
+- regional variation in harvested areas
+- regional variation in harvest seasons
+- regional variation in proportion of irrigated land
+
+]
+
+.right-half[
+![Conflict across space](Figures/map_harvest_main.png)
+]
+
+---
+
+
+# Positive correlation between conflict and croplands
+
+.pull-right[
+![Conflict and Cropland](Figures/cor.png)
+]
+
+---
+
+
+# We study the effect of harvest on forms of conflict
+
+.right-column[
+
+The outcome variable is the number of conflict incidents observed at a cell in a given time. We consider:
+- each form of conflict separately,
+- all forms of conflict combined.
+
+The treatment variable is the product of the cell-specific area (hectares) and harvest season (binary).
+
+Fixed effects: cell, country `\(\times\)` year, year-month.
+
+]
+
+
+
+---
+
+# Battles and violence increase and protests decrease
+
+.right-column[
+
+![Main Results](Figures/results_main.png)
+
+]
+
+---
+
+
+# Myanmar seems to be driving (some of) the results
+
+.pull-right[
+
+![Main Results](Figures/dropacountry.png)
+
+]
+
+---
+
+
+# 2021 seems to be driving (some of) the results
+
+.pull-right[
+
+![Main Results](Figures/dropayear.png)
+
+]
+
+---
+
+
+# Conflict series look sensible w/o Myanmar 2021-2022
+
+.pull-left[
+Full sample consists of 44,724 observations and 71,109 incidents.
+
+Myanmar 2021-2022 includes 1,416 (3.2%) observations and 23,550 (33.1%) conflict incidents.
+
+]
+
+.pull-right[
+
+![Conflict over time](Figures/ts_conflict_myanmar.png)
+
+]
+
+---
+
+
+# Violence increases (and nothing else changes)
+
+.right-column[
+
+![Main Results](Figures/results_main_myanmar.png)
+
+]
+
+---
+
+
+# Harvest-time violence may be linked to rapacity
+
+.right-column[
+
+[Ubilava et al. (2023)](https://doi.org/10.1111/ajae.12364) investigate the effect of cereal price change on seasonal violence in the croplands of Africa.
+
+The key finding: much of the annually accrued effect&amp;mdash;which is positive, statistically significant, and economically meaningful&amp;mdash;happens during the first three months of the crop year.
+
+Accords with the *rapacity mechanism*: farmers attacked when most gains are to be made (or maximum damage incurred).
+
+]
+
+---
+
+
+# Opportunity cost may explain less protests 
+
+.right-column[
+The *opportunity cost mechanism* often is portrayed as a trade-off a person faces between farming and fighting.
+
+Agricultural shocks may push a person in one direction or another... but this is a longer term engagement.
+
+In the short run, the opportunity cost mechanism is well-suited to explain the lack of protests at harvest time.
+]
+
+---
+
+
+# Excessive rainfall mitigates the effects 
+
+.right-column[
+![Main Results](Figures/results_rain.png)
+]
+
+---
+
+# Much of the effect comes from rainfed locations 
+
+.right-column[
+![Main Results](Figures/results_irri.png)
+]
+
+---
+
+# We contribute to three strands of literature
+
+.right-column[
+
+Climate shocks and conflict ([Burke et al., 2009](https://www.pnas.org/doi/pdf/10.1073/pnas.0907998106); [Hsiang et al., 2013](https://www.science.org/doi/10.1126/science.1235367); [Crost et al., 2018](https://www.sciencedirect.com/science/article/abs/pii/S0095069617301584))
+
+Economic roots of conflict ([Berman et al, 2011](https://journals.sagepub.com/doi/10.1177/0022002710393920); [Crost and Felter, 2020](https://academic.oup.com/jeea/article/18/3/1484/5505371); [McGuirk and Burke, 2020](https://www.journals.uchicago.edu/doi/abs/10.1086/709993))
+
+Seasonality of conflict ([Harari and La Ferrara, 2018](https://direct.mit.edu/rest/article-abstract/100/4/594/58501/Conflict-Climate-and-Cells-A-Disaggregated); McGuirk and Nunn, 2023; Guardado and Pennings, 2023)
+
+]
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

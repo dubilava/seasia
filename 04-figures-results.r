@@ -21,7 +21,7 @@ gc()
 
 "%!in%" <- Negate("%in%")
 
-theme_paper <- function(base_size=11,border=F){
+theme_paper <- function(base_size=13,border=F){
   theme_foundation(base_size=base_size) +
     theme(
       line = element_line(linetype=1,linewidth=.4,colour="dimgray"),
@@ -69,7 +69,7 @@ gg_main <- ggplot(main_dt,aes(x=event,y=est))+
   theme_paper()+
   theme(axis.text.y=element_text(hjust=0),axis.title.y=element_text(margin=margin(t=0,r=5,b=0,l=0)),panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"))
 
-ggsave("Figures/results_main.png",gg_main,width=6.5,height=3.5,dpi="retina")
+ggsave("Figures/results_main.png",gg_main,width=6.5,height=4.0,dpi="retina")
 
 
 rain_dt <- rbind(rain_dt[,.(event,est=est1,se=se1,rain="average")],rain_dt[,.(event,est=est2,se=se2,rain="rainy")])
@@ -84,7 +84,7 @@ gg_rain <- ggplot(rain_dt,aes(x=event,y=est,linetype=rain))+
   theme_paper()+
   theme(axis.text.y=element_text(hjust=0),axis.title.y=element_text(margin=margin(t=0,r=5,b=0,l=0)),panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"),legend.position="top",legend.key.width=unit(3,'lines'))
 
-ggsave("Figures/results_rain.png",gg_rain,width=6.5,height=3.5,dpi="retina")
+ggsave("Figures/results_rain.png",gg_rain,width=6.5,height=4.0,dpi="retina")
 
 
 
@@ -106,7 +106,7 @@ gg_irri <- ggplot(irri_dt,aes(x=event,y=est,linetype=rain,color=col))+
   theme_paper()+
   theme(axis.text.y=element_text(hjust=0),axis.title.y=element_text(margin=margin(t=0,r=5,b=0,l=0)),panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"),legend.position="top",legend.key.width=unit(3,'lines'))
 
-ggsave("Figures/results_irri.png",gg_irri,width=6.5,height=3.5,dpi="retina")
+ggsave("Figures/results_irri.png",gg_irri,width=6.5,height=4.0,dpi="retina")
 
 
 conflict_dt <- rbind(regime_dt[,.(event,est=est1,se=se1,conflict="average")],regime_dt[,.(event,est=est2,se=se2,conflict="elevated")])
@@ -121,7 +121,7 @@ gg_conflict <- ggplot(conflict_dt,aes(x=event,y=est,linetype=conflict))+
   theme_paper()+
   theme(axis.text.y=element_text(hjust=0),axis.title.y=element_text(margin=margin(t=0,r=5,b=0,l=0)),panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"),legend.position="top",legend.key.width=unit(3,'lines'))
 
-ggsave("Figures/results_conflict.png",gg_rain,width=6.5,height=3.5,dpi="retina")
+ggsave("Figures/results_conflict.png",gg_rain,width=6.5,height=4.0,dpi="retina")
 
 
 
@@ -144,7 +144,7 @@ gg_main <- ggplot(main_dt,aes(x=event,y=est))+
   theme_paper()+
   theme(axis.text.y=element_text(hjust=0),axis.title.y=element_text(margin=margin(t=0,r=5,b=0,l=0)),panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"))
 
-ggsave("Figures/results_main_myanmar.png",gg_main,width=6.5,height=3.5,dpi="retina")
+ggsave("Figures/results_main_myanmar.png",gg_main,width=6.5,height=4.0,dpi="retina")
 
 
 rain_dt <- rbind(rain_dt[,.(event,est=est1,se=se1,rain="average")],rain_dt[,.(event,est=est2,se=se2,rain="rainy")])
@@ -160,7 +160,7 @@ gg_rain <- ggplot(rain_dt,aes(x=event,y=est,linetype=rain))+
   theme_paper()+
   theme(axis.text.y=element_text(hjust=0),axis.title.y=element_text(margin=margin(t=0,r=5,b=0,l=0)),panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"),legend.position="top",legend.key.width=unit(3,'lines'))
 
-ggsave("Figures/results_rain_myanmar.png",gg_rain,width=6.5,height=3.5,dpi="retina")
+ggsave("Figures/results_rain_myanmar.png",gg_rain,width=6.5,height=4.0,dpi="retina")
 
 
 
@@ -184,7 +184,7 @@ gg_irri <- ggplot(irri_dt,aes(x=event,y=est,linetype=rain,color=col))+
   theme_paper()+
   theme(axis.text.y=element_text(hjust=0),axis.title.y=element_text(margin=margin(t=0,r=5,b=0,l=0)),panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"),legend.position="top",legend.key.width=unit(3,'lines'))
 
-ggsave("Figures/results_irri_myanmar.png",gg_irri,width=6.5,height=3.5,dpi="retina")
+ggsave("Figures/results_irri_myanmar.png",gg_irri,width=6.5,height=4.0,dpi="retina")
 
 
 
@@ -201,7 +201,7 @@ gg_conflict <- ggplot(conflict_dt,aes(x=event,y=est,linetype=conflict))+
   theme_paper()+
   theme(axis.text.y=element_text(hjust=0),axis.title.y=element_text(margin=margin(t=0,r=5,b=0,l=0)),panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"),legend.position="top",legend.key.width=unit(3,'lines'))
 
-ggsave("Figures/results_conflict_myanmar.png",gg_rain,width=6.5,height=3.5,dpi="retina")
+ggsave("Figures/results_conflict_myanmar.png",gg_rain,width=6.5,height=4.0,dpi="retina")
 
 
 

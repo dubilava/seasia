@@ -68,28 +68,72 @@ datacomb_dt <- datacomb_dt[country %!in% c("Brunei","Timor-Leste")]
 dataset_dt <- dataset_dt[country %!in% c("Brunei","Timor-Leste")]
 
 
-## some descriptive stats
-datacomb_dt[,.(incidents=sum(incidents)),by=.(country)]
-datacomb_dt[yearmo=="2020-01",.(cells=.N),by=.(country)]
+# some graphs
+sub_dt <- datacomb_dt[yearmo=="2020-01",.(area=area_spam,irri=prop_i,country)]
 
-tab1 <- datacomb_dt[,.(obs=.N,indicence_mean=round(mean(ifelse(incidents>0,1,0)),3),indicence_sd=round(sd(ifelse(incidents>0,1,0)),3),indicents_mean=round(mean(incidents),3),indicents_sd=round(sd(incidents),3),indicents_min=round(min(incidents),3),indicents_max=round(max(incidents),3))]
+sum_dt <- datacomb_dt[,.(incidents=mean(incidents),area=mean(area_spam),irri=mean(ifelse(prop_i>=.5,1,0))),by=.(xy,country)]
+sum_dt[,irri:=ifelse(irri==1,"irrigated","rainfed")]
 
-kable_styling(kable(tab1))
+## cropland area
+gg_area <- ggplot(sub_dt,aes(x=area*100000))+
+  geom_histogram(bins=20,fill="seagreen",color="white")+
+  labs(x="Rice cropland area (ha) in a cell",y="Count")+
+  theme_paper()
 
-dataset_dt$event <- factor(dataset_dt$event,levels=unique(dataset_dt$event)[c(6,4,2,5,1,3)])
+ggsave("Figures/area.png",gg_area,width=6.5,height=4.0,dpi="retina")
+ggsave("Figures/area.eps",gg_area,width=6.5,height=4.0,dpi="retina",device="eps")
 
-tab2 <- dataset_dt[,.(obs=.N,indicence_mean=round(mean(ifelse(incidents>0,1,0)),3),indicence_sd=round(sd(ifelse(incidents>0,1,0)),3),indicents_mean=round(mean(incidents),3),indicents_sd=round(sd(incidents),3),indicents_min=round(min(incidents),3),indicents_max=round(max(incidents),3)),by=.(event)]
+## irrigation
+gg_irri <- ggplot(sub_dt,aes(x=irri))+
+  geom_histogram(bins=20,fill="steelblue",color="white")+
+  labs(x="Proportion of irrigated rice in a cell",y="Count")+
+  theme_paper()
 
-kable_styling(kable(tab2))
+ggsave("Figures/irri.png",gg_irri,width=6.5,height=4.0,dpi="retina")
+ggsave("Figures/irri.eps",gg_irri,width=6.5,height=4.0,dpi="retina",device="eps")
 
 
-tab3a <- datacomb_dt[yearmo=="2020-01",.(obs=.N,Crop_area_mean=round(mean(area_spam),3),Crop_area_sd=round(sd(area_spam),3),Crop_area_min=round(min(area_spam),3),Crop_area_max=round(max(area_spam),3))]
+color_palette <- colorRampPalette(colors=c("indianred","coral","goldenrod","forestgreen","seagreen","steelblue","dimgray"),interpolate="spline")
 
-tab3i <- datacomb_dt[yearmo=="2020-01",.(obs=.N,Crop_area_mean=round(mean(area_i),3),Crop_area_sd=round(sd(area_i),3),Crop_area_min=round(min(area_i),3),Crop_area_max=round(max(area_i),3))]
+sample_of_colors <- color_palette(16)[seq(2,16,2)]
 
-tab3r <- datacomb_dt[yearmo=="2020-01",.(obs=.N,Crop_area_mean=round(mean(area_r),3),Crop_area_sd=round(sd(area_r),3),Crop_area_min=round(min(area_r),3),Crop_area_max=round(max(area_r),3))]
+sample_of_shapes <- c(21:24,21:24)
 
-kable_styling(kable(rbind(tab3a,tab3i,tab3r)))
+gg_scatter <- ggplot(sub_dt,aes(x=log(area*100000),y=irri))+
+  geom_point(aes(color=country,fill=country,shape=country),size=1.5,stroke=.5,alpha=.75,na.rm=T)+
+  scale_colour_manual(values=sample_of_colors)+
+  scale_fill_manual(values=sample_of_colors)+
+  scale_shape_manual(values=sample_of_shapes)+
+  labs(x="Rice cropland area (ha), natural log",y="Proportion of irrigated rice")+
+  theme_paper()+
+  theme(legend.position="top")
+
+ggsave("Figures/area_irri.png",gg_scatter,width=6.5,height=5.5,dpi="retina")
+ggsave("Figures/area_irri.eps",gg_scatter,width=6.5,height=5.5,dpi="retina",device=cairo_ps)
+
+
+gg_cor <- ggplot(sum_dt,aes(x=log(area*100000),y=log(incidents),shape=irri,color=irri))+
+  geom_point(size=1.5,stroke=.7,na.rm=T)+
+  scale_shape_manual(values=c(16,1))+
+  scale_color_manual(values=c("steelblue","coral"))+
+  labs(x="Cropland area (ha), natural log",y="Average number of conflict incidents, natural log")+
+  theme_paper()+
+  theme(legend.position="top")
+
+gg_den <- ggplot(sum_dt,aes(x=log(incidents),color=irri))+
+  geom_density(na.rm=T)+
+  scale_color_manual(values=c("steelblue","coral"))+
+  labs(x="",y="Density")+
+  coord_flip(ylim=c(0,.2))+
+  theme_paper()
+
+gg_comb <- plot_grid(gg_cor,gg_den,ncol=2,align="hv",axis="tb",rel_widths=c(3,1))
+
+ggsave("Figures/area_conflict.png",gg_comb,width=6.5,height=4.0,dpi="retina")
+ggsave("Figures/area_conflict.eps",gg_comb,width=6.5,height=4.0,dpi="retina",device="eps")
+
+
+
 
 
 ## A1: irrigation histogram ----

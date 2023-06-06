@@ -106,9 +106,6 @@ impact1 <- function(x){
 
 ## combined effect ----
 datasub_dt <- datacomb_dt
-# datasub_dt[,`:=`(l1=shift(harvest_month,1),f1=shift(harvest_month,1,type="lead")),by=.(xy)]
-# datasub_dt[,`:=`(harvest_season=l1+harvest_month+f1)]
-# datasub_dt[is.na(harvest_season)]$harvest_season <- 0
 datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
 
 ## effect
@@ -119,9 +116,6 @@ c_comb <- impact1(datasub_dt)
 
 ## event-specific effects ----
 datasub_dt <- dataset_dt
-# datasub_dt[,`:=`(l1=shift(harvest_month,1),f1=shift(harvest_month,1,type="lead")),by=.(xy)]
-# datasub_dt[,`:=`(harvest_season=l1+harvest_month+f1)]
-# datasub_dt[is.na(harvest_season)]$harvest_season <- 0
 datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
 
 ## effect

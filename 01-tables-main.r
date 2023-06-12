@@ -107,11 +107,14 @@ tab3r <- datacomb_dt[yearmo=="2020-01",.(obs=.N,Crop_area_mean=round(mean(area_r
 kable_styling(kable(rbind(tab3a,tab3i,tab3r)))
 
 
+# label the contemporanous rain differently
+datacomb_dt[,rain_t:=rain]
+dataset_dt[,rain_t:=rain]
 
 # 01 - main effect ----
 
 impact1 <- function(x){
-  r <- feols(incidents~area:seas | xy+country^year+yearmo, data=x,vcov=~xy)
+  r <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, data=x,vcov=~xy)
   
   m <- x[area>0,.(incidents=mean(incidents),cropland=mean(area))]
   
@@ -134,10 +137,10 @@ datasub_dt <- datacomb_dt
 # datasub_dt[,`:=`(l1=shift(harvest_month,1),f1=shift(harvest_month,1,type="lead")),by=.(xy)]
 # datasub_dt[,`:=`(harvest_season=l1+harvest_month+f1)]
 # datasub_dt[is.na(harvest_season)]$harvest_season <- 0
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season)]
 
 ## effect
-coef0_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt,vcov=~xy)
+coef0_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt,vcov=~xy)
 
 ## impact
 c_comb <- impact1(datasub_dt)
@@ -147,13 +150,13 @@ datasub_dt <- dataset_dt
 # datasub_dt[,`:=`(l1=shift(harvest_month,1),f1=shift(harvest_month,1,type="lead")),by=.(xy)]
 # datasub_dt[,`:=`(harvest_season=l1+harvest_month+f1)]
 # datasub_dt[is.na(harvest_season)]$harvest_season <- 0
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season)]
 
 ## effect
-coef1_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt[event=="battles"],vcov=~xy)
-coef2_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt[event=="violence"],vcov=~xy)
-coef3_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
-coef4_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt[event=="protests"],vcov=~xy)
+coef1_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt[event=="battles"],vcov=~xy)
+coef2_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt[event=="violence"],vcov=~xy)
+coef3_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
+coef4_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt[event=="protests"],vcov=~xy)
 
 ## impact
 c_battles <- impact1(datasub_dt[event=="battles"])
@@ -187,27 +190,27 @@ main_dt <- dt
 
 ## combined effect ----
 datasub_dt <- datacomb_dt
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season)]
 
 datasub_dt <- datasub_dt[as.numeric(as.character(year))>=2018]
 
 ## effect
-coef0_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt,vcov=~xy)
+coef0_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt,vcov=~xy)
 
 ## impact
 c_comb <- impact1(datasub_dt)
 
 ## evens-specific effects ----
 datasub_dt <- dataset_dt
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season)]
 
 datasub_dt <- datasub_dt[as.numeric(as.character(year))>2017]
 
 ## effect
-coef1_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt[event=="battles"],vcov=~xy)
-coef2_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt[event=="violence"],vcov=~xy)
-coef3_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
-coef4_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt[event=="protests"],vcov=~xy)
+coef1_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt[event=="battles"],vcov=~xy)
+coef2_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt[event=="violence"],vcov=~xy)
+coef3_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
+coef4_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt[event=="protests"],vcov=~xy)
 
 ## impact
 c_battles <- impact1(datasub_dt[event=="battles"])
@@ -226,27 +229,27 @@ kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),battles=
 
 ## combined effect ----
 datasub_dt <- datacomb_dt
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season)]
 
 datasub_dt <- datasub_dt[country %!in% c("Indonesia","Malaysia","Philippines")]
 
 ## effect
-coef0_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt,vcov=~xy)
+coef0_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt,vcov=~xy)
 
 ## impact
 c_comb <- impact1(datasub_dt)
 
 ## event-specific effects ----
 datasub_dt <- dataset_dt
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season)]
 
 datasub_dt <- datasub_dt[country %!in% c("Indonesia","Malaysia","Philippines")]
 
 ## effect
-coef1_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt[event=="battles"],vcov=~xy)
-coef2_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt[event=="violence"],vcov=~xy)
-coef3_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
-coef4_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt[event=="protests"],vcov=~xy)
+coef1_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt[event=="battles"],vcov=~xy)
+coef2_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt[event=="violence"],vcov=~xy)
+coef3_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
+coef4_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt[event=="protests"],vcov=~xy)
 
 ## impact
 c_battles <- impact1(datasub_dt[event=="battles"])
@@ -262,7 +265,7 @@ kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),battles=
 
 
 
-# 01d - Check: drop one country at a time ----
+# 01c - Check: drop one country at a time ----
 
 list_of_countries <- unique(datacomb_dt$country)
 
@@ -272,7 +275,7 @@ for(i in 1:length(list_of_countries)){
   
   ## combined effect ----
   datasub_dt <- datacomb_dt
-  datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
+  datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season)]
   
   datasub_dt <- datasub_dt[country!=list_of_countries[i]]
   
@@ -281,7 +284,7 @@ for(i in 1:length(list_of_countries)){
   
   ## event-specific effects ----
   datasub_dt <- dataset_dt
-  datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
+  datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season)]
   
   datasub_dt <- datasub_dt[country!=list_of_countries[i]]
   
@@ -323,15 +326,28 @@ gg_dropone <- ggplot(dropone_dt,aes(x=country,y=est))+
   geom_point(size=1.5,shape=21,color=dropone_dt$col,fill="white",stroke=.8)+
   facet_grid(.~event)+
   coord_flip()+
-  labs(title="",x="Omitted country",y="Estimated impact (%) relative to the baseline")+
+  labs(title="",x="Omitted country",y="Harvest-time change in conflict relative to the baseline (%)")+
   theme_paper()+
   theme(panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"),axis.text.y=element_text(hjust=0))
 
+country_dt <- datacomb_dt[,.(incidents=sum(incidents)),by=.(country)]
+country_dt <- country_dt[order(country)]
+country_dt$country <- factor(country_dt$country,levels=unique(country_dt$country)[length(unique(country_dt$country)):1])
+country_dt[,share:=(incidents/sum(incidents))]
 
-ggsave("Figures/dropacountry.png",gg_dropone,width=6.5,height=4.5,dpi="retina",device="png")
+gg_incidents <- ggplot(country_dt,aes(x=country,y=share))+
+  geom_col(fill="slategray",width=.5)+
+  coord_flip()+
+  labs(title="",x="",y="Share of incidents")+
+  theme_paper()+
+  theme(panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"),axis.text.y=element_blank())
 
-ggsave("Figures/dropacountry.eps",gg_dropone,width=6.5,height=4.5,dpi="retina",device="eps")
+gg_comb <- plot_grid(gg_dropone,gg_incidents,align = "hv",axis="tb",ncol=2,rel_widths=c(3,1))
 
+
+ggsave("Figures/dropacountry.png",gg_comb,width=6.5,height=4.5,dpi="retina",device="png")
+
+ggsave("Figures/dropacountry.eps",gg_comb,width=6.5,height=4.5,dpi="retina",device="eps")
 
 
 # 01d - Check: drop one country at a time ----
@@ -344,7 +360,7 @@ for(i in 1:length(list_of_years)){
   
   ## combined effect ----
   datasub_dt <- datacomb_dt
-  datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
+  datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season)]
   
   datasub_dt <- datasub_dt[year!=list_of_years[i]]
   
@@ -353,7 +369,7 @@ for(i in 1:length(list_of_years)){
   
   ## event-specific effects ----
   datasub_dt <- dataset_dt
-  datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
+  datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season)]
   
   datasub_dt <- datasub_dt[year!=list_of_years[i]]
   
@@ -395,18 +411,75 @@ gg_dropone <- ggplot(dropone_dt,aes(x=year,y=est))+
   geom_point(size=1.5,shape=21,color=dropone_dt$col,fill="white",stroke=.8)+
   facet_grid(.~event)+
   coord_flip()+
-  labs(title="",x="Omitted year",y="Estimated impact (%) relative to the baseline")+
+  labs(title="",x="Omitted year",y="Harvest-time change in conflict relative to the baseline (%)")+
   theme_paper()+
   theme(panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"),axis.text.y=element_text(hjust=0))
 
 
-ggsave("Figures/dropayear.png",gg_dropone,width=6.5,height=4.5,dpi="retina",device="png")
+year_dt <- datacomb_dt[,.(incidents=sum(incidents)),by=.(year)]
+year_dt <- year_dt[order(year)]
+year_dt$year <- factor(year_dt$year,levels=unique(year_dt$year)[length(unique(year_dt$year)):1])
+year_dt[,share:=(incidents/sum(incidents))]
 
-ggsave("Figures/dropayear.eps",gg_dropone,width=6.5,height=4.5,dpi="retina",device="eps")
+gg_incidents <- ggplot(year_dt,aes(x=year,y=share))+
+  geom_col(fill="slategray",width=.5)+
+  scale_y_continuous(breaks=pretty_breaks(n=3))+
+  coord_flip()+
+  labs(title="",x="",y="Share of incidents")+
+  theme_paper()+
+  theme(panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"),axis.text.y=element_blank())
+
+gg_comb <- plot_grid(gg_dropone,gg_incidents,align = "hv",axis="tb",ncol=2,rel_widths=c(3,1))
+
+
+ggsave("Figures/dropayear.png",gg_comb,width=6.5,height=4.5,dpi="retina",device="png")
+
+ggsave("Figures/dropayear.eps",gg_comb,width=6.5,height=4.5,dpi="retina",device="eps")
+
+
+# 01e - Check: Omit Myanmar-2021-2022 ----
+
+## combined effect ----
+datasub_dt <- datacomb_dt
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season)]
+
+datasub_dt <- datasub_dt[(country!="Myanmar" & as.numeric(as.character(year))%!in%c(2021,2022)) | (country=="Myanmar" & as.numeric(as.character(year))%!in%c(2021,2022)) | (country!="Myanmar" & as.numeric(as.character(year))%in%c(2021,2022))]
+
+## effect
+coef0_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt,vcov=~xy)
+
+## impact
+c_comb <- impact1(datasub_dt)
+
+## evens-specific effects ----
+datasub_dt <- dataset_dt
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season)]
+
+datasub_dt <- datasub_dt[(country!="Myanmar" & as.numeric(as.character(year))%!in%c(2021,2022)) | (country=="Myanmar" & as.numeric(as.character(year))%!in%c(2021,2022)) | (country!="Myanmar" & as.numeric(as.character(year))%in%c(2021,2022))]
+
+## effect
+coef1_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt[event=="battles"],vcov=~xy)
+coef2_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt[event=="violence"],vcov=~xy)
+coef3_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
+coef4_fe <- feols(incidents~area:seas+rain_t | xy+country^year+yearmo, datasub_dt[event=="protests"],vcov=~xy)
+
+## impact
+c_battles <- impact1(datasub_dt[event=="battles"])
+c_violence <- impact1(datasub_dt[event=="violence"])
+c_riots <- impact1(datasub_dt[event=="riots"])
+c_protests <- impact1(datasub_dt[event=="protests"])
+
+## estimated effect
+modelsummary(list(coef0_fe,coef1_fe,coef2_fe,coef3_fe,coef4_fe),estimate="{estimate}{stars}",stars=c('*'=.1,'**'=.05,'***'=.01),gof_map=gm)
+
+## calculated impact
+kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),battles=c(c_battles$descriptive,c_battles$effect),violence=c(c_violence$descriptive,c_violence$effect),riots=c(c_riots$descriptive,c_riots$effect),protests=c(c_protests$descriptive,c_protests$effect))))
 
 
 
-# # 01e - Check: randomize harvest seasons ----
+
+
+# # 01f - Check: randomize harvest seasons ----
 # 
 # list_of_iter <- 1:100
 # 
@@ -429,7 +502,7 @@ ggsave("Figures/dropayear.eps",gg_dropone,width=6.5,height=4.5,dpi="retina",devi
 #   datasub_dt$harvest_season <- NULL
 #   datasub_dt <- merge(datasub_dt,random_dt,by=c("xy","mo"),all.x=T)
 #   
-#   datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
+#   datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season)]
 #   
 #   ## impact
 #   c_comb <- impact1(datasub_dt)
@@ -450,7 +523,7 @@ ggsave("Figures/dropayear.eps",gg_dropone,width=6.5,height=4.5,dpi="retina",devi
 #   datasub_dt$harvest_season <- NULL
 #   datasub_dt <- merge(datasub_dt,random_dt,by=c("xy","mo"),all.x=T)
 #   
-#   datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
+#   datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season)]
 #   
 #   ## impact
 #   c_battles <- impact1(datasub_dt[event=="battles"])
@@ -511,82 +584,40 @@ ggsave("Figures/dropayear.eps",gg_dropone,width=6.5,height=4.5,dpi="retina",devi
 
 
 
-# 01c - Check: Omit Myanmar-2021-2022 ----
-
-## combined effect ----
-datasub_dt <- datacomb_dt
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
-
-datasub_dt <- datasub_dt[(country!="Myanmar" & as.numeric(as.character(year))%!in%c(2021,2022)) | (country=="Myanmar" & as.numeric(as.character(year))%!in%c(2021,2022)) | (country!="Myanmar" & as.numeric(as.character(year))%in%c(2021,2022))]
-
-## effect
-coef0_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt,vcov=~xy)
-
-## impact
-c_comb <- impact1(datasub_dt)
-
-## evens-specific effects ----
-datasub_dt <- dataset_dt
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
-
-datasub_dt <- datasub_dt[(country!="Myanmar" & as.numeric(as.character(year))%!in%c(2021,2022)) | (country=="Myanmar" & as.numeric(as.character(year))%!in%c(2021,2022)) | (country!="Myanmar" & as.numeric(as.character(year))%in%c(2021,2022))]
-
-## effect
-coef1_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt[event=="battles"],vcov=~xy)
-coef2_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt[event=="violence"],vcov=~xy)
-coef3_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
-coef4_fe <- feols(incidents~area:seas | xy+country^year+yearmo, datasub_dt[event=="protests"],vcov=~xy)
-
-## impact
-c_battles <- impact1(datasub_dt[event=="battles"])
-c_violence <- impact1(datasub_dt[event=="violence"])
-c_riots <- impact1(datasub_dt[event=="riots"])
-c_protests <- impact1(datasub_dt[event=="protests"])
-
-## estimated effect
-modelsummary(list(coef0_fe,coef1_fe,coef2_fe,coef3_fe,coef4_fe),estimate="{estimate}{stars}",stars=c('*'=.1,'**'=.05,'***'=.01),gof_map=gm)
-
-## calculated impact
-kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),battles=c(c_battles$descriptive,c_battles$effect),violence=c(c_violence$descriptive,c_violence$effect),riots=c(c_riots$descriptive,c_riots$effect),protests=c(c_protests$descriptive,c_protests$effect))))
-
 
 
 
 # 02 - Rainfall ----
 
 impact2 <- function(x){
-  x[,`:=`(shock=sd(rain)),by=.(xy)]
-  r <- feols(incidents~area:seas + area:seas:rain | xy+country^year+yearmo, data=x,vcov=~xy)
-  r1 <- feols(incidents~area:seas + area:seas:I(rain-shock) | xy+country^year+yearmo, data=x,vcov=~xy)
+  # x[,`:=`(shock=sd(rain)),by=.(xy)]
+  r <- feols(incidents~area:seas:rain_cat+rain_t | xy+country^year+yearmo, data=x,vcov=~xy)
+  # r1 <- feols(incidents~area:seas + area:seas:I(rain-shock)+rain_t | xy+country^year+yearmo, data=x,vcov=~xy)
   
   m <- x[area>0,.(incidents=mean(incidents),cropland=mean(area))]
   
   s <- 100*m$cropland/m$incidents
   
-  h_coef <- round(r$coeftable["area:seas","Estimate"]*s,1)
-  h_se <- round(r$coeftable["area:seas","Std. Error"]*s,1)
-  h_stars <- pstars(r$coeftable["area:seas","Pr(>|t|)"])
-  
-  p_coef <- round(r1$coeftable["area:seas","Estimate"]*s,1)
-  p_se <- round(r1$coeftable["area:seas","Std. Error"]*s,1)
-  p_stars <- pstars(r1$coeftable["area:seas","Pr(>|t|)"])
+  h_coef <- round(r$coeftable[,"Estimate"][-1]*s,1)
+  h_se <- round(r$coeftable[,"Std. Error"][-1]*s,1)
+  h_stars <- pstars(r$coeftable[,"Pr(>|t|)"][-1])
   
   h_est <- paste0(format(round(h_coef,1),nsmall=1),h_stars)
   h_std <- paste0("(",format(round(h_se,1),nsmall=1),")")
   
-  p_est <- paste0(format(round(p_coef,1),nsmall=1),p_stars)
-  p_std <- paste0("(",format(round(p_se,1),nsmall=1),")")
   
-  return(list(descriptive=c(incidents=round(m$incidents,2),cropland=round(m$cropland,2)),effect=c(h_est,h_std,p_est,p_std),output=c(h_coef,h_se,p_coef,p_se)))
+  return(list(descriptive=c(incidents=round(m$incidents,2),cropland=round(m$cropland,2)),effect=c(h_est[1],h_std[1],h_est[2],h_std[2],h_est[3],h_std[3]),output=c(h_coef[1],h_se[1],h_coef[2],h_se[2],h_coef[3],h_se[3])))
 }
 
 ## combined effect ----
 datasub_dt <- datacomb_dt
 datasub_dt[,`:=`(gsrain_dev=gsrain-mean(gsrain)),by=.(xy)]
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season,rain=gsrain_stand_long)]
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season,rain=gsrain_stand_long)]
+
+datasub_dt[,rain_cat:=factor(ifelse(rain<=-1,"dry",ifelse(rain>=1,"wet","normal")))]
 
 ## effect
-coef0_fe <- feols(incidents~area:seas+area:seas:rain | xy+country^year+yearmo, datasub_dt,vcov=~xy)
+coef0_fe <- feols(incidents~area:seas:rain_cat+rain_t | xy+country^year+yearmo, datasub_dt,vcov=~xy)
 
 ## impact
 c_comb <- impact2(datasub_dt)
@@ -595,13 +626,15 @@ c_comb <- impact2(datasub_dt)
 
 datasub_dt <- dataset_dt
 datasub_dt[,`:=`(gsrain_dev=gsrain-mean(gsrain)),by=.(xy,event)]
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season,rain=gsrain_stand_long)]
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season,rain=gsrain_stand_long)]
+
+datasub_dt[,rain_cat:=factor(ifelse(rain<=-1,"dry",ifelse(rain>=1,"wet","normal")))]
 
 ## effect
-coef1_fe <- feols(incidents~area:seas+area:seas:rain | xy+country^year+yearmo, datasub_dt[event=="battles"],vcov=~xy)
-coef2_fe <- feols(incidents~area:seas+area:seas:rain | xy+country^year+yearmo, datasub_dt[event=="violence"],vcov=~xy)
-coef3_fe <- feols(incidents~area:seas+area:seas:rain | xy+country^year+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
-coef4_fe <- feols(incidents~area:seas+area:seas:rain | xy+country^year+yearmo, datasub_dt[event=="protests"],vcov=~xy)
+coef1_fe <- feols(incidents~area:seas:rain_cat+rain_t | xy+country^year+yearmo, datasub_dt[event=="battles"],vcov=~xy)
+coef2_fe <- feols(incidents~area:seas:rain_cat+rain_t | xy+country^year+yearmo, datasub_dt[event=="violence"],vcov=~xy)
+coef3_fe <- feols(incidents~area:seas:rain_cat+rain_t | xy+country^year+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
+coef4_fe <- feols(incidents~area:seas:rain_cat+rain_t | xy+country^year+yearmo, datasub_dt[event=="protests"],vcov=~xy)
 
 
 ## impact
@@ -637,10 +670,10 @@ rain_dt <- dt
 
 impact3 <- function(x){
   x[,`:=`(shock=sd(rain)),by=.(xy)]
-  r1 <- feols(incidents~area:seas + area:seas:irri+(area:seas + area:seas:irri):rain | xy+country^year+yearmo, data=x,vcov=~xy)
-  r2 <- feols(incidents~area:seas + area:seas:irri+(area:seas + area:seas:irri):I(rain-shock) | xy+country^year+yearmo, data=x,vcov=~xy)
-  r3 <- feols(incidents~area:seas + area:seas:I(1-irri)+(area:seas + area:seas:I(1-irri)):rain | xy+country^year+yearmo, data=x,vcov=~xy)
-  r4 <- feols(incidents~area:seas + area:seas:I(1-irri)+(area:seas + area:seas:I(1-irri)):I(rain-shock) | xy+country^year+yearmo, data=x,vcov=~xy)
+  r1 <- feols(incidents~area:seas + area:seas:irri+(area:seas + area:seas:irri):rain+rain_t | xy+country^year+yearmo, data=x,vcov=~xy)
+  r2 <- feols(incidents~area:seas + area:seas:irri+(area:seas + area:seas:irri):I(rain-shock)+rain_t | xy+country^year+yearmo, data=x,vcov=~xy)
+  r3 <- feols(incidents~area:seas + area:seas:I(1-irri)+(area:seas + area:seas:I(1-irri)):rain+rain_t | xy+country^year+yearmo, data=x,vcov=~xy)
+  r4 <- feols(incidents~area:seas + area:seas:I(1-irri)+(area:seas + area:seas:I(1-irri)):I(rain-shock)+rain_t | xy+country^year+yearmo, data=x,vcov=~xy)
   
   m <- x[area>0,.(incidents=mean(incidents),cropland=mean(area))]
   
@@ -681,10 +714,10 @@ impact3 <- function(x){
 
 datasub_dt <- datacomb_dt
 datasub_dt[,`:=`(gsrain_dev=gsrain-mean(gsrain)),by=.(xy)]
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season,rain=gsrain_stand_long,irri=prop_i)]
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season,rain=gsrain_stand_long,irri=prop_i)]
 
 ## effect
-coef0_fe <- feols(incidents~area:seas+area:seas:irri+(area:seas+area:seas:irri):rain | xy+country^year+yearmo, datasub_dt,vcov=~xy)
+coef0_fe <- feols(incidents~area:seas+area:seas:irri+(area:seas+area:seas:irri):rain+rain_t | xy+country^year+yearmo, datasub_dt,vcov=~xy)
 
 ## impact
 c_comb <- impact3(datasub_dt)
@@ -694,13 +727,13 @@ c_comb <- impact3(datasub_dt)
 
 datasub_dt <- dataset_dt
 datasub_dt[,`:=`(gsrain_dev=gsrain-mean(gsrain)),by=.(xy,event)]
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season,rain=gsrain_stand_long,irri=prop_i)]
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season,rain=gsrain_stand_long,irri=prop_i)]
 
 ## effect
-coef1_fe <- feols(incidents~area:seas+area:seas:irri+(area:seas+area:seas:irri):rain | xy+country^year+yearmo, datasub_dt[event=="battles"],vcov=~xy)
-coef2_fe <- feols(incidents~area:seas+area:seas:irri+(area:seas+area:seas:irri):rain | xy+country^year+yearmo, datasub_dt[event=="violence"],vcov=~xy)
-coef3_fe <- feols(incidents~area:seas+area:seas:irri+(area:seas+area:seas:irri):rain | xy+country^year+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
-coef4_fe <- feols(incidents~area:seas+area:seas:irri+(area:seas+area:seas:irri):rain | xy+country^year+yearmo, datasub_dt[event=="protests"],vcov=~xy)
+coef1_fe <- feols(incidents~area:seas+area:seas:irri+(area:seas+area:seas:irri):rain+rain_t | xy+country^year+yearmo, datasub_dt[event=="battles"],vcov=~xy)
+coef2_fe <- feols(incidents~area:seas+area:seas:irri+(area:seas+area:seas:irri):rain+rain_t | xy+country^year+yearmo, datasub_dt[event=="violence"],vcov=~xy)
+coef3_fe <- feols(incidents~area:seas+area:seas:irri+(area:seas+area:seas:irri):rain+rain_t | xy+country^year+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
+coef4_fe <- feols(incidents~area:seas+area:seas:irri+(area:seas+area:seas:irri):rain+rain_t | xy+country^year+yearmo, datasub_dt[event=="protests"],vcov=~xy)
 
 
 ## impact
@@ -735,8 +768,8 @@ irrirain_dt <- dt
 # 04 - conditional on battles ----
 
 impact4 <- function(x){
-  r1 <- feols(incidents~area:seas+area:seas:conf | xy+country^year+yearmo, data=x,vcov=~xy)
-  r2 <- feols(incidents~area:seas+area:seas:I(conf-1)  | xy+country^year+yearmo, data=x,vcov=~xy)
+  r1 <- feols(incidents~area:seas+area:seas:conf+rain_t | xy+country^year+yearmo, data=x,vcov=~xy)
+  r2 <- feols(incidents~area:seas+area:seas:I(conf-1)+rain_t  | xy+country^year+yearmo, data=x,vcov=~xy)
   
   m <- x[area>0,.(incidents=mean(incidents),cropland=mean(area),conflict=mean(conflict))]
   
@@ -769,12 +802,12 @@ datawide_dt <- datasub_dt[event=="battles",.(longitude,latitude,xy,yearmo,battle
 
 datasub_dt <- merge(datasub_dt,datawide_dt,by=c("longitude","latitude","xy","yearmo"),all.x=T)
 
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season,conf=gsconflict_stand)]
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season,conf=gsconflict_stand)]
 
 ## effect
-coef1_fe <- feols(incidents~area:seas+area:seas:conf | xy+country^year+yearmo, datasub_dt[event=="violence"],vcov=~xy)
-coef2_fe <- feols(incidents~area:seas+area:seas:conf | xy+country^year+yearmo, datasub_dt[event=="riots"],vcov=~xy)
-coef3_fe <- feols(incidents~area:seas+area:seas:conf | xy+country^year+yearmo, datasub_dt[event=="protests"],vcov=~xy)
+coef1_fe <- feols(incidents~area:seas+area:seas:conf+rain_t | xy+country^year+yearmo, datasub_dt[event=="violence"],vcov=~xy)
+coef2_fe <- feols(incidents~area:seas+area:seas:conf+rain_t | xy+country^year+yearmo, datasub_dt[event=="riots"],vcov=~xy)
+coef3_fe <- feols(incidents~area:seas+area:seas:conf+rain_t | xy+country^year+yearmo, datasub_dt[event=="protests"],vcov=~xy)
 
 ## impact
 c_protests <- impact4(datasub_dt[event=="protests"])
@@ -915,7 +948,7 @@ impact1c300 <- function(x,n){
 
 ## combined effect ----
 datasub_dt <- datacomb_dt
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season)]
 
 ## effect
 
@@ -934,7 +967,7 @@ c_comb$event <- "combined"
 
 ## event-specific effects ----
 datasub_dt <- dataset_dt
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season)]
 
 ## impact
 c_battles1 <- impact1i(datasub_dt[event=="battles"],2)

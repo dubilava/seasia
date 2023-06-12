@@ -79,14 +79,20 @@ southeastasia <- st_set_crs(southeastasia,"+proj=longlat +ellps=WGS84 +datum=WGS
 ## drop Brunei and Timor-Leste
 datacomb_dt <- datacomb_dt[country %!in% c("Brunei","Timor-Leste")]
 dataset_dt <- dataset_dt[country %!in% c("Brunei","Timor-Leste")]
+
+datacomb_dt[,`:=`(incidence=ifelse(incidents>0,1,0))]
+dataset_dt[,`:=`(incidence=ifelse(incidents>0,1,0))]
+
+datacomb_dt[,rain_t:=rain]
+dataset_dt[,rain_t:=rain]
                                          
 
 impact1i <- function(x,n){
-  r <- feols(incidents~area:seas | sw(xy+country^year+yearmo,xy+country^year+mo,xy+yearmo,xy+year+mo), data=x,vcov=~xy)
+  r <- feols(incidence~area:seas+rain_t | sw(xy+country^year+yearmo,xy+country^year+mo,xy+yearmo,xy+year+mo), data=x,vcov=~xy)
   
-  m <- x[area>0,.(incidents=mean(incidents),cropland=mean(area))]
+  m <- x[area>0,.(incidence=mean(incidence),cropland=mean(area))]
   
-  s <- 100*m$cropland/m$incidents
+  s <- 100*m$cropland/m$incidence
   
   lst <- list()
   
@@ -111,11 +117,11 @@ impact1i <- function(x,n){
   return(coef_dt)
 }
 impact1c150 <- function(x,n){
-  r <- feols(incidents~area:seas | sw(xy+country^year+yearmo,xy+country^year+mo,xy+yearmo,xy+year+mo), data=x,vcov=vcov_conley(lat="latitude",lon="longitude",cutoff=150,distance="spherical"))
+  r <- feols(incidence~area:seas+rain_t | sw(xy+country^year+yearmo,xy+country^year+mo,xy+yearmo,xy+year+mo), data=x,vcov=vcov_conley(lat="latitude",lon="longitude",cutoff=150,distance="spherical"))
   
-  m <- x[area>0,.(incidents=mean(incidents),cropland=mean(area))]
+  m <- x[area>0,.(incidence=mean(incidence),cropland=mean(area))]
   
-  s <- 100*m$cropland/m$incidents
+  s <- 100*m$cropland/m$incidence
   
   lst <- list()
   
@@ -140,11 +146,40 @@ impact1c150 <- function(x,n){
   return(coef_dt)
 }
 impact1c300 <- function(x,n){
-  r <- feols(incidents~area:seas | sw(xy+country^year+yearmo,xy+country^year+mo,xy+yearmo,xy+year+mo), data=x,vcov=vcov_conley(lat="latitude",lon="longitude",cutoff=300,distance="spherical"))
+  r <- feols(incidence~area:seas+rain_t | sw(xy+country^year+yearmo,xy+country^year+mo,xy+yearmo,xy+year+mo), data=x,vcov=vcov_conley(lat="latitude",lon="longitude",cutoff=300,distance="spherical"))
   
-  m <- x[area>0,.(incidents=mean(incidents),cropland=mean(area))]
+  m <- x[area>0,.(incidence=mean(incidence),cropland=mean(area))]
   
-  s <- 100*m$cropland/m$incidents
+  s <- 100*m$cropland/m$incidence
+  
+  lst <- list()
+  
+  for(i in 1:n){
+    
+    h_coef <- round(r[[i]]$coeftable["area:seas","Estimate"]*s,1)
+    
+    h_se <- round(r[[i]]$coeftable["area:seas","Std. Error"]*s,1)
+    
+    h_stars <- pstars(r[[i]]$coeftable["area:seas","Pr(>|t|)"])
+    
+    h_est <- paste0(format(round(h_coef,1),nsmall=1),h_stars)
+    h_std <- paste0("(",format(round(h_se,1),nsmall=1),")")
+    
+    lst[[i]] <- c(h_coef,h_se,paste(r[[i]]$fixef_vars,collapse=', '))
+    
+  }
+  
+  coef_dt <- as.data.table(Reduce(rbind,lst))
+  colnames(coef_dt) <- c("impact","se","fe")
+  
+  return(coef_dt)
+}
+impact1c <- function(x,n){
+  r <- feols(incidence~area:seas+rain_t | sw(xy+country^year+yearmo,xy+country^year+mo,xy+yearmo,xy+year+mo), data=x,vcov=~country)
+  
+  m <- x[area>0,.(incidence=mean(incidence),cropland=mean(area))]
+  
+  s <- 100*m$cropland/m$incidence
   
   lst <- list()
   
@@ -174,7 +209,7 @@ impact1c300 <- function(x,n){
 
 ## combined effect ----
 datasub_dt <- datacomb_dt
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season)]
 
 ## effect
 
@@ -182,18 +217,21 @@ datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
 c_comb1 <- impact1i(datasub_dt,4)
 c_comb1$cluster <- "Cell"
 
+c_comb2 <- impact1i(datasub_dt,4)
+c_comb2$cluster <- "Country"
+
 c_comb3 <- impact1c150(datasub_dt,4)
 c_comb3$cluster <- "Conley (150km)"
 
 c_comb4 <- impact1c300(datasub_dt,4)
 c_comb4$cluster <- "Conley (300km)"
 
-c_comb <- rbind(c_comb1,c_comb3,c_comb4)
+c_comb <- rbind(c_comb1,c_comb2,c_comb3,c_comb4)
 c_comb$event <- "combined"
 
 ## event-specific effects ----
 datasub_dt <- dataset_dt
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season)]
 
 ## impact
 c_battles1 <- impact1i(datasub_dt[event=="battles"],4)
@@ -205,6 +243,17 @@ c_battles1$cluster <- "Cell"
 c_violence1$cluster <- "Cell"
 c_riots1$cluster <- "Cell"
 c_protests1$cluster <- "Cell"
+
+
+c_battles2 <- impact1c(datasub_dt[event=="battles"],4)
+c_violence2 <- impact1c(datasub_dt[event=="violence"],4)
+c_riots2 <- impact1c(datasub_dt[event=="riots"],4)
+c_protests2 <- impact1c(datasub_dt[event=="protests"],4)
+
+c_battles2$cluster <- "Country"
+c_violence2$cluster <- "Country"
+c_riots2$cluster <- "Country"
+c_protests2$cluster <- "Country"
 
 
 c_battles3 <- impact1c150(datasub_dt[event=="battles"],4)
@@ -229,16 +278,16 @@ c_riots4$cluster <- "Conley (300km)"
 c_protests4$cluster <- "Conley (300km)"
 
 
-c_battles <- rbind(c_battles1,c_battles3,c_battles4)
+c_battles <- rbind(c_battles1,c_battles2,c_battles3,c_battles4)
 c_battles$event <- "battles"
 
-c_violence <- rbind(c_violence1,c_violence3,c_violence4)
+c_violence <- rbind(c_violence1,c_violence2,c_violence3,c_violence4)
 c_violence$event <- "violence"
 
-c_riots <- rbind(c_riots1,c_riots3,c_riots4)
+c_riots <- rbind(c_riots1,c_riots2,c_riots3,c_riots4)
 c_riots$event <- "riots"
 
-c_protests <- rbind(c_protests1,c_protests3,c_protests4)
+c_protests <- rbind(c_protests1,c_protests2,c_protests3,c_protests4)
 c_protests$event <- "protests"
 
 
@@ -247,9 +296,9 @@ dt <- data.table(rbind(c_comb,c_battles,c_violence,c_riots,c_protests))
 dt$impact <- as.numeric(dt$impact)
 dt$se <- as.numeric(dt$se)
 
-dt[,`:=`(col=ifelse(impact/se > 1.96,"coral",ifelse(impact/se < -1.96,"steelblue","darkgray")))]
+dt[,`:=`(col=ifelse(impact/se > 1.96,"coral",ifelse(impact/se < -1.96,"steelblue","darkgray")),pch=ifelse(abs(impact/se) > 1.96,16,21))]
 
-dt$event <- factor(dt$event,levels=unique(dt$event))
+dt$event <- factor(dt$event,levels=unique(dt$event),labels=c("all events","battles","violence","riots","protests"))
 
 dt$fe <- factor(dt$fe,levels=unique(dt$fe))
 
@@ -291,14 +340,14 @@ dt$cluster <- factor(dt$cluster,levels=unique(dt$cluster))
 
 gg_est <- ggplot(dt,aes(x=group_id,y=impact,group=group_id))+
   geom_errorbar(aes(ymin=impact-1.96*se,ymax=impact+1.96*se),linewidth=.5,width=NA,color=dt$col)+
-  geom_point(size=1.5,shape=21,color=dt$col,fill="white",stroke=.8)+
+  geom_point(size=1.5,shape=dt$pch,color=dt$col,fill="white",stroke=.8)+
   scale_y_continuous(breaks=pretty_breaks(n=4))+
   facet_wrap(.~event,ncol=1,strip.position="left")+
-  labs(title="Harvest-time change relative to the baseline conflict (%)",x="",y="")+
+  labs(title="Harvest-time change in conflict incidence relative to the baseline (%)",x="",y="")+
   theme_paper()+
   theme(axis.text.x=element_blank(),strip.placement="outside")
 
-spec_dt <- melt(dt[,.(group_id,xy,`country^year`,yearmo,year,mo,Cell,`Conley (150km)`,`Conley (300km)`)],id.vars="group_id")
+spec_dt <- melt(dt[,.(group_id,xy,`country^year`,yearmo,year,mo,Cell,`Conley (150km)`,`Conley (300km)`,Country)],id.vars="group_id")
 
 spec_dt$variable <- factor(spec_dt$variable,levels=rev(unique(spec_dt$variable)))
 
@@ -307,7 +356,7 @@ spec_dt <- spec_dt[order(group_id)]
 spec1_dt <- spec_dt[variable %in% c("xy","country^year","yearmo","year","mo")]
 spec1_dt$variable <- factor(spec1_dt$variable,levels=unique(spec1_dt$variable),labels=rev(c("Month","Year","Year-Month","Country-Year","Cell")))
 
-spec2_dt <- spec_dt[variable %in% c("Cell","Conley (150km)","Conley (300km)")]
+spec2_dt <- spec_dt[variable %in% c("Cell","Conley (150km)","Conley (300km)","Country")]
 spec2_dt$variable <- factor(spec2_dt$variable,levels=rev(unique(spec2_dt$variable)))
 
 gg_spec1 <- ggplot(spec1_dt,aes(x=group_id,y=variable)) + 
@@ -328,11 +377,12 @@ gg_spec2 <- ggplot(spec2_dt,aes(x=group_id,y=variable)) +
   theme_paper()+
   theme(axis.title.x=element_blank(),axis.line.x = element_blank(),axis.text.x = element_blank(),axis.text.y = element_text(hjust=0))
 
-gg_comb <- plot_grid(gg_est,gg_spec1,gg_spec2,ncol=1,align="hv",axis="lr",rel_heights=c(8,3,2))
+gg_comb <- plot_grid(gg_est,gg_spec1,gg_spec2,ncol=1,align="hv",axis="lr",rel_heights=c(27,7,6))
 
-ggsave("Figures/spec.png",gg_comb,width=6.5,height=6.0,dpi="retina",device="png")
 
-ggsave("Figures/spec.eps",gg_comb,width=6.5,height=6.0,dpi="retina",device="eps")
+ggsave("Figures/spec_incidence.png",gg_comb,width=6.5,height=6.5,dpi="retina",device="png")
+
+ggsave("Figures/spec_incidence.eps",gg_comb,width=6.5,height=6.5,dpi="retina",device="eps")
 
 
 
@@ -355,13 +405,16 @@ datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
 c_comb1 <- impact1i(datasub_dt,4)
 c_comb1$cluster <- "Cell"
 
+c_comb2 <- impact1i(datasub_dt,4)
+c_comb2$cluster <- "Country"
+
 c_comb3 <- impact1c150(datasub_dt,4)
 c_comb3$cluster <- "Conley (150km)"
 
 c_comb4 <- impact1c300(datasub_dt,4)
 c_comb4$cluster <- "Conley (300km)"
 
-c_comb <- rbind(c_comb1,c_comb3,c_comb4)
+c_comb <- rbind(c_comb1,c_comb2,c_comb3,c_comb4)
 c_comb$event <- "combined"
 
 ## event-specific effects ----
@@ -378,6 +431,17 @@ c_battles1$cluster <- "Cell"
 c_violence1$cluster <- "Cell"
 c_riots1$cluster <- "Cell"
 c_protests1$cluster <- "Cell"
+
+
+c_battles2 <- impact1c(datasub_dt[event=="battles"],4)
+c_violence2 <- impact1c(datasub_dt[event=="violence"],4)
+c_riots2 <- impact1c(datasub_dt[event=="riots"],4)
+c_protests2 <- impact1c(datasub_dt[event=="protests"],4)
+
+c_battles2$cluster <- "Country"
+c_violence2$cluster <- "Country"
+c_riots2$cluster <- "Country"
+c_protests2$cluster <- "Country"
 
 
 c_battles3 <- impact1c150(datasub_dt[event=="battles"],4)
@@ -402,16 +466,16 @@ c_riots4$cluster <- "Conley (300km)"
 c_protests4$cluster <- "Conley (300km)"
 
 
-c_battles <- rbind(c_battles1,c_battles3,c_battles4)
+c_battles <- rbind(c_battles1,c_battles2,c_battles3,c_battles4)
 c_battles$event <- "battles"
 
-c_violence <- rbind(c_violence1,c_violence3,c_violence4)
+c_violence <- rbind(c_violence1,c_violence2,c_violence3,c_violence4)
 c_violence$event <- "violence"
 
-c_riots <- rbind(c_riots1,c_riots3,c_riots4)
+c_riots <- rbind(c_riots1,c_riots2,c_riots3,c_riots4)
 c_riots$event <- "riots"
 
-c_protests <- rbind(c_protests1,c_protests3,c_protests4)
+c_protests <- rbind(c_protests1,c_protests2,c_protests3,c_protests4)
 c_protests$event <- "protests"
 
 
@@ -467,11 +531,11 @@ gg_est <- ggplot(dt,aes(x=group_id,y=impact,group=group_id))+
   geom_point(size=1.5,shape=21,color=dt$col,fill="white",stroke=.8)+
   scale_y_continuous(breaks=pretty_breaks(n=4))+
   facet_wrap(.~event,ncol=1,strip.position="left")+
-  labs(title="Harvest-time change relative to the baseline conflict (%)",x="",y="")+
+  labs(title="Harvest-time change in conflict relative to the baseline (%)",x="",y="")+
   theme_paper()+
   theme(axis.text.x=element_blank(),strip.placement="outside")
 
-spec_dt <- melt(dt[,.(group_id,xy,`country^year`,yearmo,year,mo,Cell,`Conley (150km)`,`Conley (300km)`)],id.vars="group_id")
+spec_dt <- melt(dt[,.(group_id,xy,`country^year`,yearmo,year,mo,Cell,`Conley (150km)`,`Conley (300km)`,Country)],id.vars="group_id")
 
 spec_dt$variable <- factor(spec_dt$variable,levels=rev(unique(spec_dt$variable)))
 
@@ -480,7 +544,7 @@ spec_dt <- spec_dt[order(group_id)]
 spec1_dt <- spec_dt[variable %in% c("xy","country^year","yearmo","year","mo")]
 spec1_dt$variable <- factor(spec1_dt$variable,levels=unique(spec1_dt$variable),labels=rev(c("Month","Year","Year-Month","Country-Year","Cell")))
 
-spec2_dt <- spec_dt[variable %in% c("Cell","Conley (150km)","Conley (300km)")]
+spec2_dt <- spec_dt[variable %in% c("Cell","Conley (150km)","Conley (300km)","Country")]
 spec2_dt$variable <- factor(spec2_dt$variable,levels=rev(unique(spec2_dt$variable)))
 
 gg_spec1 <- ggplot(spec1_dt,aes(x=group_id,y=variable)) + 
@@ -501,7 +565,7 @@ gg_spec2 <- ggplot(spec2_dt,aes(x=group_id,y=variable)) +
   theme_paper()+
   theme(axis.title.x=element_blank(),axis.line.x = element_blank(),axis.text.x = element_blank(),axis.text.y = element_text(hjust=0))
 
-gg_comb <- plot_grid(gg_est,gg_spec1,gg_spec2,ncol=1,align="hv",axis="lr",rel_heights=c(8,3,2))
+gg_comb <- plot_grid(gg_est,gg_spec1,gg_spec2,ncol=1,align="hv",axis="lr",rel_heights=c(23,7,6))
 
 ggsave("Figures/spec_myanmar.png",gg_comb,width=6.5,height=6.0,dpi="retina",device="png")
 

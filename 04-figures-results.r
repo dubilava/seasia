@@ -152,8 +152,8 @@ rain_dt <- rbind(rain_dt[,.(event,est=est1,se=se1,rain="average")],rain_dt[,.(ev
 rain_dt[,`:=`(col=ifelse(est/se > 1.96,"coral",ifelse(est/se < -1.96,"steelblue","darkgray")))]
 
 gg_rain <- ggplot(rain_dt,aes(x=event,y=est,linetype=rain))+
-  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se,group=rain),linewidth=.8,width=NA,position= position_dodge(width=0.3),color=rain_dt$col)+
-  geom_point(size=2,position= position_dodge(width=0.3),color=rain_dt$col)+
+  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se,group=rain),linewidth=.8,width=NA,position= position_dodge(width=0.4),color=rain_dt$col)+
+  geom_point(size=2,position= position_dodge(width=0.4),color=rain_dt$col)+
   scale_linetype_manual(values=c(1,5))+
   coord_flip()+
   labs(x="Conflict Type",y="Estimated impact (%) relative to the baseline")+
@@ -175,8 +175,8 @@ irri_dt$system <- factor(irri_dt$system,levels=unique(irri_dt$system))
 irri_dt[,`:=`(col=ifelse(est/se > 1.96,"coral",ifelse(est/se < -1.96,"steelblue","darkgray")))]
 
 gg_irri <- ggplot(irri_dt,aes(x=event,y=est,linetype=rain,color=col))+
-  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se,group=rain),linewidth=.8,width=NA,position= position_dodge(width=0.6))+
-  geom_point(size=2,position= position_dodge(width=0.6))+
+  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se,group=rain),linewidth=.8,width=NA,position= position_dodge(width=0.4))+
+  geom_point(size=2,position= position_dodge(width=0.4))+
   scale_color_manual(values=c("coral","darkgray","steelblue"),guide="none")+
   facet_grid(.~system)+
   coord_flip()+
@@ -193,8 +193,8 @@ conflict_dt <- rbind(regime_dt[,.(event,est=est1,se=se1,conflict="average")],reg
 conflict_dt[,`:=`(col=ifelse(est/se > 1.96,"coral",ifelse(est/se < -1.96,"steelblue","darkgray")))]
 
 gg_conflict <- ggplot(conflict_dt,aes(x=event,y=est,linetype=conflict))+
-  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se,group=conflict),linewidth=.8,width=NA,position= position_dodge(width=0.3),color=conflict_dt$col)+
-  geom_point(size=2,position= position_dodge(width=0.3),color=conflict_dt$col)+
+  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se,group=conflict),linewidth=.8,width=NA,position= position_dodge(width=0.4),color=conflict_dt$col)+
+  geom_point(size=2,position= position_dodge(width=0.4),color=conflict_dt$col)+
   scale_linetype_manual(values=c(1,5))+
   coord_flip()+
   labs(x="Conflict Type",y="Estimated impact (%) relative to the baseline")+

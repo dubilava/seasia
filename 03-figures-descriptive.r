@@ -76,8 +76,8 @@ sum_dt[,irri:=ifelse(irri==1,"irrigated","rainfed")]
 
 ## cropland area
 gg_area <- ggplot(sub_dt,aes(x=area*100000))+
-  geom_histogram(bins=20,fill="seagreen",color="white")+
-  labs(x="Rice cropland area (ha) in a cell",y="Count")+
+  geom_histogram(binwidth=20000,fill="seagreen",color="white",boundary=0)+
+  labs(x="Rice cropland area (ha) in a cell",y="Count (cells)")+
   theme_paper()
 
 ggsave("Figures/area.png",gg_area,width=6.5,height=4.0,dpi="retina")
@@ -85,8 +85,8 @@ ggsave("Figures/area.eps",gg_area,width=6.5,height=4.0,dpi="retina",device="eps"
 
 ## irrigation
 gg_irri <- ggplot(sub_dt,aes(x=irri))+
-  geom_histogram(bins=20,fill="steelblue",color="white")+
-  labs(x="Proportion of irrigated rice in a cell",y="Count")+
+  geom_histogram(binwidth=.05,fill="steelblue",color="white",boundary=0)+
+  labs(x="Proportion of irrigated rice in a cell",y="Count (cells)")+
   theme_paper()
 
 ggsave("Figures/irri.png",gg_irri,width=6.5,height=4.0,dpi="retina")

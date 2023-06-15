@@ -1,5 +1,6 @@
 library(data.table)
 library(ggplot2)
+library(ggthemes)
 library(ggrepel)
 library(scatterpie)
 library(cowplot)
@@ -13,6 +14,7 @@ library(rnaturalearth)
 library(rnaturalearthdata)
 # devtools::install_github("ropensci/rnaturalearthhires")
 library(kableExtra)
+library(scales)
 
 ## clean up the environment (just in case)
 rm(list=ls())
@@ -131,35 +133,35 @@ gg_den <- ggplot(sum_dt,aes(x=log(incidents),color=irri))+
 
 gg_comb <- plot_grid(gg_cor,gg_den,ncol=2,align="hv",axis="tb",rel_widths=c(3,1))
 
-ggsave("Figures/area_conflict.png",gg_comb,width=6.5,height=4.0,dpi="retina")
-ggsave("Figures/area_conflict.eps",gg_comb,width=6.5,height=4.0,dpi="retina",device=cairo_ps)
+ggsave("Figures/area_conflict.png",gg_cor,width=6.5,height=5.0,dpi="retina")
+ggsave("Figures/area_conflict.eps",gg_cor,width=6.5,height=5.0,dpi="retina",device=cairo_ps)
 
 
 
 
 
-## A1: irrigation histogram ----
-
-datacomb_dt[,`:=`(prop_i=ifelse(area_i==0,0,area_i/area_spam))]
-dataset_dt[,`:=`(prop_i=ifelse(area_i==0,0,area_i/area_spam))]
-
-check_dt <- datacomb_dt[year==2020 & month=="Jan"]
-# check_dt <- check_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
-
-check_dt[,.(proportion=mean(prop_i)),by=.(country)]
-
-mean(check_dt$area_spam)
-sd(check_dt$area_spam)
-min(check_dt$area_spam)
-max(check_dt$area_spam)
-
-gg <- ggplot(check_dt,aes(x=prop_i))+
-  geom_histogram(fill="steelblue",color="white",bins=20)+
-  labs(x="Proportion of Irrigated Croplands",y="Count")+
-  theme_paper()+
-  theme(axis.title = element_text(size=12),axis.text = element_text(size=10))
-
-ggsave("Figures/irrigated.png",gg,width=6.5,height=3.5,dpi="retina")
+# ## A1: irrigation histogram ----
+# 
+# datacomb_dt[,`:=`(prop_i=ifelse(area_i==0,0,area_i/area_spam))]
+# dataset_dt[,`:=`(prop_i=ifelse(area_i==0,0,area_i/area_spam))]
+# 
+# check_dt <- datacomb_dt[year==2020 & month=="Jan"]
+# # check_dt <- check_dt[country %!in% c("Brunei","Laos","Timor-Leste")]
+# 
+# check_dt[,.(proportion=mean(prop_i)),by=.(country)]
+# 
+# mean(check_dt$area_spam)
+# sd(check_dt$area_spam)
+# min(check_dt$area_spam)
+# max(check_dt$area_spam)
+# 
+# gg <- ggplot(check_dt,aes(x=prop_i))+
+#   geom_histogram(fill="steelblue",color="white",bins=20)+
+#   labs(x="Proportion of Irrigated Croplands",y="Count")+
+#   theme_paper()+
+#   theme(axis.title = element_text(size=12),axis.text = element_text(size=10))
+# 
+# ggsave("Figures/irrigated.png",gg,width=6.5,height=3.5,dpi="retina")
 
 
 
@@ -226,34 +228,8 @@ ggsave("Figures/map_harvest_main.eps",gg_maplegend,width=6.5,height=5.5,dpi="ret
 
 ## lengths of harvest season
 
-# country longitude latitude
-# 1: Indonesia     116.5      2.5
-# 2: Indonesia     117.5      0.5
-# 3: Indonesia     117.5      1.5
-# 4: Indonesia     117.5      2.5
-# 5: Indonesia     120.5     -1.5
-# 6: Indonesia     122.5      0.5
-# 7: Indonesia     123.5      0.5
-# 8: Indonesia     124.5      0.5
-# 9: Indonesia     128.5      2.5
-# 10:  Malaysia     100.5      5.5
-# 11:  Malaysia     115.5      4.5
-# 12:  Malaysia     115.5      5.5
-# 13:  Malaysia     116.5      4.5
-# 14:  Malaysia     116.5      5.5
-# 15:  Malaysia     117.5      4.5
-# 16:  Malaysia     117.5      5.5
-# 17:  Malaysia     117.5      6.5
-# 18:  Malaysia     118.5      4.5
-# 19:  Malaysia     118.5      5.5
-
 
 maps_dt <- datacomb_dt[year==2020]
-
-# gs_dt <- maps_dt[,.(country,xy,mo,growing_season)]
-# 
-# gs_dt <- gs_dt[,.(gs=sum(growing_season)),by=.(country,mo)]
-
 
 maps_dt[,`:=`(irrig=ifelse(prop_i>=.5,1,0))]
 
@@ -267,18 +243,29 @@ country_dt <- datacomb_dt[yearmo=="2020-01",.(xy,country)]
 
 length_dt <- merge(length_dt,country_dt,by="xy")
 
-# ## seasonal color scheme
-# fourseasons <- colorRampPalette(colors=c("skyblue2","seagreen","coral","indianred","goldenrod","skyblue2"),interpolate="spline")
-# 
-# fourseasons_col <- fourseasons(13)[c(13,2:12)]
-
 gg_map <- ggplot(data = southeastasia) +
   geom_sf(color="gray",fill=NA,linewidth=.25)+
   geom_point(data=length_dt,aes(x=longitude,y=latitude,size=area_spam,color=factor(hs_length)))+
   scale_size(range=c(.3,2.5),guide="none")+
   theme_void()+
-  # guides(color = guide_legend(override.aes = list(size = 2)))+
   theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title = element_blank(),axis.text = element_blank(),legend.position = "none",plot.background=element_rect(fill="white",color=NA))
+
+lengthsum_dt <- length_dt[,.(.N),by=.(hs_length)]
+lengthsum_dt <- lengthsum_dt[order(hs_length)]
+
+# the map legend
+gg_legend <- ggplot(lengthsum_dt,aes(x=hs_length,y=N,fill=factor(hs_length))) +
+  geom_bar(stat="identity") +
+  ylim(0,140)+
+  labs(y="Cells")+
+  coord_flip()+
+  theme_void() +
+  theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title.x = element_text(size=10),axis.text.x = element_text(size=10,hjust=0),axis.text.y = element_blank(),legend.position = "none")
+
+aligned <- align_plots(gg_map,gg_legend,align="hv", axis="tblr")
+gg_maplegend <- ggdraw(aligned[[1]]) + draw_plot(aligned[[2]],x=.58,y=.65,width=.20,height=.30)
+
+gg_maplegend
 
 
 # 02 - conflict ----
@@ -287,7 +274,9 @@ datasub_dt <- dataset_dt
 
 ## F1: conflict map ----
 
-conflict_dt <- dataset_dt[event %in% c("battles","violence","riots","protests"),.(incidents=sum(incidents)),by=.(country,xy,longitude,latitude,event)]
+conflict_dt <- dataset_dt[event %in% c("battles","violence","riots","protests"),.(incidents=sum(incidents),city,capital,city_population=mean(city_population),population=mean(population)),by=.(country,xy,longitude,latitude,event)]
+
+conflict_dt <- unique(conflict_dt)
 
 conflict_dt <- conflict_dt[incidents>0]
 
@@ -324,7 +313,7 @@ countries_dt$country <- factor(countries_dt$country,levels=ccum_dt$country)
 ccum_dt[,`:=`(country_incidents=paste0(country," (",incidents,")"))]
 
 
-conflict_dt <- dcast(conflict_dt,country+xy+longitude+latitude~event,value.var="incidents")
+conflict_dt <- dcast(conflict_dt,country+xy+longitude+latitude+population+city_population+city+capital~event,value.var="incidents")
 conflict_dt[is.na(conflict_dt)] <- 0
 
 conflict_dt[,`:=`(battles=battles,unrest=protests+riots,comb=battles+violence+protests+riots,both=log(battles+violence+protests+riots))]
@@ -337,10 +326,10 @@ countries_dt <- countries_dt[,.(incidents=sum(incidents)),by=.(country,event=eve
 
 gg_conflict <- ggplot(data = southeastasia) +
   geom_sf(color="gray",fill=NA,linewidth=.25)+
-  geom_scatterpie(data=conflict_dt,aes(x=longitude,y=latitude,r=both*.07),cols=c("battles","violence","unrest"),color="white",size=.05)+
+  geom_scatterpie(data=conflict_dt,aes(x=longitude,y=latitude,r=both*.07),cols=c("battles","violence","unrest"),color="white",size=.1)+
   scale_fill_manual(values=c("darkgray","indianred","goldenrod"))+
-  geom_point(data=secities_sub[population>=2000000 & city_population>=1000000],aes(x=longitude,y=latitude),color="black",fill=NA,shape=21,size=2)+
-  geom_text_repel(data=secities_sub[population>=2000000 & city_population>=1000000],aes(x=longitude,y=latitude,label=city))+
+  geom_point(data=conflict_dt[capital=="primary" | population>=2000000 | city_population>=1000000],aes(x=longitude,y=latitude),color="black",fill=NA,shape=21,size=2)+
+  geom_text_repel(data=conflict_dt[capital=="primary"],aes(x=longitude,y=latitude,label=city))+
   scale_size(range=c(.3,3.5))+
   theme_void()+
   theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title = element_blank(),axis.text = element_blank(),legend.title = element_blank(),legend.text = element_text(hjust=0),legend.position = c(.5,.85),plot.background=element_rect(fill="white",color=NA))

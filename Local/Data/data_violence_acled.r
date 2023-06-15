@@ -57,55 +57,51 @@ crops_dt$xy <- as.factor(paste(crops_dt$longitude,crops_dt$latitude,sep=","))
 ## harvest ----
 
 ## harvest start
-harvest_srt_dt <- harvest_srt_dt[,.(x,y,mo,Rice_harvest_srt,Rice.2_harvest_srt,Maize_harvest_srt,Maize.2_harvest_srt)]
+harvest_srt_dt <- harvest_srt_dt[,.(x,y,mo,Rice_harvest_srt,Rice.2_harvest_srt)]#,Maize_harvest_srt,Maize.2_harvest_srt)]
 
 harvest_srt_dt$latitude <- as.numeric(harvest_srt_dt$y)
 harvest_srt_dt$longitude <- as.numeric(harvest_srt_dt$x)
 
-harvest_srt_dt$mo <- as.factor(str_pad(harvest_srt_dt$mo,2,pad="0"))
+harvest_srt_dt[,`:=`(mo=as.factor(str_pad(mo,2,pad="0")),Rice_harvest_srt=as.factor(Rice_harvest_srt),Rice.2_harvest_srt=as.factor(Rice.2_harvest_srt))]
 
-harvest_srt_dt$Rice_harvest_srt <- as.factor(harvest_srt_dt$Rice_harvest_srt)
-harvest_srt_dt$Rice.2_harvest_srt <- as.factor(harvest_srt_dt$Rice.2_harvest_srt)
-harvest_srt_dt$Maize_harvest_srt <- as.factor(harvest_srt_dt$Maize_harvest_srt)
-harvest_srt_dt$Maize.2_harvest_srt <- as.factor(harvest_srt_dt$Maize.2_harvest_srt)
+# harvest_srt_dt$Maize_harvest_srt <- as.factor(harvest_srt_dt$Maize_harvest_srt)
+# harvest_srt_dt$Maize.2_harvest_srt <- as.factor(harvest_srt_dt$Maize.2_harvest_srt)
 
 harvest_srt_dt$xy <- as.factor(paste(harvest_srt_dt$longitude,harvest_srt_dt$latitude,sep=","))
 
 ## harvest mid
-harvest_mid_dt <- harvest_mid_dt[,.(x,y,mo,Rice_harvest_mid,Rice.2_harvest_mid,Maize_harvest_mid,Maize.2_harvest_mid)]
+harvest_mid_dt <- harvest_mid_dt[,.(x,y,mo,Rice_harvest_mid,Rice.2_harvest_mid)]#,Maize_harvest_mid,Maize.2_harvest_mid)]
 
 harvest_mid_dt$latitude <- as.numeric(harvest_mid_dt$y)
 harvest_mid_dt$longitude <- as.numeric(harvest_mid_dt$x)
 
-harvest_mid_dt$mo <- as.factor(str_pad(harvest_mid_dt$mo,2,pad="0"))
+harvest_mid_dt[,`:=`(mo=as.factor(str_pad(mo,2,pad="0")),Rice_harvest_mid=as.factor(Rice_harvest_mid),Rice.2_harvest_mid=as.factor(Rice.2_harvest_mid))]
 
-harvest_mid_dt$Rice_harvest_mid <- as.factor(harvest_mid_dt$Rice_harvest_mid)
-harvest_mid_dt$Rice.2_harvest_mid <- as.factor(harvest_mid_dt$Rice.2_harvest_mid)
-harvest_mid_dt$Maize_harvest_mid <- as.factor(harvest_mid_dt$Maize_harvest_mid)
-harvest_mid_dt$Maize.2_harvest_mid <- as.factor(harvest_mid_dt$Maize.2_harvest_mid)
+# harvest_mid_dt$Rice.2_harvest_mid <- as.factor(harvest_mid_dt$Rice.2_harvest_mid)
+# harvest_mid_dt$Maize_harvest_mid <- as.factor(harvest_mid_dt$Maize_harvest_mid)
+# harvest_mid_dt$Maize.2_harvest_mid <- as.factor(harvest_mid_dt$Maize.2_harvest_mid)
 
 harvest_mid_dt$xy <- as.factor(paste(harvest_mid_dt$longitude,harvest_mid_dt$latitude,sep=","))
 
 ## harvest end
-harvest_end_dt <- harvest_end_dt[,.(x,y,mo,Rice_harvest_end,Rice.2_harvest_end,Maize_harvest_end,Maize.2_harvest_end)]
+harvest_end_dt <- harvest_end_dt[,.(x,y,mo,Rice_harvest_end,Rice.2_harvest_end)]#,Maize_harvest_end,Maize.2_harvest_end)]
 
 harvest_end_dt$latitude <- as.numeric(harvest_end_dt$y)
 harvest_end_dt$longitude <- as.numeric(harvest_end_dt$x)
 
-harvest_end_dt$mo <- as.factor(str_pad(harvest_end_dt$mo,2,pad="0"))
+harvest_end_dt[,`:=`(mo=as.factor(str_pad(mo,2,pad="0")),Rice_harvest_end=as.factor(Rice_harvest_end),Rice.2_harvest_end=as.factor(Rice.2_harvest_end))]
 
-harvest_end_dt$Rice_harvest_end <- as.factor(harvest_end_dt$Rice_harvest_end)
-harvest_end_dt$Rice.2_harvest_end <- as.factor(harvest_end_dt$Rice.2_harvest_end)
-harvest_end_dt$Maize_harvest_end <- as.factor(harvest_end_dt$Maize_harvest_end)
-harvest_end_dt$Maize.2_harvest_end <- as.factor(harvest_end_dt$Maize.2_harvest_end)
+# harvest_end_dt$Rice.2_harvest_end <- as.factor(harvest_end_dt$Rice.2_harvest_end)
+# harvest_end_dt$Maize_harvest_end <- as.factor(harvest_end_dt$Maize_harvest_end)
+# harvest_end_dt$Maize.2_harvest_end <- as.factor(harvest_end_dt$Maize.2_harvest_end)
 
 harvest_end_dt$xy <- as.factor(paste(harvest_end_dt$longitude,harvest_end_dt$latitude,sep=","))
 
 harvest_dt <- Reduce(function(x,y) merge(x=x,y=y,by=c("x","y","mo","longitude","latitude","xy")),list(harvest_srt_dt,harvest_mid_dt,harvest_end_dt))
 
 
-rice_dt <- crops_dt[Crop=="Rice"]
-maize_dt <- crops_dt[Crop=="Maize"]
+# rice_dt <- crops_dt[Crop=="Rice"]
+# maize_dt <- crops_dt[Crop=="Maize"]
 
 harvest_rice_dt <- harvest_mid_dt[Rice_harvest_mid%in%c(0,1),.(xy,x,y,Rice_harvest=Rice_harvest_mid)]
 harvest_rice_dt <- unique(harvest_rice_dt)
@@ -114,61 +110,55 @@ harvest_rice.2_dt <- unique(harvest_rice.2_dt)
 harvest_rice_dt <- merge(harvest_rice_dt,harvest_rice.2_dt,by=c("xy","x","y"))
 harvest_rice_dt <- harvest_rice_dt[order(x,y,xy)]
 
-harvest_maize_dt <- harvest_mid_dt[Maize_harvest_mid%in%c(0,1),.(xy,x,y,Maize_harvest=Maize_harvest_mid)]
-harvest_maize_dt <- unique(harvest_maize_dt)
-harvest_maize.2_dt <- harvest_mid_dt[Maize.2_harvest_mid%in%c(0,1),.(xy,x,y,Maize.2_harvest=Maize.2_harvest_mid)]
-harvest_maize.2_dt <- unique(harvest_maize.2_dt)
-harvest_maize_dt <- merge(harvest_maize_dt,harvest_maize.2_dt,by=c("xy","x","y"))
-harvest_maize_dt <- harvest_maize_dt[order(x,y,xy)]
+# harvest_maize_dt <- harvest_mid_dt[Maize_harvest_mid%in%c(0,1),.(xy,x,y,Maize_harvest=Maize_harvest_mid)]
+# harvest_maize_dt <- unique(harvest_maize_dt)
+# harvest_maize.2_dt <- harvest_mid_dt[Maize.2_harvest_mid%in%c(0,1),.(xy,x,y,Maize.2_harvest=Maize.2_harvest_mid)]
+# harvest_maize.2_dt <- unique(harvest_maize.2_dt)
+# harvest_maize_dt <- merge(harvest_maize_dt,harvest_maize.2_dt,by=c("xy","x","y"))
+# harvest_maize_dt <- harvest_maize_dt[order(x,y,xy)]
 
 crops_dt <- merge(crops_dt,harvest_rice_dt,by=c("xy","x","y"))
-crops_dt <- merge(crops_dt,harvest_maize_dt,by=c("xy","x","y"))
+# crops_dt <- merge(crops_dt,harvest_maize_dt,by=c("xy","x","y"))
 
 
 ## plant ----
 
 ## plant start
-plant_srt_dt <- plant_srt_dt[,.(x,y,mo,Rice_plant_srt,Rice.2_plant_srt,Maize_plant_srt,Maize.2_plant_srt)]
+plant_srt_dt <- plant_srt_dt[,.(x,y,mo,Rice_plant_srt,Rice.2_plant_srt)]#,Maize_plant_srt,Maize.2_plant_srt)]
 
 plant_srt_dt$latitude <- as.numeric(plant_srt_dt$y)
 plant_srt_dt$longitude <- as.numeric(plant_srt_dt$x)
 
-plant_srt_dt$mo <- as.factor(str_pad(plant_srt_dt$mo,2,pad="0"))
+plant_srt_dt[,`:=`(mo=as.factor(str_pad(mo,2,pad="0")),Rice_plant_srt=as.factor(Rice_plant_srt),Rice.2_plant_srt=as.factor(Rice.2_plant_srt))]
 
-plant_srt_dt$Rice_plant_srt <- as.factor(plant_srt_dt$Rice_plant_srt)
-plant_srt_dt$Rice.2_plant_srt <- as.factor(plant_srt_dt$Rice.2_plant_srt)
-plant_srt_dt$Maize_plant_srt <- as.factor(plant_srt_dt$Maize_plant_srt)
-plant_srt_dt$Maize.2_plant_srt <- as.factor(plant_srt_dt$Maize.2_plant_srt)
+# plant_srt_dt$Maize_plant_srt <- as.factor(plant_srt_dt$Maize_plant_srt)
+# plant_srt_dt$Maize.2_plant_srt <- as.factor(plant_srt_dt$Maize.2_plant_srt)
 
 plant_srt_dt$xy <- as.factor(paste(plant_srt_dt$longitude,plant_srt_dt$latitude,sep=","))
 
 ## plant mid
-plant_mid_dt <- plant_mid_dt[,.(x,y,mo,Rice_plant_mid,Rice.2_plant_mid,Maize_plant_mid,Maize.2_plant_mid)]
+plant_mid_dt <- plant_mid_dt[,.(x,y,mo,Rice_plant_mid,Rice.2_plant_mid)]#,Maize_plant_mid,Maize.2_plant_mid)]
 
 plant_mid_dt$latitude <- as.numeric(plant_mid_dt$y)
 plant_mid_dt$longitude <- as.numeric(plant_mid_dt$x)
 
-plant_mid_dt$mo <- as.factor(str_pad(plant_mid_dt$mo,2,pad="0"))
+plant_mid_dt[,`:=`(mo=as.factor(str_pad(mo,2,pad="0")),Rice_plant_mid=as.factor(Rice_plant_mid),Rice.2_plant_mid=as.factor(Rice.2_plant_mid))]
 
-plant_mid_dt$Rice_plant_mid <- as.factor(plant_mid_dt$Rice_plant_mid)
-plant_mid_dt$Rice.2_plant_mid <- as.factor(plant_mid_dt$Rice.2_plant_mid)
-plant_mid_dt$Maize_plant_mid <- as.factor(plant_mid_dt$Maize_plant_mid)
-plant_mid_dt$Maize.2_plant_mid <- as.factor(plant_mid_dt$Maize.2_plant_mid)
+# plant_mid_dt$Maize_plant_mid <- as.factor(plant_mid_dt$Maize_plant_mid)
+# plant_mid_dt$Maize.2_plant_mid <- as.factor(plant_mid_dt$Maize.2_plant_mid)
 
 plant_mid_dt$xy <- as.factor(paste(plant_mid_dt$longitude,plant_mid_dt$latitude,sep=","))
 
 ## plant end
-plant_end_dt <- plant_end_dt[,.(x,y,mo,Rice_plant_end,Rice.2_plant_end,Maize_plant_end,Maize.2_plant_end)]
+plant_end_dt <- plant_end_dt[,.(x,y,mo,Rice_plant_end,Rice.2_plant_end)]#,Maize_plant_end,Maize.2_plant_end)]
 
 plant_end_dt$latitude <- as.numeric(plant_end_dt$y)
 plant_end_dt$longitude <- as.numeric(plant_end_dt$x)
 
-plant_end_dt$mo <- as.factor(str_pad(plant_end_dt$mo,2,pad="0"))
+plant_end_dt[,`:=`(mo=as.factor(str_pad(mo,2,pad="0")),Rice_plant_end=as.factor(Rice_plant_end),Rice.2_plant_end=as.factor(Rice.2_plant_end))]
 
-plant_end_dt$Rice_plant_end <- as.factor(plant_end_dt$Rice_plant_end)
-plant_end_dt$Rice.2_plant_end <- as.factor(plant_end_dt$Rice.2_plant_end)
-plant_end_dt$Maize_plant_end <- as.factor(plant_end_dt$Maize_plant_end)
-plant_end_dt$Maize.2_plant_end <- as.factor(plant_end_dt$Maize.2_plant_end)
+# plant_end_dt$Maize_plant_end <- as.factor(plant_end_dt$Maize_plant_end)
+# plant_end_dt$Maize.2_plant_end <- as.factor(plant_end_dt$Maize.2_plant_end)
 
 plant_end_dt$xy <- as.factor(paste(plant_end_dt$longitude,plant_end_dt$latitude,sep=","))
 
@@ -176,7 +166,7 @@ plant_dt <- Reduce(function(x,y) merge(x=x,y=y,by=c("x","y","mo","longitude","la
 
 
 rice_dt <- crops_dt[Crop=="Rice"]
-maize_dt <- crops_dt[Crop=="Maize"]
+# maize_dt <- crops_dt[Crop=="Maize"]
 
 plant_rice_dt <- plant_mid_dt[Rice_plant_mid%in%c(0,1),.(xy,x,y,Rice_plant=Rice_plant_mid)]
 plant_rice_dt <- unique(plant_rice_dt)
@@ -185,36 +175,32 @@ plant_rice.2_dt <- unique(plant_rice.2_dt)
 plant_rice_dt <- merge(plant_rice_dt,plant_rice.2_dt,by=c("xy","x","y"))
 plant_rice_dt <- plant_rice_dt[order(x,y,xy)]
 
-plant_maize_dt <- plant_mid_dt[Maize_plant_mid%in%c(0,1),.(xy,x,y,Maize_plant=Maize_plant_mid)]
-plant_maize_dt <- unique(plant_maize_dt)
-plant_maize.2_dt <- plant_mid_dt[Maize.2_plant_mid%in%c(0,1),.(xy,x,y,Maize.2_plant=Maize.2_plant_mid)]
-plant_maize.2_dt <- unique(plant_maize.2_dt)
-plant_maize_dt <- merge(plant_maize_dt,plant_maize.2_dt,by=c("xy","x","y"))
-plant_maize_dt <- plant_maize_dt[order(x,y,xy)]
+# plant_maize_dt <- plant_mid_dt[Maize_plant_mid%in%c(0,1),.(xy,x,y,Maize_plant=Maize_plant_mid)]
+# plant_maize_dt <- unique(plant_maize_dt)
+# plant_maize.2_dt <- plant_mid_dt[Maize.2_plant_mid%in%c(0,1),.(xy,x,y,Maize.2_plant=Maize.2_plant_mid)]
+# plant_maize.2_dt <- unique(plant_maize.2_dt)
+# plant_maize_dt <- merge(plant_maize_dt,plant_maize.2_dt,by=c("xy","x","y"))
+# plant_maize_dt <- plant_maize_dt[order(x,y,xy)]
 
 crops_dt <- merge(crops_dt,plant_rice_dt,by=c("xy","x","y"))
-crops_dt <- merge(crops_dt,plant_maize_dt,by=c("xy","x","y"))
+# crops_dt <- merge(crops_dt,plant_maize_dt,by=c("xy","x","y"))
 
 
 
-crops_dt[,`:=`(Crop_area=ifelse(Crop=="Rice" & Rice.2_harvest==1,Max_area/2,ifelse(Crop=="Maize" & Maize.2_harvest==1,Max_area/2,Max_area)),Rice_area=ifelse(Rice.2_harvest==1,Rice_area/2,Rice_area))]
+crops_dt[,`:=`(Rice_area=ifelse(Rice.2_harvest==1,Rice_area/2,Rice_area))]
 
 crops_dt$Rice_harvest <- NULL
 crops_dt$Rice.2_harvest <- NULL
-crops_dt$Maize_harvest <- NULL
-crops_dt$Maize.2_harvest <- NULL
 
 crops_dt$Rice_plant <- NULL
 crops_dt$Rice.2_plant <- NULL
-crops_dt$Maize_plant <- NULL
-crops_dt$Maize.2_plant <- NULL
 
 
 calendar_dt <- merge(harvest_dt,plant_dt,by=c("x","y","xy","longitude","latitude","mo"))
 
 cereals_dt <- merge(crops_dt,calendar_dt,by=c("x","y","xy","longitude","latitude"))
 
-cereals_dt[,`:=`(Crop=ifelse(Crop_area==0,"None",Crop))]
+# cereals_dt[,`:=`(Crop=ifelse(Crop_area==0,"None",Crop))]
 cereals_dt[,`:=`(Crop_Rice=ifelse(Rice_area==0,"None",Crop_Rice))]
 
 
@@ -316,7 +302,7 @@ acled_all_dt[is.na(acled_all_dt)] <- 0
 
 
 
-## merge conflict and crops (and prices)
+## merge conflict and crops
 acled_crop_dt <- merge(acled_all_dt,cereals_dt,by=c("xy","longitude","latitude","mo"),all.x=T)
 rm(acled_all_dt)
 
@@ -345,48 +331,40 @@ dataset_dt$y <- NULL
 
 dataset_dt$month <- month.abb[dataset_dt$mo]
 
-dataset_dt[,`:=`(season=ifelse(Crop=="Rice" & Crop_area>0,as.numeric(as.character(Rice_harvest_mid)),ifelse(Crop=="Maize" & Crop_area>0,as.numeric(as.character(Maize_harvest_mid)),0)),season2=ifelse(Crop=="Rice" & Crop_area>0,as.numeric(as.character(Rice.2_harvest_mid)),ifelse(Crop=="Maize" & Crop_area>0,as.numeric(as.character(Maize.2_harvest_mid)),0)),season_rice=ifelse(Crop_Rice=="Rice" & Rice_area>0,as.numeric(as.character(Rice_harvest_mid)),0),season2_rice=ifelse(Crop_Rice=="Rice" & Rice_area>0,as.numeric(as.character(Rice.2_harvest_mid)),0),planting=ifelse(Crop=="Rice" & Crop_area>0,as.numeric(as.character(Rice_plant_mid)),ifelse(Crop=="Maize" & Crop_area>0,as.numeric(as.character(Maize_plant_mid)),0)),planting2=ifelse(Crop=="Rice" & Crop_area>0,as.numeric(as.character(Rice.2_plant_mid)),ifelse(Crop=="Maize" & Crop_area>0,as.numeric(as.character(Maize.2_plant_mid)),0)),planting_rice=ifelse(Crop_Rice=="Rice" & Rice_area>0,as.numeric(as.character(Rice_plant_mid)),0),planting2_rice=ifelse(Crop_Rice=="Rice" & Rice_area>0,as.numeric(as.character(Rice.2_plant_mid)),0))]
+dataset_dt[,`:=`(harvest=ifelse(Crop_Rice=="Rice" & Rice_area>0,as.numeric(as.character(Rice_harvest_mid)),0),harvest2=ifelse(Crop_Rice=="Rice" & Rice_area>0,as.numeric(as.character(Rice.2_harvest_mid)),0),planting=ifelse(Crop_Rice=="Rice" & Rice_area>0,as.numeric(as.character(Rice_plant_mid)),0),planting2=ifelse(Crop_Rice=="Rice" & Rice_area>0,as.numeric(as.character(Rice.2_plant_mid)),0))]
 
 
 dataset_dt[is.na(Crop)]$Crop <- "None"
-dataset_dt[is.na(Crop)]$Crop_Rice <- "None"
-dataset_dt[is.na(season)]$season <- 0
-dataset_dt[is.na(season2)]$season2 <- 0
-dataset_dt[is.na(season_rice)]$season_rice <- 0
-dataset_dt[is.na(season2_rice)]$season2_rice <- 0
-dataset_dt[is.na(season)]$planting <- 0
-dataset_dt[is.na(season2)]$planting2 <- 0
-dataset_dt[is.na(season_rice)]$planting_rice <- 0
-dataset_dt[is.na(season2_rice)]$planting2_rice <- 0
+dataset_dt[is.na(Crop_Rice)]$Crop_Rice <- "None"
+dataset_dt[is.na(harvest)]$harvest <- 0
+dataset_dt[is.na(harvest2)]$harvest2 <- 0
+dataset_dt[is.na(planting)]$planting <- 0
+dataset_dt[is.na(planting2)]$planting2 <- 0
 
 dataset_dt$year <- as.factor(dataset_dt$year)
 dataset_dt$mo <- as.factor(dataset_dt$mo)
-dataset_dt$season <- as.factor(dataset_dt$season)
-dataset_dt$season2 <- as.factor(dataset_dt$season2)
-dataset_dt$season_rice <- as.factor(dataset_dt$season_rice)
-dataset_dt$season2_rice <- as.factor(dataset_dt$season2_rice)
+dataset_dt$harvest <- as.factor(dataset_dt$harvest)
+dataset_dt$harvest2 <- as.factor(dataset_dt$harvest2)
 dataset_dt$planting <- as.factor(dataset_dt$planting)
 dataset_dt$planting2 <- as.factor(dataset_dt$planting2)
-dataset_dt$planting_rice <- as.factor(dataset_dt$planting_rice)
-dataset_dt$planting2_rice <- as.factor(dataset_dt$planting2_rice)
 
 dataset_dt <- dataset_dt[order(country,longitude,latitude,yearmo)]
 
 ## aggregate events into the single category
-datacomb_dt <- dataset_dt[,.(incidents=sum(incidents),fatalities=sum(fatalities)),by=.(xy,longitude,latitude,country,year,yearmo,mo,month,Crop,Crop_Rice,Max_area,Crop_area,Rice_area,Rice_harvest_srt,Rice.2_harvest_srt,Maize_harvest_srt,Maize.2_harvest_srt,Rice_harvest_mid,Rice.2_harvest_mid,Maize_harvest_mid,Maize.2_harvest_mid,Rice_harvest_end,Rice.2_harvest_end,Maize_harvest_end,Maize.2_harvest_end,Rice_plant_srt,Rice.2_plant_srt,Maize_plant_srt,Maize.2_plant_srt,Rice_plant_mid,Rice.2_plant_mid,Maize_plant_mid,Maize.2_plant_mid,Rice_plant_end,Rice.2_plant_end,Maize_plant_end,Maize.2_plant_end,season,season2,season_rice,season2_rice,planting,planting2,planting_rice,planting2_rice)]
+datacomb_dt <- dataset_dt[,.(incidents=sum(incidents),fatalities=sum(fatalities)),by=.(xy,longitude,latitude,country,year,yearmo,mo,month,Crop,Crop_Rice,Max_area,Rice_area,Rice_harvest_srt,Rice.2_harvest_srt,Rice_harvest_mid,Rice.2_harvest_mid,Rice_harvest_end,Rice.2_harvest_end,Rice_plant_srt,Rice.2_plant_srt,Rice_plant_mid,Rice.2_plant_mid,Rice_plant_end,Rice.2_plant_end,harvest,harvest2,planting,planting2)]
 
-## drop years in countries for which acled data are unavailable
-dataset_dt <- dataset_dt[country!="Brunei" | (country=="Brunei" & as.numeric(as.character(year))>=2020)]
-dataset_dt <- dataset_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>=2015)]
-dataset_dt <- dataset_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>=2018)]
-dataset_dt <- dataset_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>=2016)]
-dataset_dt <- dataset_dt[country!="Timor-Leste" | (country=="Timor-Leste" & as.numeric(as.character(year))>=2020)]
-
-
-datacomb_dt <- datacomb_dt[country!="Brunei" | (country=="Brunei" & as.numeric(as.character(year))>=2020)]
-datacomb_dt <- datacomb_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>=2015)]
-datacomb_dt <- datacomb_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>=2018)]
-datacomb_dt <- datacomb_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>=2016)]
-datacomb_dt <- datacomb_dt[country!="Timor-Leste" | (country=="Timor-Leste" & as.numeric(as.character(year))>=2020)]
+# ## drop years in countries for which acled data are unavailable
+# dataset_dt <- dataset_dt[country!="Brunei" | (country=="Brunei" & as.numeric(as.character(year))>=2020)]
+# dataset_dt <- dataset_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>=2015)]
+# dataset_dt <- dataset_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>=2018)]
+# dataset_dt <- dataset_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>=2016)]
+# dataset_dt <- dataset_dt[country!="Timor-Leste" | (country=="Timor-Leste" & as.numeric(as.character(year))>=2020)]
+# 
+# 
+# datacomb_dt <- datacomb_dt[country!="Brunei" | (country=="Brunei" & as.numeric(as.character(year))>=2020)]
+# datacomb_dt <- datacomb_dt[country!="Indonesia" | (country=="Indonesia" & as.numeric(as.character(year))>=2015)]
+# datacomb_dt <- datacomb_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>=2018)]
+# datacomb_dt <- datacomb_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>=2016)]
+# datacomb_dt <- datacomb_dt[country!="Timor-Leste" | (country=="Timor-Leste" & as.numeric(as.character(year))>=2020)]
 
 save(dataset_dt,datacomb_dt,file="agconflict.RData")

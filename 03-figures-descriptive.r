@@ -71,12 +71,12 @@ dataset_dt <- dataset_dt[country %!in% c("Brunei","Timor-Leste")]
 # some graphs
 sub_dt <- datacomb_dt[yearmo=="2020-01",.(area=area_spam,irri=prop_i,country)]
 
-sum_dt <- datacomb_dt[,.(incidents=mean(incidents),area=mean(area_spam),irri=mean(ifelse(prop_i>=.5,1,0))),by=.(xy,country)]
+sum_dt <- datacomb_dt[,.(incidents=mean(incidents),area=mean(area_spam),irri=mean(ifelse(prop_i>=.5,1,0)),city=mean(ifelse(capital=="primary" | city_population>=1000000 | population>=2000000,1,0))),by=.(xy,country)]
 sum_dt[,irri:=ifelse(irri==1,"irrigated","rainfed")]
 
 ## cropland area
 gg_area <- ggplot(sub_dt,aes(x=area*100000))+
-  geom_histogram(binwidth=20000,fill="seagreen",color="white",boundary=0)+
+  geom_histogram(binwidth=10000,fill="seagreen",color="white",boundary=0)+
   labs(x="Rice cropland area (ha) in a cell",y="Count (cells)")+
   theme_paper()
 
@@ -112,10 +112,11 @@ ggsave("Figures/area_irri.png",gg_scatter,width=6.5,height=5.5,dpi="retina")
 ggsave("Figures/area_irri.eps",gg_scatter,width=6.5,height=5.5,dpi="retina",device=cairo_ps)
 
 
-gg_cor <- ggplot(sum_dt,aes(x=log(area*100000),y=log(incidents),shape=irri,color=irri))+
-  geom_point(size=1.5,stroke=.7,na.rm=T)+
-  scale_shape_manual(values=c(16,1))+
+gg_cor <- ggplot(sum_dt,aes(x=log(area*100000),y=log(incidents)))+
+  geom_point(aes(shape=irri,color=irri),size=1.5,stroke=.7,alpha=.7,na.rm=T)+
+  scale_shape_manual(values=c(16,16))+
   scale_color_manual(values=c("steelblue","coral"))+
+  geom_point(data=sum_dt[city==1],aes(x=log(area*100000),y=log(incidents)),color="dimgray",fill=NA,shape=21,size=3,stroke=.5,alpha=.85)+
   labs(x="Cropland area (ha), natural log",y="Average number of conflict incidents, natural log")+
   theme_paper()+
   theme(legend.position="top")
@@ -123,6 +124,7 @@ gg_cor <- ggplot(sum_dt,aes(x=log(area*100000),y=log(incidents),shape=irri,color
 gg_den <- ggplot(sum_dt,aes(x=log(incidents),color=irri))+
   geom_density(na.rm=T)+
   scale_color_manual(values=c("steelblue","coral"))+
+  scale_y_continuous(breaks=pretty_breaks(n=3))+
   labs(x="",y="Density")+
   coord_flip(ylim=c(0,.2))+
   theme_paper()
@@ -130,7 +132,7 @@ gg_den <- ggplot(sum_dt,aes(x=log(incidents),color=irri))+
 gg_comb <- plot_grid(gg_cor,gg_den,ncol=2,align="hv",axis="tb",rel_widths=c(3,1))
 
 ggsave("Figures/area_conflict.png",gg_comb,width=6.5,height=4.0,dpi="retina")
-ggsave("Figures/area_conflict.eps",gg_comb,width=6.5,height=4.0,dpi="retina",device="eps")
+ggsave("Figures/area_conflict.eps",gg_comb,width=6.5,height=4.0,dpi="retina",device=cairo_ps)
 
 
 
@@ -161,7 +163,7 @@ ggsave("Figures/irrigated.png",gg,width=6.5,height=3.5,dpi="retina")
 
 
 
-# 01 - harvest calendar ----
+# 01 - harvest calendars ----
 
 ## F3: production map ----
 
@@ -219,6 +221,64 @@ gg_maplegend <- ggdraw(aligned[[1]]) + draw_plot(aligned[[2]],x=.64,y=.60,width=
 ggsave("Figures/map_harvest_main.png",gg_maplegend,width=6.5,height=5.5,dpi="retina",device="png")
 
 ggsave("Figures/map_harvest_main.eps",gg_maplegend,width=6.5,height=5.5,dpi="retina",device="eps")
+
+
+
+## lengths of harvest season
+
+# country longitude latitude
+# 1: Indonesia     116.5      2.5
+# 2: Indonesia     117.5      0.5
+# 3: Indonesia     117.5      1.5
+# 4: Indonesia     117.5      2.5
+# 5: Indonesia     120.5     -1.5
+# 6: Indonesia     122.5      0.5
+# 7: Indonesia     123.5      0.5
+# 8: Indonesia     124.5      0.5
+# 9: Indonesia     128.5      2.5
+# 10:  Malaysia     100.5      5.5
+# 11:  Malaysia     115.5      4.5
+# 12:  Malaysia     115.5      5.5
+# 13:  Malaysia     116.5      4.5
+# 14:  Malaysia     116.5      5.5
+# 15:  Malaysia     117.5      4.5
+# 16:  Malaysia     117.5      5.5
+# 17:  Malaysia     117.5      6.5
+# 18:  Malaysia     118.5      4.5
+# 19:  Malaysia     118.5      5.5
+
+
+maps_dt <- datacomb_dt[year==2020]
+
+# gs_dt <- maps_dt[,.(country,xy,mo,growing_season)]
+# 
+# gs_dt <- gs_dt[,.(gs=sum(growing_season)),by=.(country,mo)]
+
+
+maps_dt[,`:=`(irrig=ifelse(prop_i>=.5,1,0))]
+
+length_dt <- maps_dt[,.(area_spam,area_i,area_r,irrig,hs_length=sum(harvest_season),hs_check=sum(harvest_month)),by=.(longitude,latitude)]
+
+length_dt <- unique(length_dt)
+
+length_dt[,`:=`(xy=paste(longitude,latitude,sep=","))]
+
+country_dt <- datacomb_dt[yearmo=="2020-01",.(xy,country)]
+
+length_dt <- merge(length_dt,country_dt,by="xy")
+
+# ## seasonal color scheme
+# fourseasons <- colorRampPalette(colors=c("skyblue2","seagreen","coral","indianred","goldenrod","skyblue2"),interpolate="spline")
+# 
+# fourseasons_col <- fourseasons(13)[c(13,2:12)]
+
+gg_map <- ggplot(data = southeastasia) +
+  geom_sf(color="gray",fill=NA,linewidth=.25)+
+  geom_point(data=length_dt,aes(x=longitude,y=latitude,size=area_spam,color=factor(hs_length)))+
+  scale_size(range=c(.3,2.5),guide="none")+
+  theme_void()+
+  # guides(color = guide_legend(override.aes = list(size = 2)))+
+  theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title = element_blank(),axis.text = element_blank(),legend.position = "none",plot.background=element_rect(fill="white",color=NA))
 
 
 # 02 - conflict ----

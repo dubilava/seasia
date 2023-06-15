@@ -204,12 +204,21 @@ cereals_dt <- merge(crops_dt,calendar_dt,by=c("x","y","xy","longitude","latitude
 cereals_dt[,`:=`(Crop_Rice=ifelse(Rice_area==0,"None",Crop_Rice))]
 
 
+
+####
+
+merge(acled_sum_dt,cereals_dt,by=c("xy","longitude","latitude","mo"),all.x=T)
+
+####
+
 ## I am doing this to ensure that conflict and crop data geocoordinates match -- super inefficient coding but gets the stuff done (I think)
 xy_acled_dt <- acled_sum_dt[,.(xy)]
 xy_acled_dt <- unique(xy_acled_dt)
 
 xy_cereals_dt <- cereals_dt[,.(xy)]
 xy_cereals_dt <- unique(xy_cereals_dt)
+
+# merge(xy_acled_dt,xy_cereals_dt,all.x=T)
 
 xy_cereals_dt$longitude <- as.numeric(unlist(strsplit(as.character(xy_cereals_dt$xy),","))[c(T,F)])
 xy_cereals_dt$latitude <- as.numeric(unlist(strsplit(as.character(xy_cereals_dt$xy),","))[c(F,T)])
@@ -218,17 +227,23 @@ xy_acled_dt$longitude <- as.numeric(unlist(strsplit(as.character(xy_acled_dt$xy)
 xy_acled_dt$latitude <- as.numeric(unlist(strsplit(as.character(xy_acled_dt$xy),","))[c(F,T)])
 
 xy_acled_dt <- xy_acled_dt[xy %!in% xy_cereals_dt$xy]
+# xy_cereals_dt <- xy_cereals_dt[xy %!in% xy_acled_dt$xy]
 
 d <- pointDistance(xy_acled_dt[,.(longitude,latitude)],xy_cereals_dt[,.(longitude,latitude)],lonlat=T)
+# d <- pointDistance(xy_cereals_dt[,.(longitude,latitude)],xy_acled_dt[,.(longitude,latitude)],lonlat=T)
 
 r <- apply(d,1,which.min)
 
 p <- data.table(acled=xy_acled_dt$xy,cereal=xy_cereals_dt$xy[r])
+# p <- data.table(cereal=xy_cereals_dt$xy,acled=xy_acled_dt$xy[r])
 
 colnames(p) <- c("xy","xy_cereals")
+# colnames(p) <- c("xy","xy_acled")
 
 xy_acled_dt <- acled_sum_dt[,.(xy)]
 xy_acled_dt <- unique(xy_acled_dt)
+# xy_cereals_dt <- cereals_dt[,.(xy)]
+# xy_cereals_dt <- unique(xy_cereals_dt)
 
 acled_xy_dt <- merge(acled_sum_dt,p,by="xy",all.x=T)
 acled_xy_dt[!is.na(xy_cereals)]$xy <- acled_xy_dt[!is.na(xy_cereals)]$xy_cereals

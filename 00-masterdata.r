@@ -8,6 +8,7 @@ library(Cairo)
 library(stringr)
 library(sf)
 library(sp)
+library(raster)
 library(rworldmap)
 library(rnaturalearth)
 library(rnaturalearthdata)
@@ -234,21 +235,6 @@ load("Local/Data/precipitation_new.RData")
 
 rain_dt <- rain_dt[,.(year=as.factor(year),mo=as.factor(mo),longitude=x,latitude=y,rain=as.numeric(rain))]
 
-# rain_dt[,`:=`(rain_m=mean())]
-
-# ###-----
-# 
-# cal_dt <- unique(datacomb_dt[,.(longitude,latitude,mo,planting_rice,harvesting_rice=season_rice)])
-# 
-# raincal_dt <- merge(rain_dt,cal_dt,by=c("longitude","latitude","mo"),all.x=T)
-# raincal_dt[is.na(rain)]$rain <- 0 # doesn't seem to be needed but just in case
-# 
-# # number of months in the growing season
-# raincal_dt[,`:=`(gs_months=ifelse(as.numeric(as.character(harvesting_rice))-as.numeric(as.character(planting_rice))<0,12-(as.numeric(as.character(harvesting_rice))-as.numeric(as.character(planting_rice))+12),12-(as.numeric(as.character(harvesting_rice))-as.numeric(as.character(planting_rice)))))]
-# 
-# raincal_dt[harvesting_rice==0]$gsm <- 0 # doesn't seem to be needed but just in case
-# 
-# ###-----
 
 datacomb_dt <- merge(datacomb_dt,rain_dt,by=c("year","mo","longitude","latitude"),all.x=T)
 dataset_dt <- merge(dataset_dt,rain_dt,by=c("year","mo","longitude","latitude"),all.x=T)
@@ -385,26 +371,65 @@ secities_dt <- secities_dt[order(-population)]
 secities_dt$latitude <- round(round(secities_dt$lat,2)-.499)+.5
 secities_dt$longitude <- round(round(secities_dt$lng,2)-.499)+.5
 
+
 secities_sub1 <- secities_dt[,.(population=sum(population)),by=.(longitude,latitude)]#dropped country
 
 secities_sub2 <- secities_dt[secities_dt[,.I[population==max(population)],by=.(longitude,latitude)]$V1,.(longitude,latitude,city=city_ascii,capital,city_population=population)]#dropped country
 
 secities_sub <- merge(secities_sub1,secities_sub2,by=c("longitude","latitude"))
 
-# secities_sub <- secities_sub[order(-population,-city_population)]
-# 
-# secities_sub <- secities_sub[capital %in% c("admin","primary")]
 
-# secities_sub[,xy:=paste(longitude,latitude,sep=",")]
-# 
-# secities_sub$xy[duplicated(secities_sub$xy)]
-# 
-# secities_sub[xy=="100.5,6.5"]
+
+
+## making sure that the population cells align with the main dataset cells
+
+secities_sub[,xy:=paste(longitude,latitude,sep=",")]
+
+xy_city_dt <- secities_sub[,.(xy)]
+xy_city_dt <- unique(xy_city_dt)
+
+xy_datacomb_dt <- datacomb_dt[,.(xy)]
+xy_datacomb_dt <- unique(xy_datacomb_dt)
+
+xy_datacomb_dt$longitude <- as.numeric(unlist(strsplit(as.character(xy_datacomb_dt$xy),","))[c(T,F)])
+xy_datacomb_dt$latitude <- as.numeric(unlist(strsplit(as.character(xy_datacomb_dt$xy),","))[c(F,T)])
+
+xy_city_dt$longitude <- as.numeric(unlist(strsplit(as.character(xy_city_dt$xy),","))[c(T,F)])
+xy_city_dt$latitude <- as.numeric(unlist(strsplit(as.character(xy_city_dt$xy),","))[c(F,T)])
+
+xy_city_dt <- xy_city_dt[xy %!in% xy_datacomb_dt$xy]
+
+d <- pointDistance(xy_city_dt[,.(longitude,latitude)],xy_datacomb_dt[,.(longitude,latitude)],lonlat=T)
+
+r <- apply(d,1,which.min)
+
+p <- data.table(city=xy_city_dt$xy,datacomb=xy_datacomb_dt$xy[r])
+
+colnames(p) <- c("xy","xy_datacomb")
+
+xy_city_dt <- secities_sub[,.(xy)]
+xy_city_dt <- unique(xy_city_dt)
+
+city_xy_dt <- merge(secities_sub,p,by="xy",all.x=T)
+city_xy_dt[!is.na(xy_datacomb)]$xy <- city_xy_dt[!is.na(xy_datacomb)]$xy_datacomb
+
+city_xy_dt$longitude <- as.numeric(unlist(strsplit(as.character(city_xy_dt$xy),","))[c(T,F)])
+city_xy_dt$latitude <- as.numeric(unlist(strsplit(as.character(city_xy_dt$xy),","))[c(F,T)])
+
+city_xy_dt$xy_datacomb <- NULL
+
+rm(d)
+
+secities_sub1 <- city_xy_dt[city_xy_dt[,.I[city_population==max(city_population)],by=xy]$V1][,.(xy,longitude,latitude,city,capital)]
+
+secities_sub2 <- city_xy_dt[,.(population=sum(population),city_population=sum(city_population)),by=.(xy,longitude,latitude)]
+
+secities_sub <- merge(secities_sub1,secities_sub2,by=c("xy","longitude","latitude"))
 
 
 ## merge datasets
 
-datacomb_dt <- merge(datacomb_dt,secities_sub,by=c("longitude","latitude"),all.x=T)
+datacomb_dt <- merge(datacomb_dt,secities_sub,by=c("xy","longitude","latitude"),all.x=T)
 
 datacomb_dt[is.na(population)]$population <- 0
 datacomb_dt[is.na(city_population)]$city_population <- 0
@@ -412,7 +437,7 @@ datacomb_dt[is.na(city)]$city <- ""
 datacomb_dt[is.na(capital)]$capital <- ""
 
 
-dataset_dt <- merge(dataset_dt,secities_sub,by=c("longitude","latitude"),all.x=T)
+dataset_dt <- merge(dataset_dt,secities_sub,by=c("xy","longitude","latitude"),all.x=T)
 
 dataset_dt[is.na(population)]$population <- 0
 dataset_dt[is.na(city_population)]$city_population <- 0

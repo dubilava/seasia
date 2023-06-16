@@ -281,24 +281,24 @@ conflict_dt <- unique(conflict_dt)
 conflict_dt <- conflict_dt[incidents>0]
 
 
-cities_dt <- fread("Local/Data/Cities/worldcities.csv")
-
-secities_dt <- cities_dt[country %in% unique(datacomb_dt$country) & population!="NA"]
-
-secities_dt <- secities_dt[order(-population)]
-
-secities_dt$latitude <- round(round(secities_dt$lat,2)-.499)+.5
-secities_dt$longitude <- round(round(secities_dt$lng,2)-.499)+.5
-
-secities_sub1 <- secities_dt[,.(population=sum(population)),by=.(longitude,latitude,country)]
-
-secities_sub2 <- secities_dt[secities_dt[,.I[population==max(population)],by=.(longitude,latitude,country)]$V1,.(longitude,latitude,country,city=city_ascii,capital,city_population=population)]
-
-secities_sub <- merge(secities_sub1,secities_sub2,by=c("longitude","latitude","country"))
-
-secities_sub <- secities_sub[order(-population,-city_population)]
-
-secities_sub <- secities_sub[capital %in% c("admin","primary")]
+# cities_dt <- fread("Local/Data/Cities/worldcities.csv")
+# 
+# secities_dt <- cities_dt[country %in% unique(datacomb_dt$country) & population!="NA"]
+# 
+# secities_dt <- secities_dt[order(-population)]
+# 
+# secities_dt$latitude <- round(round(secities_dt$lat,2)-.499)+.5
+# secities_dt$longitude <- round(round(secities_dt$lng,2)-.499)+.5
+# 
+# secities_sub1 <- secities_dt[,.(population=sum(population)),by=.(longitude,latitude,country)]
+# 
+# secities_sub2 <- secities_dt[secities_dt[,.I[population==max(population)],by=.(longitude,latitude,country)]$V1,.(longitude,latitude,country,city=city_ascii,capital,city_population=population)]
+# 
+# secities_sub <- merge(secities_sub1,secities_sub2,by=c("longitude","latitude","country"))
+# 
+# secities_sub <- secities_sub[order(-population,-city_population)]
+# 
+# secities_sub <- secities_sub[capital %in% c("admin","primary")]
 
 
 countries_dt <- dataset_dt[event %in% c("battles","protests","riots","violence"),.(incidents=sum(incidents)),by=.(country,event)]
@@ -326,10 +326,10 @@ countries_dt <- countries_dt[,.(incidents=sum(incidents)),by=.(country,event=eve
 
 gg_conflict <- ggplot(data = southeastasia) +
   geom_sf(color="gray",fill=NA,linewidth=.25)+
-  geom_scatterpie(data=conflict_dt,aes(x=longitude,y=latitude,r=both*.07),cols=c("battles","violence","unrest"),color="white",size=.1)+
-  scale_fill_manual(values=c("darkgray","indianred","goldenrod"))+
-  geom_point(data=conflict_dt[capital=="primary" | population>=2000000 | city_population>=1000000],aes(x=longitude,y=latitude),color="black",fill=NA,shape=21,size=2)+
-  geom_text_repel(data=conflict_dt[capital=="primary"],aes(x=longitude,y=latitude,label=city))+
+  geom_scatterpie(data=conflict_dt,aes(x=longitude,y=latitude,r=both*.06),cols=c("battles","violence","unrest"),color=NA)+
+  scale_fill_manual(values=c("gray","indianred","goldenrod"))+
+  geom_point(data=conflict_dt[capital=="primary" | population>=2000000 | city_population>=1000000],aes(x=longitude,y=latitude),color="dimgray",fill=NA,shape=21,size=2)+
+  geom_text_repel(data=conflict_dt[capital=="primary" | city_population>=2500000],aes(x=longitude,y=latitude,label=city),seed=100)+
   scale_size(range=c(.3,3.5))+
   theme_void()+
   theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title = element_blank(),axis.text = element_blank(),legend.title = element_blank(),legend.text = element_text(hjust=0),legend.position = c(.5,.85),plot.background=element_rect(fill="white",color=NA))
@@ -350,6 +350,8 @@ gg_bars <- ggplot(countries_dt,aes(x=reorder(country,incidents),y=incidents))+
 
 aligned <- align_plots(gg_conflict,gg_bars,align="hv", axis="tblr")
 gg_maplegend <- ggdraw(aligned[[1]]) + draw_plot(aligned[[2]],x=.62,y=.60,width=.36,height=.36)
+
+gg_maplegend
 
 ggsave("Figures/map_conflict.png",gg_maplegend,width=6.5,height=5.5,dpi="retina",device="png")
 

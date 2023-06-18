@@ -513,6 +513,7 @@ ggsave("Figures/shuffleharvest_incidence.png",gg_comb,width=6.5,height=7.0,dpi="
 ggsave("Figures/shuffleharvest_incidence.eps",gg_comb,width=6.5,height=7.0,dpi="retina",device="eps")
 
 
+
 # 02 - Monthly ----
 
 impact1m <- function(x){
@@ -901,6 +902,125 @@ modelsummary(list(coef0_fe,coef1_fe,coef2_fe,coef3_fe,coef4_fe),estimate="{estim
 
 ## calculated impact
 kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),battles=c(c_battles$descriptive,c_battles$effect),violence=c(c_violence$descriptive,c_violence$effect),riots=c(c_riots$descriptive,c_riots$effect),protests=c(c_protests$descriptive,c_protests$effect))))
+
+
+
+
+
+# 07 - Monthly/Rainfall ----
+
+impact2m <- function(x){
+  r <- feols(incidence~area:(l2+l1+s0+f1+f2):rain_cat+rain_t | xy+country^year+yearmo, data=x,vcov=~xy)
+  
+  m <- x[area>0,.(incidence=mean(incidence),cropland=mean(area))]
+  
+  s <- 100*m$cropland/m$incidence
+  
+  h_coef <- round(r$coeftable[,"Estimate"][-1]*s,1)
+  h_se <- round(r$coeftable[,"Std. Error"][-1]*s,1)
+  h_stars <- pstars(r$coeftable[,"Pr(>|t|)"][-1])
+  
+  h_est <- paste0(format(round(h_coef,1),nsmall=1),h_stars)
+  h_std <- paste0("(",format(round(h_se,1),nsmall=1),")")
+  
+  return(list(descriptive=c(incidence=round(m$incidence,2),cropland=round(m$cropland,2)),effect=c(h_est[1],h_std[1],h_est[2],h_std[2],h_est[3],h_std[3],h_est[4],h_std[4],h_est[5],h_std[5],h_est[6],h_std[6],h_est[7],h_std[7],h_est[8],h_std[8],h_est[9],h_std[9],h_est[10],h_std[10],h_est[11],h_std[11],h_est[12],h_std[12],h_est[13],h_std[13],h_est[14],h_std[14],h_est[15],h_std[15]),output=c(h_coef[1],h_se[1],h_coef[2],h_se[2],h_coef[3],h_se[3],h_coef[4],h_se[4],h_coef[5],h_se[5],h_coef[6],h_se[6],h_coef[7],h_se[7],h_coef[8],h_se[8],h_coef[9],h_se[9],h_coef[10],h_se[10],h_coef[11],h_se[11],h_coef[12],h_se[12],h_coef[13],h_se[13],h_coef[14],h_se[14],h_coef[15],h_se[15])))
+}
+
+## combined effect ----
+datasub_dt <- datacomb_dt
+datasub_dt[,`:=`(l2=shift(harvest_month,2),l1=shift(harvest_month,1),s0=harvest_month,f1=shift(harvest_month,1,type="lead"),f2=shift(harvest_month,2,type="lead")),by=.(xy)]
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season,rain=gs_rain_stand_long)]
+datasub_dt[,rain_cat:=factor(ifelse(rain<=-1,"dry",ifelse(rain>=1,"wet","normal")))]
+
+## effect
+coef0_fe <- feols(incidence~area:(l2+l1+s0+f1+f2):rain_cat+rain_t | xy+country^year+yearmo, datasub_dt,vcov=~xy)
+
+## impact
+c_comb <- impact2m(datasub_dt)
+
+## event-specific effects ----
+datasub_dt <- dataset_dt
+datasub_dt[,`:=`(l2=shift(harvest_month,2),l1=shift(harvest_month,1),s0=harvest_month,f1=shift(harvest_month,1,type="lead"),f2=shift(harvest_month,2,type="lead")),by=.(xy,event)]
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season,rain=gs_rain_stand_long)]
+datasub_dt[,rain_cat:=factor(ifelse(rain<=-1,"dry",ifelse(rain>=1,"wet","normal")))]
+
+## effect
+coef1_fe <- feols(incidence~area:(l2+l1+s0+f1+f2):rain_cat+rain_t | xy+country^year+yearmo, datasub_dt[event=="battles"],vcov=~xy)
+coef2_fe <- feols(incidence~area:(l2+l1+s0+f1+f2):rain_cat+rain_t | xy+country^year+yearmo, datasub_dt[event=="violence"],vcov=~xy)
+coef3_fe <- feols(incidence~area:(l2+l1+s0+f1+f2):rain_cat+rain_t | xy+country^year+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
+coef4_fe <- feols(incidence~area:(l2+l1+s0+f1+f2):rain_cat+rain_t | xy+country^year+yearmo, datasub_dt[event=="protests"],vcov=~xy)
+
+## impact
+c_battles <- impact2m(datasub_dt[event=="battles"])
+c_violence <- impact2m(datasub_dt[event=="violence"])
+c_riots <- impact2m(datasub_dt[event=="riots"])
+c_protests <- impact2m(datasub_dt[event=="protests"])
+
+## estimated effect
+modelsummary(list(coef0_fe,coef1_fe,coef2_fe,coef3_fe,coef4_fe),estimate="{estimate}{stars}",stars=c('*'=.1,'**'=.05,'***'=.01),gof_map=gm)
+
+## calculated impact
+kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),battles=c(c_battles$descriptive,c_battles$effect),violence=c(c_violence$descriptive,c_violence$effect),riots=c(c_riots$descriptive,c_riots$effect),protests=c(c_protests$descriptive,c_protests$effect))))
+
+
+# for plotting
+dt <- data.table(combined=c_comb$output,battles=c_battles$output,violence=c_violence$output,riots=c_riots$output,protests=c_protests$output)
+
+dt_cn <- colnames(dt)
+
+dt$period <- rep(c("-2","-1","0","+1","+2"),each=6)
+
+dt$weather <- rep(rep(c("dry","normal","wet"),each=2),5)
+
+dt$parameter <- rep(c("est","se"),15)
+
+long_dt <- melt(dt,id.vars=c("period","weather","parameter"))
+
+long1_dt <- long_dt[parameter=="est"]
+long2_dt <- long_dt[parameter=="se"]
+
+long1_dt$parameter <- NULL
+long2_dt$parameter <- NULL
+
+colnames(long1_dt) <- c("period","weather","event","est")
+colnames(long2_dt) <- c("period","weather","event","se")
+
+long_dt <- merge(long1_dt,long2_dt,by=c("event","period","weather"))
+
+long_dt$event <- factor(long_dt$event,levels=dt_cn)
+long_dt$period <- factor(long_dt$period,levels=c("-2","-1","0","+1","+2"))
+
+long_dt[,`:=`(col=ifelse(est/se > 1.96,"coral",ifelse(est/se < -1.96,"steelblue","darkgray")),pch=ifelse(abs(est/se) > 1.96,16,21))]
+
+long_dt <- long_dt[event!="combined"]
+
+gg_gsmonthly <- ggplot(long_dt,aes(x=period,y=est,color=weather,linetype=weather,group=weather))+
+  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se),linewidth=.6,width=NA,position=position_dodge(.5))+
+  geom_point(size=2,shape=long_dt$pch,fill="white",stroke=1,position=position_dodge(.5))+
+  scale_color_manual(values=c("coral","seagreen","steelblue"))+
+  scale_linetype_manual(values=c(5,1,4))+
+  facet_wrap(.~event,ncol=2)+
+  labs(title="",x="Month from harvest",y="Harvest-time change in conflict incidence relative to the baseline (%)")+
+  theme_paper()+
+  theme(legend.position="top",legend.key.width=unit(1,'in'))
+
+ggsave("Figures/gs_monthly.png",gg_gsmonthly,width=6.5,height=5,dpi="retina")
+
+ggsave("Figures/gs_monthly.eps",gg_gsmonthly,width=6.5,height=5,dpi="retina")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

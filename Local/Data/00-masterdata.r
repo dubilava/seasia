@@ -24,8 +24,8 @@ gc()
 
 
 # data management ----
-load("Local/Data/agconflict.RData")
-load("Local/Data/spam.RData")
+load("agconflict.RData")
+load("spam.RData")
 
 countries <- unique(datacomb_dt$country)
 
@@ -231,7 +231,7 @@ standardize <- function(x,ln=TRUE){
   return(z)
 }
 
-load("Local/Data/precipitation_new.RData")
+load("precipitation_new.RData")
 
 rain_dt <- rain_dt[,.(year=as.factor(year),mo=as.factor(mo),longitude=x,latitude=y,rain=as.numeric(rain))]
 
@@ -362,7 +362,7 @@ dataset_dt <- dataset_dt[order(country,longitude,latitude,event,year,mo)]
 
 ## add cities
 
-cities_dt <- fread("Local/Data/Cities/worldcities.csv")
+cities_dt <- fread("Cities/worldcities.csv")
 
 secities_dt <- cities_dt[country %in% unique(datacomb_dt$country) & population!="NA"]
 

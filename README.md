@@ -23,9 +23,9 @@ The data used for generating the main results of the study are stored in the [ma
 
 The R codes to replicate the study are as follows:
 
-- [01-mainresults.r](01-mainresults.r): Tables 1-8 (main text), Appendix Tables B1-B2 and B5, Appendix Figures A3-A4 and A6
+- [01-mainresults.r](01-mainresults.r): Tables 1-8, Appendix Tables B1-B2 and B5, Figure 1, and Appendix Figures A3-A4 and A6
 - [02-altresults.r](03-altresults.r): Appendix Tables B3-B4.
-- [03-figures.r](03-figures.r): Figures 1-5 (main text), and Appendix Figures A1-A2.
+- [03-figures.r](03-figures.r): Figures 1-4, and Appendix Figures A1-A2.
 - [04-specchart.r](04-specchart.r): Appendix Figure A5.
 
 

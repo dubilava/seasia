@@ -296,7 +296,7 @@ dt <- data.table(rbind(c_comb,c_battles,c_violence,c_riots,c_protests))
 dt$impact <- as.numeric(dt$impact)
 dt$se <- as.numeric(dt$se)
 
-dt[,`:=`(col=ifelse(impact/se > 1.96,"coral",ifelse(impact/se < -1.96,"steelblue","darkgray")),pch=ifelse(abs(impact/se) > 1.96,16,21))]
+dt[,`:=`(pch=ifelse(abs(impact/se) > 1.96,16,21))]
 
 dt$event <- factor(dt$event,levels=unique(dt$event),labels=c("all events","battles","violence","riots","protests"))
 
@@ -339,8 +339,8 @@ dt <- dt[order(cluster,fe)]
 dt$cluster <- factor(dt$cluster,levels=unique(dt$cluster))
 
 gg_est <- ggplot(dt,aes(x=group_id,y=impact,group=group_id))+
-  geom_errorbar(aes(ymin=impact-1.96*se,ymax=impact+1.96*se),linewidth=.5,width=NA,color=dt$col)+
-  geom_point(size=1.5,shape=dt$pch,color=dt$col,fill="white",stroke=.8)+
+  geom_errorbar(aes(ymin=impact-1.96*se,ymax=impact+1.96*se),linewidth=.5,width=NA,color="dimgray")+
+  geom_point(size=1.5,shape=dt$pch,color="dimgray",fill="white",stroke=.8)+
   scale_y_continuous(breaks=pretty_breaks(n=4))+
   facet_wrap(.~event,ncol=1,strip.position="left")+
   labs(title="Harvest-time change in conflict incidence relative to the baseline (%)",x="",y="")+
@@ -380,196 +380,8 @@ gg_spec2 <- ggplot(spec2_dt,aes(x=group_id,y=variable)) +
 gg_comb <- plot_grid(gg_est,gg_spec1,gg_spec2,ncol=1,align="hv",axis="lr",rel_heights=c(27,7,6))
 
 
-ggsave("Figures/spec_incidence.png",gg_comb,width=6.5,height=6.5,dpi="retina",device="png")
+ggsave("Figures/spec_chart.png",gg_comb,width=6.5,height=7.0,dpi="retina",device="png")
 
-ggsave("Figures/spec_incidence.eps",gg_comb,width=6.5,height=6.5,dpi="retina",device="eps")
-
-
-
-
-
-
-
-# Spec: myanmar ----
-
-datacomb_dt <- datacomb_dt[(country!="Myanmar" & as.numeric(as.character(year))%!in%c(2021,2022)) | (country=="Myanmar" & as.numeric(as.character(year))%!in%c(2021,2022)) | (country!="Myanmar" & as.numeric(as.character(year))%in%c(2021,2022))]
-dataset_dt <- dataset_dt[(country!="Myanmar" & as.numeric(as.character(year))%!in%c(2021,2022)) | (country=="Myanmar" & as.numeric(as.character(year))%!in%c(2021,2022)) | (country!="Myanmar" & as.numeric(as.character(year))%in%c(2021,2022))]
-
-## combined effect ----
-datasub_dt <- datacomb_dt
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
-
-## effect
-
-## impact
-c_comb1 <- impact1i(datasub_dt,4)
-c_comb1$cluster <- "Cell"
-
-c_comb2 <- impact1i(datasub_dt,4)
-c_comb2$cluster <- "Country"
-
-c_comb3 <- impact1c150(datasub_dt,4)
-c_comb3$cluster <- "Conley (150km)"
-
-c_comb4 <- impact1c300(datasub_dt,4)
-c_comb4$cluster <- "Conley (300km)"
-
-c_comb <- rbind(c_comb1,c_comb2,c_comb3,c_comb4)
-c_comb$event <- "combined"
-
-## event-specific effects ----
-datasub_dt <- dataset_dt
-datasub_dt[,`:=`(area=area_spam,seas=harvest_season)]
-
-## impact
-c_battles1 <- impact1i(datasub_dt[event=="battles"],4)
-c_violence1 <- impact1i(datasub_dt[event=="violence"],4)
-c_riots1 <- impact1i(datasub_dt[event=="riots"],4)
-c_protests1 <- impact1i(datasub_dt[event=="protests"],4)
-
-c_battles1$cluster <- "Cell"
-c_violence1$cluster <- "Cell"
-c_riots1$cluster <- "Cell"
-c_protests1$cluster <- "Cell"
-
-
-c_battles2 <- impact1c(datasub_dt[event=="battles"],4)
-c_violence2 <- impact1c(datasub_dt[event=="violence"],4)
-c_riots2 <- impact1c(datasub_dt[event=="riots"],4)
-c_protests2 <- impact1c(datasub_dt[event=="protests"],4)
-
-c_battles2$cluster <- "Country"
-c_violence2$cluster <- "Country"
-c_riots2$cluster <- "Country"
-c_protests2$cluster <- "Country"
-
-
-c_battles3 <- impact1c150(datasub_dt[event=="battles"],4)
-c_violence3 <- impact1c150(datasub_dt[event=="violence"],4)
-c_riots3 <- impact1c150(datasub_dt[event=="riots"],4)
-c_protests3 <- impact1c150(datasub_dt[event=="protests"],4)
-
-c_battles3$cluster <- "Conley (150km)"
-c_violence3$cluster <- "Conley (150km)"
-c_riots3$cluster <- "Conley (150km)"
-c_protests3$cluster <- "Conley (150km)"
-
-
-c_battles4 <- impact1c300(datasub_dt[event=="battles"],4)
-c_violence4 <- impact1c300(datasub_dt[event=="violence"],4)
-c_riots4 <- impact1c300(datasub_dt[event=="riots"],4)
-c_protests4 <- impact1c300(datasub_dt[event=="protests"],4)
-
-c_battles4$cluster <- "Conley (300km)"
-c_violence4$cluster <- "Conley (300km)"
-c_riots4$cluster <- "Conley (300km)"
-c_protests4$cluster <- "Conley (300km)"
-
-
-c_battles <- rbind(c_battles1,c_battles2,c_battles3,c_battles4)
-c_battles$event <- "battles"
-
-c_violence <- rbind(c_violence1,c_violence2,c_violence3,c_violence4)
-c_violence$event <- "violence"
-
-c_riots <- rbind(c_riots1,c_riots2,c_riots3,c_riots4)
-c_riots$event <- "riots"
-
-c_protests <- rbind(c_protests1,c_protests2,c_protests3,c_protests4)
-c_protests$event <- "protests"
-
-
-dt <- data.table(rbind(c_comb,c_battles,c_violence,c_riots,c_protests))
-
-dt$impact <- as.numeric(dt$impact)
-dt$se <- as.numeric(dt$se)
-
-dt[,`:=`(col=ifelse(impact/se > 1.96,"coral",ifelse(impact/se < -1.96,"steelblue","darkgray")))]
-
-dt$event <- factor(dt$event,levels=unique(dt$event))
-
-dt$fe <- factor(dt$fe,levels=unique(dt$fe))
-
-characters <- unlist(strsplit(as.character(dt$fe),", "))
-
-unique_chars <- unique(characters)
-
-mt <- matrix(NA,nrow=length(dt$fe),ncol=length(unique_chars), dimnames=list(NULL,unique_chars))
-
-for(i in 1:length(dt$fe)){
-  for(j in 1:length(colnames(mt))){
-    if(any(unlist(strsplit(as.character(dt$fe[i]),", "))==colnames(mt)[j]))
-      mt[i,j] <- 1
-  }
-}
-
-
-mt_dt <- data.table(mt)
-
-dt <- cbind(dt,mt_dt)
-
-mt <- matrix(NA,nrow=length(dt$cluster),ncol=length(unique(dt$cluster)), dimnames=list(NULL,unique(dt$cluster)))
-
-for(i in 1:length(dt$cluster)){
-  for(j in 1:length(unique(dt$cluster))){
-    if(unique(dt$cluster)[j]==dt$cluster[i])
-      mt[i,j] <- 1
-  }
-}
-
-mt_dt <- data.table(mt)
-
-dt <- cbind(dt,mt_dt)
-
-dt[,group_id:=paste(cluster,fe,sep="/")]
-
-dt <- dt[order(cluster,fe)]
-dt$cluster <- factor(dt$cluster,levels=unique(dt$cluster))
-
-gg_est <- ggplot(dt,aes(x=group_id,y=impact,group=group_id))+
-  geom_errorbar(aes(ymin=impact-1.96*se,ymax=impact+1.96*se),linewidth=.5,width=NA,color=dt$col)+
-  geom_point(size=1.5,shape=21,color=dt$col,fill="white",stroke=.8)+
-  scale_y_continuous(breaks=pretty_breaks(n=4))+
-  facet_wrap(.~event,ncol=1,strip.position="left")+
-  labs(title="Harvest-time change in conflict relative to the baseline (%)",x="",y="")+
-  theme_paper()+
-  theme(axis.text.x=element_blank(),strip.placement="outside")
-
-spec_dt <- melt(dt[,.(group_id,xy,`country^year`,yearmo,year,mo,Cell,`Conley (150km)`,`Conley (300km)`,Country)],id.vars="group_id")
-
-spec_dt$variable <- factor(spec_dt$variable,levels=rev(unique(spec_dt$variable)))
-
-spec_dt <- spec_dt[order(group_id)]
-
-spec1_dt <- spec_dt[variable %in% c("xy","country^year","yearmo","year","mo")]
-spec1_dt$variable <- factor(spec1_dt$variable,levels=unique(spec1_dt$variable),labels=rev(c("Month","Year","Year-Month","Country-Year","Cell")))
-
-spec2_dt <- spec_dt[variable %in% c("Cell","Conley (150km)","Conley (300km)","Country")]
-spec2_dt$variable <- factor(spec2_dt$variable,levels=rev(unique(spec2_dt$variable)))
-
-gg_spec1 <- ggplot(spec1_dt,aes(x=group_id,y=variable)) + 
-  geom_tile(na.rm=T,color=NA,fill=NA) + 
-  ylim(rev(levels(spec1_dt$variable))) + 
-  geom_point(aes(size=value),na.rm=T,shape=15,color="slategray")+
-  scale_size_continuous(range=c(0,3))+
-  labs(title="Fixed effects",x="",y="")+
-  theme_paper()+
-  theme(axis.title.x=element_blank(),axis.line.x = element_blank(),axis.text.x = element_blank(),axis.text.y = element_text(hjust=0))
-
-gg_spec2 <- ggplot(spec2_dt,aes(x=group_id,y=variable)) + 
-  geom_tile(na.rm=T,color=NA,fill=NA) + 
-  ylim(levels(spec2_dt$variable)) + 
-  geom_point(aes(size=value),na.rm=T,shape=15,color="slategray")+
-  scale_size_continuous(range=c(0,3))+
-  labs(title="Level of clustering",x="",y="")+
-  theme_paper()+
-  theme(axis.title.x=element_blank(),axis.line.x = element_blank(),axis.text.x = element_blank(),axis.text.y = element_text(hjust=0))
-
-gg_comb <- plot_grid(gg_est,gg_spec1,gg_spec2,ncol=1,align="hv",axis="lr",rel_heights=c(23,7,6))
-
-ggsave("Figures/spec_myanmar.png",gg_comb,width=6.5,height=6.0,dpi="retina",device="png")
-
-ggsave("Figures/spec_myanmar.eps",gg_comb,width=6.5,height=6.0,dpi="retina",device="eps")
-
+ggsave("Figures/spec_chart.eps",gg_comb,width=6.5,height=7.0,dpi="retina",device="eps")
 
 

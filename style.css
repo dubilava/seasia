@@ -143,34 +143,37 @@ a:active {
   color: coral;
 }
 
-.pull-left {
+.left-30 {
   padding-top: 0;
   float: left;
-  width: 30%;
+  width: 27.5%;
 }
-.pull-right {
-  padding-top: 0;
-  float: right;
-  width: 65%;
-}
-
-.left-column {
+.left-40 {
   padding-top: 0;
   float: left;
-  width: 10%;
+  width: 37.5%;
 }
-.right-column {
-  padding-top: 0;
-  float: right;
-  width: 85%;
-}
-
-.left-half {
+.left-50 {
   padding-top: 0;
   float: left;
   width: 47.5%;
 }
-.right-half {
+.right-90 {
+  padding-top: 0;
+  float: right;
+  width: 87.5%;
+}
+.right-70 {
+  padding-top: 0;
+  float: right;
+  width: 67.5%;
+}
+.right-60 {
+  padding-top: 0;
+  float: right;
+  width: 57.5%;
+}
+.right-50 {
   padding-top: 0;
   float: right;
   width: 47.5%;

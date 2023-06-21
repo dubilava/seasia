@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="" xml:lang="">
   <head>
-    <title>Agricultural Shocks and Social Conflict in Southeast Asia</title>
+    <title>Agricultural Harvests and Seasonal Conflict</title>
     <meta charset="utf-8" />
     <meta name="author" content="David Ubilava" />
-    <script src="libs/header-attrs-2.19/header-attrs.js"></script>
+    <script src="libs/header-attrs-2.22/header-attrs.js"></script>
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
@@ -15,10 +15,10 @@
 class: center, middle, inverse, title-slide
 
 .title[
-# Agricultural Shocks and Social Conflict in Southeast Asia
+# Agricultural Harvests and Seasonal Conflict
 ]
 .subtitle[
-## 18th Australasian Development Economics Workshop
+## Prepared for IAMO 2023 Forum
 ]
 .author[
 ### David Ubilava
@@ -33,15 +33,26 @@ class: center, middle, inverse, title-slide
 
 
 
-# Does harvest affect conflict?
 
-.right-column[
+# Agriculture and conflict can be linked... literally
 
-Conflicts happen... everywhere and all the time. 
+.right-90[
 
-But in some places and at certain times more of them happen.
+![A tractor pulling a tank](tractor.png)
 
-We focus on low- and middle-income countries of Southeast Asia, where agriculture employs and pays large shares of population, and ask the question:
+]
+
+---
+
+
+
+# Agriculture may also be linked with conflict causally
+
+.right-90[
+
+We focus on low- and middle-income countries of Southeast Asia, where agriculture employs and pays large shares of population. 
+
+We ask the question:
 
 &gt; Do harvest-time agricultural shocks lead to changes in forms of conflict?
 
@@ -51,21 +62,18 @@ We focus on low- and middle-income countries of Southeast Asia, where agricultur
 ---
 
 
-# It amplifies violence and (maybe) reduces protests
+# More violence and less protests at harvest time
 
-.right-column[
+.right-90[
 
-The answer to the research question is hardly unequivocal.
-
-Relative to the rest of the year, at harvest time we observe:
-- four-to-eight percent increase in violence against civilians
+Relative to the rest of the year, at harvest time we estimate:
+- more than ten percent increase in violence against civilians
+- up to ten percent increase in battles*
 - up to ten percent decrease in protests*
-- excess rain during the growing season mitigates the effects
-- the results are mainly driven by rainfed locations
 
 `$$\\[.5in]$$`
 
-*sensitive to data subsetting.
+*sensitive to data subsetting or changes in model specification.
 
 ]
 
@@ -76,7 +84,7 @@ Relative to the rest of the year, at harvest time we observe:
 
 # Conflicts happen all across Southeast Asia
 
-.left-half[
+.left-50[
 
 From the [ACLED Project](https://acleddata.com/), over 70 thousand incidents of: 
 - &lt;span style="color:dimgray"&gt;**battles**&lt;/span&gt;, 
@@ -89,7 +97,7 @@ observed over the 2010-2022 period.
 
 ]
 
-.right-half[
+.right-50[
 ![Conflict across space](Figures/map_conflict.png)
 ]
 
@@ -98,7 +106,7 @@ observed over the 2010-2022 period.
 
 # Conflicts happen all the time in Southeast Asia
 
-.pull-left[
+.left-40[
 
 Unbalanced panel of eight countries.
 
@@ -110,8 +118,8 @@ For most countries, the data are available from 2010 onward, except for:
 
 ]
 
-.pull-right[
-![Conflict over time](Figures/ts_conflict.png)
+.right-60[
+![Conflict over time](Figures/series_conflict.png)
 ]
 
 ---
@@ -119,17 +127,17 @@ For most countries, the data are available from 2010 onward, except for:
 
 # Rice is cultivated across all of Southeast Asia
 
-.left-half[
+.left-50[
 
 From IFPRI's [Spatial Production Allocation Model](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/PRFF8V) (SPAM) and [Monfreda et al. (2008)](https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2007GB002947),
-- regional variation in harvested areas
-- regional variation in harvest seasons
-- regional variation in proportion of irrigated land
+- regional variation in the sizes of harvested area
+- regional variation in the timing of harvest seasons
+- regional variation in the proportions of irrigated land
 
 ]
 
-.right-half[
-![Conflict across space](Figures/map_harvest_main.png)
+.right-50[
+![Conflict across space](Figures/map_harvest.png)
 ]
 
 ---
@@ -137,8 +145,16 @@ From IFPRI's [Spatial Production Allocation Model](https://dataverse.harvard.edu
 
 # Positive correlation between conflict and croplands
 
-.pull-right[
-![Conflict and Cropland](Figures/area_conflict.png)
+.left-40[
+
+Generally positive relationship between the size of croplands and the average number of incidents in the cell
+
+Seemingly negative relationship between these two variables in 'urban' cells
+
+]
+
+.right-60[
+![Conflict and Cropland](Figures/area_incidents.png)
 ]
 
 ---
@@ -146,13 +162,14 @@ From IFPRI's [Spatial Production Allocation Model](https://dataverse.harvard.edu
 
 # We study the effect of harvest on forms of conflict
 
-.right-column[
+.right-90[
 
-The outcome variable is the number of conflict incidents observed at a cell in a given time. We consider:
-- each form of conflict separately,
-- all forms of conflict combined.
+The outcome variable is the incidence of conflict in a given cell at a given period (year-month). We consider:
 
-The treatment variable is the product of the cell-specific area (hectares) and harvest season (binary).
+- all forms of conflict combined, and
+- each form of conflict separately.
+
+The treatment variable is the product of the cropland indicator (harvest area `\(\ge\)` 10,000ha) and harvest season indicator.
 
 Fixed effects: cell, country-year, year-month.
 
@@ -162,7 +179,7 @@ Fixed effects: cell, country-year, year-month.
 
 # Battles and violence increase and protests decrease
 
-.pull-left[
+.left-40[
 
 The estimated effect is evaluated at the average size of the cropland and relative to the average conflict.
 
@@ -170,112 +187,104 @@ The dots are point estimates, and errorbars denote 95% confidence interval.
 
 ]
 
-.pull-right[
+.right-60[
 
-![Main Results](Figures/results_main.png)
-
-]
-
----
-
-
-# Myanmar seems to be driving (some of) the results
-
-.pull-right[
-
-![Omit a Country](Figures/dropacountry.png)
+![Main Results](Figures/Extra/results_baseline.png)
 
 ]
 
 ---
 
 
-# 2021 seems to be driving (some of) the results
+# Myanmar is driving the results
 
-.pull-right[
+.left-40[
 
-![Omit a Year](Figures/dropayear.png)
+This comes hardly as a surprise, since nearly half of the observations come from Myanmar.
+
+]
+
+.right-60[
+
+![Omit a Country](Figures/results_dropacountry.png)
 
 ]
 
 ---
 
 
-# Conflict series look sensible w/o Myanmar 2021-2022
+# 2020 and 2021 are driving (some of) the results
 
-.pull-left[
-Full sample consists of 44,724 observations and 71,109 incidents.
+.left-40[
 
-Myanmar 2021-2022 includes 1,416 (3.2%) observations and 23,550 (33.1%) conflict incidents.
-
-]
-
-.pull-right[
-
-![Conflict over time without Myanmar](Figures/ts_conflict_myanmar.png)
+Likely linked with pandemic-related restrictions in 2020, and the onset of the Myanmar conflict in 2021.
 
 ]
 
----
+.right-60[
 
-
-# When we omit Myanmar 2021-2022 data...
-
-.pull-left[
-
-Violence increases (but nothing else changes)
-
-]
-
-.pull-right[
-
-![Main Results without Myanmar](Figures/results_main_myanmar.png)
+![Omit a Year](Figures/results_dropayear.png)
 
 ]
 
 ---
 
 
-# When we use incidence as the outcome variable...
 
-.pull-left[
+# The specification chart
 
-Battles and Violence increase (protests and riots don't change)
+.left-40[
+
+![Main Results with Incidence](Figures/spec_chart.png)
 
 ]
 
-.pull-right[
+.right-60[
 
-![Main Results with Incidence](Figures/results_main_incidence.png)
+The effect on violence robust across most specifications.
+
+]
+
+---
+
+
+# Heterogeneity: rainfed vs irrigated
+
+.left-40[
+
+The harvest-time increase in violence and (statistically insignificant) decrease in protests more prominent in rainfed locations.
+
+]
+
+.right-60[
+
+![Main Results](Figures/Extra/results_irrigated.png)
 
 ]
 
 ---
 
 
-# The specification chart (incidents, full sample)
+# Heterogeneity: rural vs urban
 
-.left-half[
+.left-40[
 
-The effect on violence robust across specifications.
-
-The effect on protests not significant in most instances (even with full sample)
+The harvest-time increase in battles and violence is a rural phenomenon.
 
 ]
 
-.right-half[
+.right-60[
 
-![Main Results with Incidence](Figures/spec.png)
+![Main Results](Figures/Extra/results_urban.png)
 
 ]
 
 ---
-
 
 
 # Harvest-time violence may be linked to rapacity
 
-.right-column[
+.right-90[
 
 [Ubilava et al. (2023)](https://doi.org/10.1111/ajae.12364) investigate the effect of cereal price change on seasonal violence in the croplands of Africa.
 
@@ -290,54 +299,87 @@ Accords with the *rapacity mechanism*: farmers attacked when most gains are to b
 
 # Opportunity cost may explain less protests 
 
-.right-column[
+.right-90[
 The *opportunity cost mechanism* often is portrayed as a trade-off a person faces between farming and fighting.
 
 Agricultural shocks may push a person in one direction or another... but this is a longer term engagement.
 
 In the short run, the opportunity cost mechanism is well-suited to explain the lack of protests at harvest time.
 
-Although, some of this may be offset by *resentment*, i.e., when people feel being worse off only because others are doing well.
+But, some of this may be offset by *resentment*, i.e., when people feel being worse off only because others are doing well.
 ]
 
 ---
 
 
+# Mechanisms: harvest intensity
 
-# The cropland size aplifies the effects 
+.left-50[
 
-.pull-right[
-![Dose](Figures/dose.png)
+
+The harvest-time increase in battles and violence is more prominent in larger croplands.
+
+The harvest-time decrease in protests observed in small croplands only.
+
+]
+
+.right-50[
+
+![Main Results](Figures/Extra/results_dose.png)
+
 ]
 
 ---
 
 
-# Excessive rainfall mitigates the effects 
+# Mechanisms: harvest timing
 
-.pull-right[
-![Rain](Figures/results_rain_myanmar.png)
+.left-50[
+
+
+The harvest-time increase in battles lingers post-harvest (possibly picking up the dry-season effect).
+
+The harvest-time increase in violence and decrease in protests are centered on the harvest month.
+
+]
+
+.right-50[
+
+![Main Results](Figures/Extra/results_monthly.png)
+
 ]
 
 ---
 
-# Much of the effect comes from rainfed locations 
 
-.pull-right[
-![Irrigation](Figures/results_irri_myanmar.png)
+# Mechanisms: harvest quality
+
+.left-50[
+
+The harvest-time increase in battles negatively correlated with the growing season rainfall.
+
+The harvest-time decrease in violence, as well as protests and riots, have inverted V-shaped patterns relative to the growing season rainfall.
+
+]
+
+.right-50[
+
+![Main Results](Figures/Extra/results_rain.png)
+
 ]
 
 ---
+
 
 # We contribute to three strands of conflict literature
 
-.right-column[
+.right-90[
 
 Climate shocks and conflict ([Burke et al., 2009](https://www.pnas.org/doi/pdf/10.1073/pnas.0907998106); [Hsiang et al., 2013](https://www.science.org/doi/10.1126/science.1235367); [Crost et al., 2018](https://www.sciencedirect.com/science/article/abs/pii/S0095069617301584))
 
 Economic roots of conflict ([Berman et al, 2011](https://journals.sagepub.com/doi/10.1177/0022002710393920); [Crost and Felter, 2020](https://academic.oup.com/jeea/article/18/3/1484/5505371); [McGuirk and Burke, 2020](https://www.journals.uchicago.edu/doi/abs/10.1086/709993))
 
-Seasonality of conflict ([Harari and La Ferrara, 2018](https://direct.mit.edu/rest/article-abstract/100/4/594/58501/Conflict-Climate-and-Cells-A-Disaggregated); McGuirk and Nunn, 2023; Guardado and Pennings, 2023)
+Seasonality of conflict ([Harari and La Ferrara, 2018](https://direct.mit.edu/rest/article-abstract/100/4/594/58501/Conflict-Climate-and-Cells-A-Disaggregated); McGuirk and Nunn, 2023; Guardado and Pennings, 2023; [Ubilava et al., 2023](https://doi.org/10.1111/ajae.12364))
 
 ]
 

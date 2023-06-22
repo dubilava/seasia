@@ -643,7 +643,6 @@ kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),battles=
 dt <- data.table(combined=c_comb$output,battles=c_battles$output,violence=c_violence$output,riots=c_riots$output,protests=c_protests$output)
 
 dt_cn <- colnames(dt)
-dt_cn[1] <- "all events"
 
 dt$plot <- rep(c("rainfed","irrigated"),each=2)
 
@@ -662,7 +661,7 @@ colnames(long2_dt) <- c("plot","event","se")
 
 long_dt <- merge(long1_dt,long2_dt,by=c("event","plot"))
 
-long_dt$event <- factor(long_dt$event,levels=dt_cn[length(dt_cn):1])
+long_dt$event <- factor(long_dt$event,levels=dt_cn[length(dt_cn):1],labels=c(dt_cn[length(dt_cn):2],"all events"))
 long_dt$plot <- factor(long_dt$plot,levels=c("rainfed","irrigated"))
 
 long_dt[,`:=`(pch=ifelse(abs(est/se) > 1.96,16,21))]
@@ -732,7 +731,6 @@ kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),battles=
 dt <- data.table(combined=c_comb$output,battles=c_battles$output,violence=c_violence$output,riots=c_riots$output,protests=c_protests$output)
 
 dt_cn <- colnames(dt)
-dt_cn[1] <- "all events"
 
 dt$plot <- rep(c("rural","urban"),each=2)
 
@@ -751,7 +749,7 @@ colnames(long2_dt) <- c("plot","event","se")
 
 long_dt <- merge(long1_dt,long2_dt,by=c("event","plot"))
 
-long_dt$event <- factor(long_dt$event,levels=dt_cn[length(dt_cn):1])
+long_dt$event <- factor(long_dt$event,levels=dt_cn[length(dt_cn):1],labels=c(dt_cn[length(dt_cn):2],"all events"))
 long_dt$plot <- factor(long_dt$plot,levels=c("rural","urban"))
 
 long_dt[,`:=`(pch=ifelse(abs(est/se) > 1.96,16,21))]

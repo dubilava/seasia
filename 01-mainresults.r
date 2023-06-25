@@ -113,6 +113,20 @@ tab3r <- datacomb_dt[yearmo=="2020-01",.(obs=.N,Crop_area_mean=round(mean(area_r
 kable_styling(kable(rbind(tab3a[,.(Crop_area_mean,Crop_area_sd,Crop_area_min,Crop_area_max)],tab3i[,.(Crop_area_mean,Crop_area_sd,Crop_area_min,Crop_area_max)],tab3r[,.(Crop_area_mean,Crop_area_sd,Crop_area_min,Crop_area_max)])))
 
 
+load("Local/Data/precipitation_mean.RData")
+
+countries_dt <- datacomb_dt[,.(country,x=longitude,y=latitude,xy,year,mo)]
+
+check_dt <- merge(countries_dt,rain_dt,by=c("x","y","year","mo"))
+
+check_dt[,date:=as.Date(paste0(year,"-",mo,"-",dy))]
+
+ggplot(check_dt[country=="Indonesia" & year==2020],aes(x=date,y=rain,group=xy))+
+  geom_line()
+
+check_dt <- check_dt[,.(rain=sum(rain)),by=.(country,year)]
+
+
 # 01 - main results ----
 impact1 <- function(x){
   r <- feols(incidence~area:seas+rain_t | xy+country^year+yearmo, data=x,vcov=~xy)
@@ -178,7 +192,7 @@ gg_baseline <- ggplot(dt,aes(x=event,y=est))+
   geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se),linewidth=.8,width=NA,color="dimgray")+
   geom_point(shape=dt$pch,size=2,stroke=1,color="dimgray",fill="white")+
   coord_flip()+
-  labs(title="",x="Conflict Type",y="Harvest-time change in conflict incidence relative to the baseline (%)")+
+  labs(title="",x="Conflict type",y="Harvest-time change in conflict incidence relative to the baseline (%)")+
   theme_paper()+
   theme(axis.text.y=element_text(hjust=0),axis.title.y=element_text(margin=margin(t=0,r=5,b=0,l=0)),panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"))
 
@@ -672,7 +686,7 @@ gg_irrigated <- ggplot(long_dt,aes(x=event,y=est,color=plot,linetype=plot,group=
   scale_color_manual(values=c("coral","steelblue"))+
   scale_linetype_manual(values=c(1,5))+
   coord_flip()+
-  labs(title="",x="Month from harvest",y="Harvest-time change in conflict incidence relative to the baseline (%)")+
+  labs(title="",x="Conflict type",y="Harvest-time change in conflict incidence relative to the baseline (%)")+
   theme_paper()+
   theme(axis.text.y=element_text(hjust=0),axis.title.y=element_text(margin=margin(t=0,r=5,b=0,l=0)),panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"),legend.position="top",legend.key.width=unit(.5,'in'))
 
@@ -760,7 +774,7 @@ gg_urban <- ggplot(long_dt,aes(x=event,y=est,color=plot,linetype=plot,group=plot
   scale_color_manual(values=c("coral","steelblue"))+
   scale_linetype_manual(values=c(1,5))+
   coord_flip()+
-  labs(title="",x="Month from harvest",y="Harvest-time change in conflict incidence relative to the baseline (%)")+
+  labs(title="",x="Conflict type",y="Harvest-time change in conflict incidence relative to the baseline (%)")+
   theme_paper()+
   theme(axis.text.y=element_text(hjust=0),axis.title.y=element_text(margin=margin(t=0,r=5,b=0,l=0)),panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"),legend.position="top",legend.key.width=unit(.5,'in'))
 

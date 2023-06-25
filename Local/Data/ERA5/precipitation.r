@@ -20,14 +20,14 @@ gc()
 "%!in%" <- Negate("%in%")
 
 ## load the map of se asia
-load("masterdata.RData")
+load("../../masterdata.RData")
 
 countries <- c(unique(datacomb_dt$country),"Singapore")
 
 southeastasia <- ne_countries(country=countries,returnclass="sf",scale="large")
 southeastasia <- st_set_crs(southeastasia,"+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
 
-era5_nc <- brick("Local/Data/ERA5/era5prec.nc")
+era5_nc <- brick("ERA5/era5prec.nc")
 
 lst <- vector("list",nlayers(era5_nc))
 
@@ -36,12 +36,23 @@ res(rain_extent) <- c(1,1)
 
 for(i in 1:nlayers(era5_nc)){
   
-  rain01 <- subset(era5_nc,i)
-  rain02 <- aggregate(rain01,fact=4,fun=mean)
-  rain03 <- resample(x=rain02,y=rain_extent,method="ngb")
+  rain00 <- subset(era5_nc,i)
+  # rm0 <- data.table(rasterToPoints(rain00))
+    
+  rain01 <- mask(rain00,southeastasia)
+  # rm1 <- data.table(rasterToPoints(rain01))
   
-  raster_mask <- mask(rain03,southeastasia)
-  rm <- rasterToPoints(raster_mask)
+  # rm2 <- merge(rm0[,.(x,y)],rm1,all.x=T)
+  # rm2[is.na(rm2)] <- 0
+  
+  # rain02 <- rasterFromXYZ(rm2,crs="+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
+  
+  rain02 <- rain01
+  
+  rain03 <- aggregate(rain02,fact=4,fun=mean)
+  rain04 <- resample(x=rain03,y=rain_extent,method="ngb")
+  
+  rm <- data.table(rasterToPoints(rain04))
   
   year <- substr(colnames(rm)[3],2,5)
   mo <- substr(colnames(rm)[3],7,8)
@@ -78,8 +89,8 @@ for(i in 1:nrow(yrs_dt)){
   
 }
 
-rain_dt <- Reduce(rbind,rain_ls)
+rain_dt <- data.table(Reduce(rbind,rain_ls))
 
 
-save(rain_dt,file="Local/Data/precipitation_mean.RData")
+save(rain_dt,file="precipitation_mean.RData")
 

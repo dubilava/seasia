@@ -96,14 +96,18 @@ countries_dt[,`:=`(event_new=ifelse(event%in%c("protests","riots"),"unrest",ifel
 
 countries_dt <- countries_dt[,.(incidents=sum(incidents)),by=.(country,event=event_new)]
 
+conflict_dt[,urban:=ifelse(capital=="primary" | population>=2000000 | city_population>=1000000,"urban","")]
+
 gg_conflict <- ggplot(data = southeastasia) +
   geom_sf(color="gray",fill=NA,linewidth=.25)+
   geom_scatterpie(data=conflict_dt,aes(x=longitude,y=latitude,r=both*.05),cols=c("battles","violence","unrest"),color=NA)+
   scale_fill_manual(values=c("gray","indianred","goldenrod"))+
-  geom_point(data=conflict_dt[capital=="primary" | population>=2000000 | city_population>=1000000],aes(x=longitude,y=latitude),color="dimgray",fill=NA,shape=21,size=3.5)+
+  geom_point(data=conflict_dt,aes(x=longitude,y=latitude,shape=urban),color="dimgray",fill=NA,size=3.5,na.rm=T)+
+  scale_shape_manual(values=c(NA,21))+
   geom_text_repel(data=conflict_dt[capital=="primary" | city_population>=2500000],aes(x=longitude,y=latitude,label=city),seed=100)+
   theme_void()+
-  theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title = element_blank(),axis.text = element_blank(),legend.title = element_blank(),legend.text = element_text(hjust=0),legend.position = c(.9,.5),plot.background=element_rect(fill="white",color=NA))
+  guides(fill=guide_legend(order=2),shape=guide_legend(order=1))+
+  theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title = element_blank(),axis.text = element_blank(),legend.title = element_blank(),legend.text = element_text(hjust=0),legend.position = c(.87,.48),plot.background=element_rect(fill="white",color=NA))
 
 countries_dt$ylab <- 0
 countries_dt$event <- factor(countries_dt$event,levels=c("battles","violence","unrest"))
@@ -185,7 +189,7 @@ ggsave("Figures/Extra/series_conflict_myanmar.eps",gg_comb,width=6.0,height=4.0,
 
 maps_dt <- datacomb_dt[year==2020]
 
-maps_dt[,`:=`(irrig=ifelse(prop_i>=.5,1,0))]
+maps_dt[,`:=`(irrig=ifelse(prop_i>=.5,"irrigated",""))]
 
 cal_dt <- maps_dt[harvest_month==1,.(longitude,latitude,month,area_spam,area_i,area_r,irrig)]
 
@@ -207,12 +211,12 @@ fourseasons_col <- fourseasons(13)[c(13,2:12)]
 gg_map <- ggplot(data = southeastasia) +
   geom_sf(color="gray",fill=NA,linewidth=.25)+
   geom_point(data=cal_dt,aes(x=longitude,y=latitude,size=area_spam,color=month))+
-  geom_point(data=cal_dt[irrig==1],aes(x=longitude,y=latitude,size=area_spam,color="dimgray"),shape=1,size=3.5)+
+  geom_point(data=cal_dt,aes(x=longitude,y=latitude,shape=factor(irrig),size=area_spam,color="dimgray"),size=3.5,na.rm=T)+
   scale_size(range=c(.3,2.5),guide="none")+
+  scale_shape_manual(values=c(NA,21))+
   scale_color_manual(values=fourseasons_col,breaks=month.abb,guide="none")+
   theme_void()+
-  guides(color = guide_legend(override.aes = list(size = 2)))+
-  theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title = element_blank(),axis.text = element_blank(),legend.position = "none",plot.background=element_rect(fill="white",color=NA))
+  theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title = element_blank(),axis.text = element_blank(),legend.title=element_blank(),legend.position = c(.87,.48),plot.background=element_rect(fill="white",color=NA))
 
 calsum_dt <- cal_dt[,.(Cells=.N),by=.(month)]
 no_months <- month.abb[month.abb %!in% as.character(calsum_dt$month)]

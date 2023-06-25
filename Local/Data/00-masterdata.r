@@ -231,7 +231,7 @@ standardize <- function(x,ln=TRUE){
   return(z)
 }
 
-load("precipitation_new.RData")
+load("precipitation_mean.RData")
 
 rain_dt <- rain_dt[,.(year=as.factor(year),mo=as.factor(mo),longitude=x,latitude=y,rain=as.numeric(rain))]
 
@@ -457,6 +457,7 @@ dataset_dt <- dataset_dt[country!="Indonesia" | (country=="Indonesia" & as.numer
 dataset_dt <- dataset_dt[country!="Malaysia" | (country=="Malaysia" & as.numeric(as.character(year))>=2018)]
 dataset_dt <- dataset_dt[country!="Philippines" | (country=="Philippines" & as.numeric(as.character(year))>=2016)]
 dataset_dt <- dataset_dt[country!="Timor-Leste" | (country=="Timor-Leste" & as.numeric(as.character(year))>=2020)]
+
 
 save(datacomb_dt,dataset_dt,file="masterdata.RData")
 

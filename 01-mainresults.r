@@ -113,19 +113,6 @@ tab3r <- datacomb_dt[yearmo=="2020-01",.(obs=.N,Crop_area_mean=round(mean(area_r
 kable_styling(kable(rbind(tab3a[,.(Crop_area_mean,Crop_area_sd,Crop_area_min,Crop_area_max)],tab3i[,.(Crop_area_mean,Crop_area_sd,Crop_area_min,Crop_area_max)],tab3r[,.(Crop_area_mean,Crop_area_sd,Crop_area_min,Crop_area_max)])))
 
 
-load("Local/Data/precipitation_mean.RData")
-
-countries_dt <- datacomb_dt[,.(country,x=longitude,y=latitude,xy,year,mo)]
-
-check_dt <- merge(countries_dt,rain_dt,by=c("x","y","year","mo"))
-
-check_dt[,date:=as.Date(paste0(year,"-",mo,"-",dy))]
-
-ggplot(check_dt[country=="Indonesia" & year==2020],aes(x=date,y=rain,group=xy))+
-  geom_line()
-
-check_dt <- check_dt[,.(rain=sum(rain)),by=.(country,year)]
-
 
 # 01 - main results ----
 impact1 <- function(x){

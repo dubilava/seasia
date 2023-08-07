@@ -1,6 +1,5 @@
 ---
-title: "Agricultural Harvests and Seasonal Conflict"
-subtitle: "Prepared for IAMO 2023 Forum"
+title: "Agricultural Shocks and Social Conflict in Southeast Asia"
 author: "David Ubilava"
 date: "University of Sydney"
 output:
@@ -19,7 +18,7 @@ knitr::opts_chunk$set(echo = FALSE)
 ```
 
 
-# Agriculture and conflict can be linked... literally
+# Agriculture and conflict are linked; sometimes literally
 
 .right-90[
 
@@ -31,7 +30,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
 
 
-# Agriculture may also be linked with conflict causally
+# But, more typically, possibly also causally
 
 .right-90[
 
@@ -43,11 +42,39 @@ We ask the question:
 
 ]
 
+---
+
+
+# Harvest-time violence may be linked to rapacity
+
+.right-90[
+
+[Ubilava et al. (2023)](https://doi.org/10.1111/ajae.12364) investigate the effect of cereal price change on seasonal violence in the croplands of Africa.
+
+The key finding: much of the annually accrued effect&mdash;which is positive, statistically significant, and economically meaningful&mdash;happens during the first three months of the crop year.
+
+Accords with the *rapacity mechanism*: farmers attacked when most gains are to be made (or maximum damage incurred).
+
+]
 
 ---
 
 
-# More violence and less protests at harvest time
+# Opportunity cost may explain less protests 
+
+.right-90[
+The *opportunity cost mechanism* often is portrayed as a trade-off a person faces between farming and fighting.
+
+Agricultural shocks may push a person in one direction or another... but this is a longer term engagement.
+
+In the short run, the opportunity cost mechanism is well-suited to explain the lack of protests at harvest time.
+
+But, some of this may be offset by *resentment*, i.e., when people feel being worse off only because others are doing well.
+]
+
+---
+
+# More violence and (maybe) less protests at harvest
 
 .right-90[
 
@@ -114,7 +141,7 @@ For most countries, the data are available from 2010 onward, except for:
 
 .left-50[
 
-From IFPRI's [Spatial Production Allocation Model](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/PRFF8V) (SPAM) and [Monfreda et al. (2008)](https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2007GB002947),
+From IFPRI's [Spatial Production Allocation Model](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/PRFF8V) (SPAM) and [Sacks et al. (2010)](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1466-8238.2010.00551.x),
 - regional variation in the sizes of harvested area
 - regional variation in the timing of harvest seasons
 - regional variation in the proportions of irrigated land
@@ -145,7 +172,7 @@ Seemingly negative relationship between these two variables in 'urban' cells
 ---
 
 
-# We study the effect of harvest on forms of conflict
+# The effect of harvest on the incidence of conflict
 
 .right-90[
 
@@ -267,36 +294,6 @@ The harvest-time increase in battles and violence is a rural phenomenon.
 ---
 
 
-# Harvest-time violence may be linked to rapacity
-
-.right-90[
-
-[Ubilava et al. (2023)](https://doi.org/10.1111/ajae.12364) investigate the effect of cereal price change on seasonal violence in the croplands of Africa.
-
-The key finding: much of the annually accrued effect&mdash;which is positive, statistically significant, and economically meaningful&mdash;happens during the first three months of the crop year.
-
-Accords with the *rapacity mechanism*: farmers attacked when most gains are to be made (or maximum damage incurred).
-
-]
-
----
-
-
-# Opportunity cost may explain less protests 
-
-.right-90[
-The *opportunity cost mechanism* often is portrayed as a trade-off a person faces between farming and fighting.
-
-Agricultural shocks may push a person in one direction or another... but this is a longer term engagement.
-
-In the short run, the opportunity cost mechanism is well-suited to explain the lack of protests at harvest time.
-
-But, some of this may be offset by *resentment*, i.e., when people feel being worse off only because others are doing well.
-]
-
----
-
-
 # Mechanisms: harvest intensity
 
 .left-50[
@@ -360,9 +357,9 @@ The harvest-time decrease in violence, as well as protests and riots, have inver
 
 .right-90[
 
-Climate shocks and conflict ([Burke et al., 2009](https://www.pnas.org/doi/pdf/10.1073/pnas.0907998106); [Hsiang et al., 2013](https://www.science.org/doi/10.1126/science.1235367); [Crost et al., 2018](https://www.sciencedirect.com/science/article/abs/pii/S0095069617301584))
+Climate and conflict ([Burke et al., 2009](https://www.pnas.org/doi/pdf/10.1073/pnas.0907998106); [Hsiang et al., 2013](https://www.science.org/doi/10.1126/science.1235367); [Crost et al., 2018](https://www.sciencedirect.com/science/article/abs/pii/S0095069617301584))
 
-Economic roots of conflict ([Berman et al, 2011](https://journals.sagepub.com/doi/10.1177/0022002710393920); [Crost and Felter, 2020](https://academic.oup.com/jeea/article/18/3/1484/5505371); [McGuirk and Burke, 2020](https://www.journals.uchicago.edu/doi/abs/10.1086/709993))
+Income and conflict ([Berman et al, 2011](https://journals.sagepub.com/doi/10.1177/0022002710393920); [Crost and Felter, 2020](https://academic.oup.com/jeea/article/18/3/1484/5505371); [McGuirk and Burke, 2020](https://www.journals.uchicago.edu/doi/abs/10.1086/709993))
 
 Seasonality of conflict ([Harari and La Ferrara, 2018](https://direct.mit.edu/rest/article-abstract/100/4/594/58501/Conflict-Climate-and-Cells-A-Disaggregated); McGuirk and Nunn, 2023; Guardado and Pennings, 2023; [Ubilava et al., 2023](https://doi.org/10.1111/ajae.12364))
 

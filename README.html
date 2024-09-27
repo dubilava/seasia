@@ -354,60 +354,75 @@ display: none;
 
 <div id="replication-material" class="section level1">
 <h1>Replication Material</h1>
-<p>This repository hosts data and R codes for the paper “<a href="https://arxiv.org/abs/2304.10027">Agricultural Shocks and Social
+<p>This repository hosts data and R codes for the paper “<a href="https://arxiv.org/abs/2304.10027">Agricultural Roots of Social
 Conflict in Southeast Asia</a>,” co-authored with Justin Hastings.</p>
 <div id="data" class="section level2">
 <h2>Data</h2>
-<p>The data used for generating the main results of the study are stored
-in the <a href="masterdata.RData">masterdata.RData</a> file. This file
-compiles the data from the following sources:</p>
+<p>The data used for generating the main results of the study are
+compiled into the <a href="masterdata.RData">masterdata.RData</a>
+file.</p>
 <ul>
 <li><p>The <em>conflict</em> data are from the Armed Conflict Location
 &amp; Event Data Project (ACLED) available at: <a href="www.acleddata.com">http://acleddata.com</a>. For details, see:
 Raleigh, C., A. Linke, H. Hegre, and J. Karlsen (2010). Introducing
 ACLED: “An Armed Conflict Location and Event Dataset: Special Data
 Feature.” Journal of Peace Research 47(5): 651–660.</p></li>
-<li><p>The <em>rice harvest</em> data are from the International Food
+<li><p>The rice <em>harvest</em> data are from the International Food
 and Policy Research Institute’s MapSPAM 2010, obtained from Harvard
 Dataverse available at: <a href="https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/PRFF8V">https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/PRFF8V</a>.
 For details, see: Yu, Q., You, L., Wood-Sichra, U., Ru, Y., Joglekar,
 A.K.B., Fritz, S., Xiong, W., Lu, M., Wu, W., and P., Yang. (2020). <a href="https://essd.copernicus.org/articles/12/3545/2020/">A Cultivated
 Planet in 2010-Part 2: The Global Gridded Agricultural-Production
 Maps</a>. Earth System Science Data, 12(4), 3545-3572.</p></li>
-<li><p>The <em>harvest calendar</em> data are from Monfreda, C., N.
+<li><p>The harvest <em>calendar</em> data are from Monfreda, C., N.
 Ramankutty, and J.A. Foley (2008), Farming the Planet: 2. Geographic
 Distribution of Crop Areas, Yields, Physiological Types, and Net Primary
 Production in the Year 2000, Global Biogeochemical Cycles, 22, GB1022
 available at: <a href="http://www.earthstat.org/harvested-area-yield-175-crops/">http://www.earthstat.org/harvested-area-yield-175-crops/</a></p></li>
-<li><p>The <em>weather</em> data are the ERA5 reanalysis gridded data on
-monthly averaged total precipitation from European Centre for
-Medium-Range Weather Forecasts (ECMWF) Copernicus Project, available at
-<a href="https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels">https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels</a>.
+<li><p>The <em>weather</em> data are the NOAA/CPC Global Unified
+Gauge-Based Analysis of Daily Precipitation, available at <a href="https://psl.noaa.gov/data/gridded/data.cpc.globalprecip.html">https://psl.noaa.gov/data/gridded/data.cpc.globalprecip.html</a>.
 We use these data to test harvest-related mechanisms due to good vs bad
 crops seasons.</p></li>
-<li><p>The <em>cities</em> data are obtained from the Simple Maps
-available at <a href="https://simplemaps.com/data/world-cities">https://simplemaps.com/data/world-cities</a>.
+<li><p>The <em>cities</em> data are from the Simple Maps available at <a href="https://simplemaps.com/data/world-cities">https://simplemaps.com/data/world-cities</a>.
 We use these data to examine the treatment heterogeneity in urban vs
 rural cells.</p></li>
 </ul>
 </div>
 <div id="r-codes" class="section level2">
 <h2>R Codes</h2>
-<p>The R codes to replicate the study are as follows:</p>
+<p>The R codes to source and compile the data include:</p>
 <ul>
-<li><a href="01-mainresults.r">01-mainresults.r</a>: Tables 1-3 (main
-text), and Appendix Tables B35-B39.</li>
-<li><a href="03-altresults.r">02-altresults.r</a>: Appendix Tables
-B1-B34.</li>
-<li><a href="03-figures.r">03-figures.r</a>: Figures 1-6 (main text),
-and Appendix Figures C1-C7.</li>
-<li><a href="04-specchart.r">04-specchart.r</a>: Figures 1-6 (main
-text), and Appendix Figures C1-C7.</li>
+<li><a href="01-getacled.r">01-getacled.r</a>: download and store
+conflict data</li>
+<li><a href="02-getrainfall.r">02-getrainfall.r</a>: download and store
+rainfall data</li>
+<li><a href="03-getcalendar.r">03-getcalendar.r</a>: download and store
+harvest calendar data</li>
+<li><a href="04-getspam.r">04-getspam.r</a>: download and store rice
+harvest area data</li>
+<li><a href="05-combine.r">05-combine.r</a>: combine the crop harvest
+and conflict datasets</li>
+<li><a href="06-masterdata.r">06-masterdata.r</a>: some more data
+wrangling to finalize the dataset</li>
 </ul>
+<p>The R codes to replicate the results include:</p>
+<ul>
+<li><a href="11-descriptive.r">11-descriptive.r</a>: Table 2, Figures
+1-3, Appendix Figures B1-B2</li>
+<li><a href="12-mainresults.r">12-mainresults.r</a>: Table 3, Figures
+4-7, Appendix Tables A1-A2 and A4-A7, Appendix Figures B3-B4 and B6</li>
+<li><a href="13-specchart.r">13-specchart.r</a>: Appendix Figure B5</li>
+<li><a href="14-smallres.r">14-smallres.r</a>: Appendix Table A3*</li>
+</ul>
+<p>*Note: Appendix Table A3 generates the regression results similar to
+the main results but using 0.5-degree cells (instead of 1.0-degree
+cells) as the geographic unit of observation. The dataset is compiled
+into <a href="masterdata05.RData">masterdata05.RData</a> file using
+steps similar to that of the main dataset.</p>
 </div>
 <div id="license" class="section level2">
 <h2>License</h2>
-<p><a href="https://opensource.org/licenses/MIT"><img src="data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iODIiIGhlaWdodD0iMjAiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iTGljZW5zZTogTUlUIj48dGl0bGU+TGljZW5zZTogTUlUPC90aXRsZT48bGluZWFyR3JhZGllbnQgaWQ9InMiIHgyPSIwIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmJiIiBzdG9wLW9wYWNpdHk9Ii4xIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLW9wYWNpdHk9Ii4xIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9InIiPjxyZWN0IHdpZHRoPSI4MiIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiNmZmYiLz48L2NsaXBQYXRoPjxnIGNsaXAtcGF0aD0idXJsKCNyKSI+PHJlY3Qgd2lkdGg9IjUxIiBoZWlnaHQ9IjIwIiBmaWxsPSIjNTU1Ii8+PHJlY3QgeD0iNTEiIHdpZHRoPSIzMSIgaGVpZ2h0PSIyMCIgZmlsbD0iI2RmYjMxNyIvPjxyZWN0IHdpZHRoPSI4MiIgaGVpZ2h0PSIyMCIgZmlsbD0idXJsKCNzKSIvPjwvZz48ZyBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iVmVyZGFuYSxHZW5ldmEsRGVqYVZ1IFNhbnMsc2Fucy1zZXJpZiIgdGV4dC1yZW5kZXJpbmc9Imdlb21ldHJpY1ByZWNpc2lvbiIgZm9udC1zaXplPSIxMTAiPjx0ZXh0IGFyaWEtaGlkZGVuPSJ0cnVlIiB4PSIyNjUiIHk9IjE1MCIgZmlsbD0iIzAxMDEwMSIgZmlsbC1vcGFjaXR5PSIuMyIgdHJhbnNmb3JtPSJzY2FsZSguMSkiIHRleHRMZW5ndGg9IjQxMCI+TGljZW5zZTwvdGV4dD48dGV4dCB4PSIyNjUiIHk9IjE0MCIgdHJhbnNmb3JtPSJzY2FsZSguMSkiIGZpbGw9IiNmZmYiIHRleHRMZW5ndGg9IjQxMCI+TGljZW5zZTwvdGV4dD48dGV4dCBhcmlhLWhpZGRlbj0idHJ1ZSIgeD0iNjU1IiB5PSIxNTAiIGZpbGw9IiMwMTAxMDEiIGZpbGwtb3BhY2l0eT0iLjMiIHRyYW5zZm9ybT0ic2NhbGUoLjEpIiB0ZXh0TGVuZ3RoPSIyMTAiPk1JVDwvdGV4dD48dGV4dCB4PSI2NTUiIHk9IjE0MCIgdHJhbnNmb3JtPSJzY2FsZSguMSkiIGZpbGw9IiNmZmYiIHRleHRMZW5ndGg9IjIxMCI+TUlUPC90ZXh0PjwvZz48L3N2Zz4=" alt="License: MIT" /></a></p>
+<p><a href="https://opensource.org/licenses/MIT"><img role="img" aria-label="License: MIT" src="data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iODIiIGhlaWdodD0iMjAiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iTGljZW5zZTogTUlUIj48dGl0bGU+TGljZW5zZTogTUlUPC90aXRsZT48bGluZWFyR3JhZGllbnQgaWQ9InMiIHgyPSIwIiB5Mj0iMTAwJSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjYmJiIiBzdG9wLW9wYWNpdHk9Ii4xIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLW9wYWNpdHk9Ii4xIi8+PC9saW5lYXJHcmFkaWVudD48Y2xpcFBhdGggaWQ9InIiPjxyZWN0IHdpZHRoPSI4MiIgaGVpZ2h0PSIyMCIgcng9IjMiIGZpbGw9IiNmZmYiLz48L2NsaXBQYXRoPjxnIGNsaXAtcGF0aD0idXJsKCNyKSI+PHJlY3Qgd2lkdGg9IjUxIiBoZWlnaHQ9IjIwIiBmaWxsPSIjNTU1Ii8+PHJlY3QgeD0iNTEiIHdpZHRoPSIzMSIgaGVpZ2h0PSIyMCIgZmlsbD0iI2RmYjMxNyIvPjxyZWN0IHdpZHRoPSI4MiIgaGVpZ2h0PSIyMCIgZmlsbD0idXJsKCNzKSIvPjwvZz48ZyBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iVmVyZGFuYSxHZW5ldmEsRGVqYVZ1IFNhbnMsc2Fucy1zZXJpZiIgdGV4dC1yZW5kZXJpbmc9Imdlb21ldHJpY1ByZWNpc2lvbiIgZm9udC1zaXplPSIxMTAiPjx0ZXh0IGFyaWEtaGlkZGVuPSJ0cnVlIiB4PSIyNjUiIHk9IjE1MCIgZmlsbD0iIzAxMDEwMSIgZmlsbC1vcGFjaXR5PSIuMyIgdHJhbnNmb3JtPSJzY2FsZSguMSkiIHRleHRMZW5ndGg9IjQxMCI+TGljZW5zZTwvdGV4dD48dGV4dCB4PSIyNjUiIHk9IjE0MCIgdHJhbnNmb3JtPSJzY2FsZSguMSkiIGZpbGw9IiNmZmYiIHRleHRMZW5ndGg9IjQxMCI+TGljZW5zZTwvdGV4dD48dGV4dCBhcmlhLWhpZGRlbj0idHJ1ZSIgeD0iNjU1IiB5PSIxNTAiIGZpbGw9IiMwMTAxMDEiIGZpbGwtb3BhY2l0eT0iLjMiIHRyYW5zZm9ybT0ic2NhbGUoLjEpIiB0ZXh0TGVuZ3RoPSIyMTAiPk1JVDwvdGV4dD48dGV4dCB4PSI2NTUiIHk9IjE0MCIgdHJhbnNmb3JtPSJzY2FsZSguMSkiIGZpbGw9IiNmZmYiIHRleHRMZW5ndGg9IjIxMCI+TUlUPC90ZXh0PjwvZz48L3N2Zz4=" alt="License: MIT" /></a></p>
 </div>
 </div>
 

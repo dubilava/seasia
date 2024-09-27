@@ -79,7 +79,7 @@ dataset_dt <- dataset_dt[country %!in% c("Brunei","Timor-Leste")]
 
 
 
-# Tab 1: Descriptive stats ----
+# Tab 2: Descriptive stats ----
 
 datacomb_dt[,.(incidents=sum(incidents))]
 datacomb_dt[,.(incidents=sum(incidents)),by=.(country)]

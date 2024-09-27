@@ -101,7 +101,9 @@ dataset_dt[,rain_t:=rain]
 # dataset_dt <- merge(dataset_dt,travel10_dt,by=c("longitude","latitude"))
 
 
-# 01 - baseline result ----
+# 01 - baseline ----
+
+## Tab 3: baseline results ----
 
 impact <- function(x){
   r <- feols(incidents~area_spam:seas+rain_t | xy+country^year+yearmo, data=x,vcov=~xy)
@@ -148,7 +150,7 @@ modelsummary(list(coef0_fe,coef1_fe,coef2_fe,coef3_fe,coef4_fe),estimate="{estim
 kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),battles=c(c_battles$descriptive,c_battles$effect),violence=c(c_violence$descriptive,c_violence$effect),riots=c(c_riots$descriptive,c_riots$effect),protests=c(c_protests$descriptive,c_protests$effect))))
 
 
-## B1: balanced panel (2018:2023) ----
+## Tab A1: balanced panel (2018:2023) ----
 
 ## combined effect
 datasub_dt <- datacomb_dt
@@ -188,7 +190,7 @@ kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),battles=
 
 
 
-## B2: balanced panel (2010:2023) ----
+## Tab A2: balanced panel (2010:2023) ----
 
 ## combined effect
 datasub_dt <- datacomb_dt
@@ -227,7 +229,7 @@ modelsummary(list(coef0_fe,coef1_fe,coef2_fe,coef3_fe,coef4_fe),estimate="{estim
 kable_styling(kable(data.table(comb=c(c_comb$descriptive,c_comb$effect),battles=c(c_battles$descriptive,c_battles$effect),violence=c(c_violence$descriptive,c_violence$effect),riots=c(c_riots$descriptive,c_riots$effect),protests=c(c_protests$descriptive,c_protests$effect))))
 
 
-## A3: drop one country at a time ----
+## Fig B3: drop one country at a time ----
 
 list_of_countries <- unique(datacomb_dt$country)
 
@@ -312,7 +314,7 @@ gg_dropacountry <- plot_grid(gg_dropone,gg_incidents,align = "hv",axis="tb",ncol
 ggsave("Figures/results_dropacountry.png",gg_dropacountry,width=6.25,height=6.25*9/16,dpi="retina",device="png")
 
 
-## A4: drop one year at a time ----
+## Fig B4: drop one year at a time ----
 
 list_of_years <- as.numeric(as.character(unique(datacomb_dt$year)[order(unique(datacomb_dt$year))]))
 
@@ -397,7 +399,7 @@ gg_dropayear <- plot_grid(gg_dropone,gg_incidents,align = "hv",axis="tb",ncol=2,
 ggsave("Figures/results_dropayear.png",gg_dropayear,width=6.25,height=6.25*9/16,dpi="retina",device="png")
 
 
-## A6: randomize harvest seasons ----
+## Fig B6: randomize harvest seasons ----
 list_of_iter <- 1:100
 
 lst <- list()
@@ -501,7 +503,7 @@ ggsave("Figures/results_shuffleharvest.png",gg_comb,width=6.25,height=5.25,dpi="
 
 # 02 - heterogeneity ----
 
-## 02a - Irrigated ----
+## Fig 4/Tab A4 - Irrigated ----
 
 ## combined effect
 datasub_dt <- datacomb_dt
@@ -578,7 +580,7 @@ ggsave("Figures/results_irrigation.png",gg_irri,width=6.25,height=5.25,dpi="reti
 
 
 
-## 02b - Cities ----
+## Fig 5/Tab A5 - Cities ----
 
 ## combined effect
 datasub_dt <- datacomb_dt
@@ -668,7 +670,7 @@ ggsave("Figures/results_population.png",gg_rural,width=6.25,height=5.25,dpi="ret
 
 # 03 - mechanisms ----
 
-## 03a - Rainfall ----
+## Fig 6/Tab A6 - Rainfall ----
 
 ## combined effect
 datasub_dt <- datacomb_dt
@@ -749,7 +751,7 @@ ggsave("Figures/results_rainfall.png",gg_rain,width=6.25,height=5.25,dpi="retina
 
 
 
-## 03b - Conflict ----
+## Fig 7/Tab A7 - Conflict ----
 
 ## combined effect
 datasub_dt <- datacomb_dt

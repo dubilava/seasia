@@ -255,7 +255,7 @@ gg_maplegend <- ggdraw(aligned[[1]]) + draw_plot(aligned[[2]],x=.63,y=.60,width=
 
 
 ggsave("Figures/map_harvest.png",gg_maplegend,width=6.25,height=5.25,dpi="retina",device="png")
-ggsave("Figures/map_harvest.eps",gg_maplegend,width=6.25,height=5.25,dpi="retina",device="eps")
+ggsave("Figures/map_harvest.eps",gg_maplegend,width=6.25,height=5.25,dpi="retina",device=cairo_ps)
 
 
 

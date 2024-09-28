@@ -312,7 +312,7 @@ gg_incidents <- ggplot(country_dt,aes(x=country,y=share))+
 gg_dropacountry <- plot_grid(gg_dropone,gg_incidents,align = "hv",axis="tb",ncol=2,rel_widths=c(10,3))
 
 ggsave("Figures/results_dropacountry.png",gg_dropacountry,width=6.25,height=6.25*9/16,dpi="retina",device="png")
-
+ggsave("Figures/results_dropacountry.eps",gg_dropacountry,width=6.25,height=6.25*9/16,dpi="retina",device="eps")
 
 ## Fig B4: drop one year at a time ----
 
@@ -397,7 +397,7 @@ gg_incidents <- ggplot(year_dt,aes(x=year,y=share))+
 gg_dropayear <- plot_grid(gg_dropone,gg_incidents,align = "hv",axis="tb",ncol=2,rel_widths=c(10,3))
 
 ggsave("Figures/results_dropayear.png",gg_dropayear,width=6.25,height=6.25*9/16,dpi="retina",device="png")
-
+ggsave("Figures/results_dropayear.eps",gg_dropayear,width=6.25,height=6.25*9/16,dpi="retina",device="eps")
 
 ## Fig B6: randomize harvest seasons ----
 list_of_iter <- 1:100
@@ -499,7 +499,7 @@ gg_den <- ggplot(shuffle_dt,aes(x=est))+
 gg_comb <- plot_grid(gg_shuffle,gg_den,ncol=1,align="hv",axis="tblr",rel_heights=c(5,2))
 
 ggsave("Figures/results_shuffleharvest.png",gg_comb,width=6.25,height=5.25,dpi="retina",device="png")
-
+ggsave("Figures/results_shuffleharvest.eps",gg_comb,width=6.25,height=5.25,dpi="retina",device="eps")
 
 # 02 - heterogeneity ----
 
@@ -577,7 +577,7 @@ gg4 <- ggplot(eff4,aes(x=prop_i,y=estimate1,ymin=conf.low1,ymax=conf.high1)) +
 gg_irri <- plot_grid(gg1,gg2,gg3,gg4,align="hv",axis="lr",ncol=2)
 
 ggsave("Figures/results_irrigation.png",gg_irri,width=6.25,height=5.25,dpi="retina",device="png")
-
+ggsave("Figures/results_irrigation.eps",gg_irri,width=6.25,height=5.25,dpi="retina",device=cairo_ps)
 
 
 ## Fig 5/Tab A5 - Cities ----
@@ -589,6 +589,28 @@ datasub_dt[,`:=`(rural=1-urban)]
 
 sub_dt <- datacomb_dt[yearmo=="2020-01"]
 sub_dt[,.N,by=.(rural)]
+
+### for table
+
+## effect
+coef0_fe <- feols(incidents~treat:urban+treat:rural+rain_t | xy+country^year+yearmo, datasub_dt,vcov=~xy)
+
+## evens-specific effects
+datasub_dt <- dataset_dt
+datasub_dt[,`:=`(area=ifelse(area_spam<.1,0,1),seas=harvest_season,urban=ifelse(capital=="primary" | city_population>=2500000 | population>=2500000,1,0),treat=area_spam*harvest_season)]
+datasub_dt[,`:=`(rural=1-urban)]
+
+## effect
+coef1_fe <- feols(incidents~treat:urban+treat:rural+rain_t | xy+country^year+yearmo, datasub_dt[event=="battles"],vcov=~xy)
+coef2_fe <- feols(incidents~treat:urban+treat:rural+rain_t | xy+country^year+yearmo, datasub_dt[event=="violence"],vcov=~xy)
+coef3_fe <- feols(incidents~treat:urban+treat:rural+rain_t | xy+country^year+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
+coef4_fe <- feols(incidents~treat:urban+treat:rural+rain_t | xy+country^year+yearmo, datasub_dt[event=="protests"],vcov=~xy)
+
+
+modelsummary(list(coef0_fe,coef1_fe,coef2_fe,coef3_fe,coef4_fe),estimate="{estimate}{stars}",stars=c('*'=.1,'**'=.05,'***'=.01),gof_map=gm)
+
+
+### for plot
 
 ## effect
 coef0_fe <- feols(incidents~treat+treat:rural+rain_t | xy+country^year+yearmo, datasub_dt,vcov=~xy)
@@ -603,9 +625,6 @@ coef1_fe <- feols(incidents~treat+treat:rural+rain_t | xy+country^year+yearmo, d
 coef2_fe <- feols(incidents~treat+treat:rural+rain_t | xy+country^year+yearmo, datasub_dt[event=="violence"],vcov=~xy)
 coef3_fe <- feols(incidents~treat+treat:rural+rain_t | xy+country^year+yearmo, datasub_dt[event=="riots" ],vcov=~xy)
 coef4_fe <- feols(incidents~treat+treat:rural+rain_t | xy+country^year+yearmo, datasub_dt[event=="protests"],vcov=~xy)
-
-
-modelsummary(list(coef0_fe,coef1_fe,coef2_fe,coef3_fe,coef4_fe),estimate="{estimate}{stars}",stars=c('*'=.1,'**'=.05,'***'=.01),gof_map=gm)
 
 
 eff1 <- as.data.table(plot_slopes(coef1_fe,variables="treat",condition = "rural",draw=F))
@@ -665,7 +684,7 @@ gg4 <- ggplot(eff4,aes(x=rural,y=estimate1,ymin=conf.low1,ymax=conf.high1)) +
 gg_rural <- plot_grid(gg1,gg2,gg3,gg4,align="hv",axis="lr",ncol=2)
 
 ggsave("Figures/results_population.png",gg_rural,width=6.25,height=5.25,dpi="retina",device="png")
-
+ggsave("Figures/results_population.eps",gg_rural,width=6.25,height=5.25,dpi="retina",device=cairo_ps)
 
 
 # 03 - mechanisms ----
@@ -747,6 +766,7 @@ gg4 <- ggplot(eff4,aes(x=gs_rain100,y=estimate1,ymin=conf.low1,ymax=conf.high1))
 gg_rain <- plot_grid(gg1,gg2,gg3,gg4,align="hv",axis="lr",ncol=2)
 
 ggsave("Figures/results_rainfall.png",gg_rain,width=6.25,height=5.25,dpi="retina",device="png")
+ggsave("Figures/results_rainfall.eps",gg_rain,width=6.25,height=5.25,dpi="retina",device=cairo_ps)
 
 
 
@@ -836,7 +856,7 @@ gg4 <- ggplot(eff4,aes(x=conf,y=estimate1,ymin=conf.low1,ymax=conf.high1)) +
 gg_conf <- plot_grid(gg1,gg2,gg3,gg4,align="hv",axis="lr",ncol=2)
 
 ggsave("Figures/results_conflict.png",gg_conf,width=6.25,height=5.25,dpi="retina",device="png")
-
+ggsave("Figures/results_conflict.eps",gg_conf,width=6.25,height=5.25,dpi="retina",device=cairo_ps)
 
 
 

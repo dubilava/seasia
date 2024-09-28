@@ -1,6 +1,6 @@
 # Replication Material
 
-This repository hosts data and R codes for the paper "[Agricultural Roots of Social Conflict in Southeast Asia](https://arxiv.org/abs/2304.10027)," co-authored with Justin Hastings.
+This repository hosts data and R scripts for the paper "[Agricultural Roots of Social Conflict in Southeast Asia](https://arxiv.org/abs/2304.10027)," co-authored with Justin Hastings.
 
 
 ## Data
@@ -20,9 +20,9 @@ The data used for generating the main results of the study are compiled into the
 
 
 
-## R Codes
+## R scripts
 
-The R codes to source and compile the data include:
+### To compile the data
 
 - [01-getacled.r](01-getacled.r): download and store conflict data
 - [02-getrainfall.r](02-getrainfall.r): download and store rainfall data
@@ -31,8 +31,10 @@ The R codes to source and compile the data include:
 - [05-combine.r](05-combine.r): combine the crop harvest and conflict datasets
 - [06-masterdata.r](06-masterdata.r): some more data wrangling to finalize the dataset
 
+The replication materials do not include the downloaded data. However, the links to the data and brief instructions on how to download and store them are provided in the corresponding R scripts.
 
-The R codes to replicate the results include:
+
+### To replicate the results
 
 - [11-descriptive.r](11-descriptive.r): Table 2, Figures 1-3, Appendix Figures B1-B2
 - [12-mainresults.r](12-mainresults.r): Table 3, Figures 4-7, Appendix Tables A1-A2 and A4-A7, Appendix Figures B3-B4 and B6

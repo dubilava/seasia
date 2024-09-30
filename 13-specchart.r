@@ -70,7 +70,7 @@ gm <- list(list("raw"="nobs","clean"="Obs.","fmt"=f2),
 
 
 ## load the main dataset
-load("masterdata10.RData")
+load("masterdata.RData")
 
 countries <- c(unique(datacomb_dt$country),"Singapore")
 
@@ -386,8 +386,8 @@ gg_comb <- plot_grid(gg_est,gg_spec1,gg_spec2,ncol=1,align="hv",axis="lr",rel_he
 gg_comb
 
 
-ggsave("Figures/spec_chart.png",gg_comb,width=6.5,height=6.5,dpi="retina",device="png")
+ggsave("Figures/spec_chart.png",gg_comb,width=6.25,height=6.25,dpi="retina",device="png")
 
-# ggsave("Figures/spec_chart.eps",gg_comb,width=6.5,height=7.0,dpi="retina",device="eps")
+ggsave("Figures/spec_chart.eps",gg_comb,width=6.25,height=6.25,dpi="retina",device="eps")
 
 

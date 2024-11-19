@@ -169,7 +169,7 @@ ggsave("Figures/map_conflict.eps",gg_maplegend,width=6.25,height=5.25,dpi=350,de
 bw_conflict <- ggplot(data = southeastasia) +
   geom_sf(color="gray",fill=NA,linewidth=.25)+
   geom_scatterpie(data=conflict_dt,aes(x=longitude,y=latitude,r=both*.06),cols=c("battles","violence","unrest"),color=NA)+
-  scale_fill_manual(values=c("gray60","gray40","gray80"))+
+  scale_fill_manual(values=c("gray","gray35","gray55"))+
   geom_point(data=conflict_dt[capital=="primary" | city_population>=2500000],aes(x=longitude,y=latitude),color="dimgray",fill="white",shape=21,size=1,stroke=.3,na.rm=T)+
   geom_text_repel(data=conflict_dt[capital=="primary" | city_population>=2500000],aes(x=longitude,y=latitude,label=city),color="black",size=3,seed=100)+
   theme_void()+
@@ -179,7 +179,7 @@ bw_conflict <- ggplot(data = southeastasia) +
 bw_bars <- ggplot(countries_dt,aes(x=reorder(country,incidents),y=incidents))+
   geom_bar(aes(fill=event),stat="identity",color="white",linewidth=.25)+
   geom_text(data=ccum_dt,aes(y=incidents+5000,label=country_incidents),vjust=0.5,hjust=1,nudge_y=300,size=3)+
-  scale_fill_manual(values=c("gray60","gray40","gray80"))+
+  scale_fill_manual(values=c("gray","gray35","gray55"))+
   scale_y_reverse()+
   coord_flip(clip="off")+
   labs(y="",x="")+
@@ -224,7 +224,7 @@ ggsave("Figures/series_conflict.eps",gg_comb,width=6.25,height=6.25*9/16,dpi=350
 
 bw1 <- ggplot(conflict_ts,aes(x=date,y=rate,color=event,linetype=event))+
   geom_line()+
-  scale_color_manual(values=c("darkgray","gray60","gray40","gray80"))+
+  scale_color_manual(values=c("darkgray","gray35","gray15","gray55"))+
   labs(x="Year",y="",subtitle="Average number of incidents per cell")+
   theme_paper()+
   theme(legend.position=c(.5,.85),legend.direction="horizontal")
@@ -305,7 +305,7 @@ ggsave("Figures/map_harvest.eps",gg_maplegend,width=6.25,height=5.25,dpi=350,dev
 
 
 ## seasonal grayscale scheme
-fourseasons_bw <- colorRampPalette(colors=c("gray80","gray70","gray50","gray40","gray60","gray80"),interpolate="spline")
+fourseasons_bw <- colorRampPalette(colors=c("gray80","gray30","gray60","gray40","gray70","gray80"),interpolate="spline")
 
 fourseasons_bw <- fourseasons_bw(13)[c(13,2:12)]
 

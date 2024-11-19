@@ -311,8 +311,28 @@ gg_incidents <- ggplot(country_dt,aes(x=country,y=share))+
 
 gg_dropacountry <- plot_grid(gg_dropone,gg_incidents,align = "hv",axis="tb",ncol=2,rel_widths=c(10,3))
 
-ggsave("Figures/results_dropacountry.png",gg_dropacountry,width=6.25,height=6.25*9/16,dpi="retina",device="png")
-ggsave("Figures/results_dropacountry.eps",gg_dropacountry,width=6.25,height=6.25*9/16,dpi="retina",device="eps")
+ggsave("Figures/results_dropacountry.png",gg_dropacountry,width=6.25,height=6.25*9/16,dpi=350,device="png")
+ggsave("Figures/results_dropacountry.eps",gg_dropacountry,width=6.25,height=6.25*9/16,dpi=350,device="eps")
+
+
+dropone_dt[,`:=`(col=ifelse(est/se > 1.96,"gray40",ifelse(est/se < -1.96,"gray40","darkgray")),pch=ifelse(abs(est/se) > 1.96,16,21))]
+
+bw_dropone <- ggplot(dropone_dt,aes(x=country,y=est))+
+  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se),linewidth=.5,width=NA,color=dropone_dt$col)+
+  geom_point(size=1.5,shape=dropone_dt$pch,color=dropone_dt$col,fill="white",stroke=.8)+
+  scale_y_continuous(breaks=pretty_breaks(n=3))+
+  facet_grid(.~event)+
+  coord_flip(ylim=c(-35,35))+
+  labs(title="",x="",subtitle="Omitted country",y="Harvest-time change in conflict relative to the baseline (%)")+
+  theme_paper()+
+  theme(panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"),axis.text.y=element_text(hjust=0))
+
+
+bw_dropacountry <- plot_grid(bw_dropone,gg_incidents,align = "hv",axis="tb",ncol=2,rel_widths=c(10,3))
+
+ggsave("Figures/results_dropacountry_bw.png",bw_dropacountry,width=6.25,height=6.25*9/16,dpi=350,device="png")
+ggsave("Figures/results_dropacountry_bw.eps",bw_dropacountry,width=6.25,height=6.25*9/16,dpi=350,device="eps")
+
 
 ## Fig B4: drop one year at a time ----
 
@@ -396,8 +416,27 @@ gg_incidents <- ggplot(year_dt,aes(x=year,y=share))+
 
 gg_dropayear <- plot_grid(gg_dropone,gg_incidents,align = "hv",axis="tb",ncol=2,rel_widths=c(10,3))
 
-ggsave("Figures/results_dropayear.png",gg_dropayear,width=6.25,height=6.25*9/16,dpi="retina",device="png")
-ggsave("Figures/results_dropayear.eps",gg_dropayear,width=6.25,height=6.25*9/16,dpi="retina",device="eps")
+ggsave("Figures/results_dropayear.png",gg_dropayear,width=6.25,height=6.25*9/16,dpi=350,device="png")
+ggsave("Figures/results_dropayear.eps",gg_dropayear,width=6.25,height=6.25*9/16,dpi=350,device="eps")
+
+
+
+dropone_dt[,`:=`(col=ifelse(est/se > 1.96,"gray40",ifelse(est/se < -1.96,"gray40","darkgray")),pch=ifelse(abs(est/se) > 1.96,16,21))]
+
+bw_dropone <- ggplot(dropone_dt,aes(x=year,y=est))+
+  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se),linewidth=.5,width=NA,color=dropone_dt$col)+
+  geom_point(size=1.5,shape=dropone_dt$pch,color=dropone_dt$col,fill="white",stroke=.8)+
+  scale_y_continuous(breaks=pretty_breaks(n=3))+
+  facet_grid(.~event)+
+  coord_flip(ylim=c(-35,35))+
+  labs(title="",x="",subtitle="Omitted year",y="Harvest-time change in conflict relative to the baseline (%)")+
+  theme_paper()+
+  theme(panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"),axis.text.y=element_text(hjust=0))
+
+bw_dropayear <- plot_grid(bw_dropone,gg_incidents,align = "hv",axis="tb",ncol=2,rel_widths=c(10,3))
+
+ggsave("Figures/results_dropayear_bw.png",bw_dropayear,width=6.25,height=6.25*9/16,dpi=350,device="png")
+ggsave("Figures/results_dropayear_bw.eps",bw_dropayear,width=6.25,height=6.25*9/16,dpi=350,device="eps")
 
 ## Fig B6: randomize harvest seasons ----
 list_of_iter <- 1:100
@@ -498,8 +537,27 @@ gg_den <- ggplot(shuffle_dt,aes(x=est))+
 
 gg_comb <- plot_grid(gg_shuffle,gg_den,ncol=1,align="hv",axis="tblr",rel_heights=c(5,2))
 
-ggsave("Figures/results_shuffleharvest.png",gg_comb,width=6.25,height=5.25,dpi="retina",device="png")
-ggsave("Figures/results_shuffleharvest.eps",gg_comb,width=6.25,height=5.25,dpi="retina",device="eps")
+ggsave("Figures/results_shuffleharvest.png",gg_comb,width=6.25,height=5.25,dpi=350,device="png")
+ggsave("Figures/results_shuffleharvest.eps",gg_comb,width=6.25,height=5.25,dpi=350,device="eps")
+
+
+
+shuffle_dt[,`:=`(col=ifelse(est/se > 1.96,"gray40",ifelse(est/se < -1.96,"gray40","darkgray")),pch=ifelse(abs(est/se) > 1.96,16,21))]
+
+bw_shuffle <- ggplot(shuffle_dt,aes(x=iter,y=est))+
+  geom_errorbar(aes(ymin=est-1.96*se,ymax=est+1.96*se),linewidth=.3,width=NA,color=shuffle_dt$col)+
+  geom_point(size=0.8,shape=shuffle_dt$pch,color=shuffle_dt$col,fill="white",stroke=.4)+
+  scale_x_discrete(breaks=seq(5,100,by=5))+
+  facet_grid(.~event)+
+  coord_flip(ylim=c(-35,35))+
+  labs(title="",x="",subtitle="Iteration",y="Harvest-time change in conflict relative to the baseline (%)")+
+  theme_paper()+
+  theme(panel.grid.major.y=element_blank(),panel.grid.major.x=element_line(colour="darkgray"))
+
+bw_comb <- plot_grid(bw_shuffle,gg_den,ncol=1,align="hv",axis="tblr",rel_heights=c(5,2))
+
+ggsave("Figures/results_shuffleharvest_bw.png",bw_comb,width=6.25,height=5.25,dpi=350,device="png")
+ggsave("Figures/results_shuffleharvest_bw.eps",bw_comb,width=6.25,height=5.25,dpi=350,device="eps")
 
 # 02 - heterogeneity ----
 
@@ -576,8 +634,8 @@ gg4 <- ggplot(eff4,aes(x=prop_i,y=estimate1,ymin=conf.low1,ymax=conf.high1)) +
 
 gg_irri <- plot_grid(gg1,gg2,gg3,gg4,align="hv",axis="lr",ncol=2)
 
-ggsave("Figures/results_irrigation.png",gg_irri,width=6.25,height=5.25,dpi="retina",device="png")
-ggsave("Figures/results_irrigation.eps",gg_irri,width=6.25,height=5.25,dpi="retina",device=cairo_ps)
+ggsave("Figures/results_irrigation.png",gg_irri,width=6.25,height=5.25,dpi=350,device="png")
+ggsave("Figures/results_irrigation.eps",gg_irri,width=6.25,height=5.25,dpi=350,device=cairo_ps)
 
 
 ## Fig 5/Tab A5 - Cities ----
@@ -683,8 +741,8 @@ gg4 <- ggplot(eff4,aes(x=rural,y=estimate1,ymin=conf.low1,ymax=conf.high1)) +
 
 gg_rural <- plot_grid(gg1,gg2,gg3,gg4,align="hv",axis="lr",ncol=2)
 
-ggsave("Figures/results_population.png",gg_rural,width=6.25,height=5.25,dpi="retina",device="png")
-ggsave("Figures/results_population.eps",gg_rural,width=6.25,height=5.25,dpi="retina",device=cairo_ps)
+ggsave("Figures/results_population.png",gg_rural,width=6.25,height=5.25,dpi=350,device="png")
+ggsave("Figures/results_population.eps",gg_rural,width=6.25,height=5.25,dpi=350,device=cairo_ps)
 
 
 # 03 - mechanisms ----
@@ -765,8 +823,8 @@ gg4 <- ggplot(eff4,aes(x=gs_rain100,y=estimate1,ymin=conf.low1,ymax=conf.high1))
 
 gg_rain <- plot_grid(gg1,gg2,gg3,gg4,align="hv",axis="lr",ncol=2)
 
-ggsave("Figures/results_rainfall.png",gg_rain,width=6.25,height=5.25,dpi="retina",device="png")
-ggsave("Figures/results_rainfall.eps",gg_rain,width=6.25,height=5.25,dpi="retina",device=cairo_ps)
+ggsave("Figures/results_rainfall.png",gg_rain,width=6.25,height=5.25,dpi=350,device="png")
+ggsave("Figures/results_rainfall.eps",gg_rain,width=6.25,height=5.25,dpi=350,device=cairo_ps)
 
 
 
@@ -855,8 +913,8 @@ gg4 <- ggplot(eff4,aes(x=conf,y=estimate1,ymin=conf.low1,ymax=conf.high1)) +
 
 gg_conf <- plot_grid(gg1,gg2,gg3,gg4,align="hv",axis="lr",ncol=2)
 
-ggsave("Figures/results_conflict.png",gg_conf,width=6.25,height=5.25,dpi="retina",device="png")
-ggsave("Figures/results_conflict.eps",gg_conf,width=6.25,height=5.25,dpi="retina",device=cairo_ps)
+ggsave("Figures/results_conflict.png",gg_conf,width=6.25,height=5.25,dpi=350,device="png")
+ggsave("Figures/results_conflict.eps",gg_conf,width=6.25,height=5.25,dpi=350,device=cairo_ps)
 
 
 

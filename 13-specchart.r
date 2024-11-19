@@ -386,8 +386,8 @@ gg_comb <- plot_grid(gg_est,gg_spec1,gg_spec2,ncol=1,align="hv",axis="lr",rel_he
 gg_comb
 
 
-ggsave("Figures/spec_chart.png",gg_comb,width=6.25,height=6.25,dpi="retina",device="png")
+ggsave("Figures/spec_chart.png",gg_comb,width=6.25,height=6.25,dpi=350,device="png")
 
-ggsave("Figures/spec_chart.eps",gg_comb,width=6.25,height=6.25,dpi="retina",device="eps")
+ggsave("Figures/spec_chart.eps",gg_comb,width=6.25,height=6.25,dpi=350,device="eps")
 
 

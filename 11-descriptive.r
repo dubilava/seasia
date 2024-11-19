@@ -162,8 +162,35 @@ aligned <- align_plots(gg_conflict,gg_bars,align="hv", axis="tblr")
 gg_maplegend <- ggdraw(aligned[[1]]) + draw_plot(aligned[[2]],x=.60,y=.60,width=.35,height=.35)
 
 
-ggsave("Figures/map_conflict.png",gg_maplegend,width=6.25,height=5.25,dpi="retina",device="png")
-ggsave("Figures/map_conflict.eps",gg_maplegend,width=6.25,height=5.25,dpi="retina",device="eps")
+ggsave("Figures/map_conflict.png",gg_maplegend,width=6.25,height=5.25,dpi=350,device="png")
+ggsave("Figures/map_conflict.eps",gg_maplegend,width=6.25,height=5.25,dpi=350,device="eps")
+
+
+bw_conflict <- ggplot(data = southeastasia) +
+  geom_sf(color="gray",fill=NA,linewidth=.25)+
+  geom_scatterpie(data=conflict_dt,aes(x=longitude,y=latitude,r=both*.06),cols=c("battles","violence","unrest"),color=NA)+
+  scale_fill_manual(values=c("gray60","gray40","gray80"))+
+  geom_point(data=conflict_dt[capital=="primary" | city_population>=2500000],aes(x=longitude,y=latitude),color="dimgray",fill="white",shape=21,size=1,stroke=.3,na.rm=T)+
+  geom_text_repel(data=conflict_dt[capital=="primary" | city_population>=2500000],aes(x=longitude,y=latitude,label=city),color="black",size=3,seed=100)+
+  theme_void()+
+  guides(fill=guide_legend(order=2),shape=guide_legend(order=1))+
+  theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title = element_blank(),axis.text = element_blank(),legend.title = element_blank(),legend.text = element_text(hjust=0),legend.position = c(.87,.48),plot.background=element_rect(fill="white",color=NA))
+
+bw_bars <- ggplot(countries_dt,aes(x=reorder(country,incidents),y=incidents))+
+  geom_bar(aes(fill=event),stat="identity",color="white",linewidth=.25)+
+  geom_text(data=ccum_dt,aes(y=incidents+5000,label=country_incidents),vjust=0.5,hjust=1,nudge_y=300,size=3)+
+  scale_fill_manual(values=c("gray60","gray40","gray80"))+
+  scale_y_reverse()+
+  coord_flip(clip="off")+
+  labs(y="",x="")+
+  theme_void()+
+  theme(axis.line = element_blank(),axis.ticks = element_blank(),axis.text.x = element_blank(),panel.background=element_rect(fill="transparent",color=NA),plot.background=element_rect(fill="transparent",color=NA),legend.position="none",legend.title = element_blank(),legend.text=element_text(size=9))
+
+aligned <- align_plots(bw_conflict,bw_bars,align="hv", axis="tblr")
+bw_maplegend <- ggdraw(aligned[[1]]) + draw_plot(aligned[[2]],x=.60,y=.60,width=.35,height=.35)
+
+ggsave("Figures/map_conflict_bw.png",bw_maplegend,width=6.25,height=5.25,dpi=350,device="png")
+ggsave("Figures/map_conflict_bw.eps",bw_maplegend,width=6.25,height=5.25,dpi=350,device="eps")
 
 
 
@@ -191,10 +218,28 @@ gg2 <- ggplot(conflict_ts[,.(cells=mean(locations)),by=date],aes(x=date,y=cells)
 
 gg_comb <- plot_grid(gg1,gg2,ncol=1,align="v",axis="tb",rel_heights = c(10,3))
 
-gg_comb
+ggsave("Figures/series_conflict.png",gg_comb,width=6.25,height=6.25*9/16,dpi=350,device="png")
+ggsave("Figures/series_conflict.eps",gg_comb,width=6.25,height=6.25*9/16,dpi=350,device="eps")
 
-ggsave("Figures/series_conflict.png",gg_comb,width=6.25,height=6.25*9/16,dpi="retina",device="png")
-ggsave("Figures/series_conflict.eps",gg_comb,width=6.25,height=6.25*9/16,dpi="retina",device="eps")
+
+bw1 <- ggplot(conflict_ts,aes(x=date,y=rate,color=event,linetype=event))+
+  geom_line()+
+  scale_color_manual(values=c("darkgray","gray60","gray40","gray80"))+
+  labs(x="Year",y="",subtitle="Average number of incidents per cell")+
+  theme_paper()+
+  theme(legend.position=c(.5,.85),legend.direction="horizontal")
+
+bw2 <- ggplot(conflict_ts[,.(cells=mean(locations)),by=date],aes(x=date,y=cells))+
+  geom_col(fill="darkgray",color="white")+
+  scale_y_reverse()+
+  labs(x="",y="",subtitle="Cells")+
+  theme_paper()+
+  theme(axis.line = element_blank(),panel.grid.major=element_blank(),axis.ticks = element_blank(),axis.title.x = element_blank(),axis.text.x=element_blank())
+
+bw_comb <- plot_grid(bw1,bw2,ncol=1,align="v",axis="tb",rel_heights = c(10,3))
+
+ggsave("Figures/series_conflict_bw.png",bw_comb,width=6.25,height=6.25*9/16,dpi=350,device="png")
+ggsave("Figures/series_conflict_bw.eps",bw_comb,width=6.25,height=6.25*9/16,dpi=350,device="eps")
 
 
 
@@ -253,9 +298,44 @@ gg_legend <- ggplot(calsum_dt,aes(x=month,y=Cells,fill=month)) +
 aligned <- align_plots(gg_map,gg_legend,align="hv", axis="tblr")
 gg_maplegend <- ggdraw(aligned[[1]]) + draw_plot(aligned[[2]],x=.63,y=.60,width=.35,height=.35)
 
+ggsave("Figures/map_harvest.png",gg_maplegend,width=6.25,height=5.25,dpi=350,device="png")
+ggsave("Figures/map_harvest.eps",gg_maplegend,width=6.25,height=5.25,dpi=350,device=cairo_ps)
 
-ggsave("Figures/map_harvest.png",gg_maplegend,width=6.25,height=5.25,dpi="retina",device="png")
-ggsave("Figures/map_harvest.eps",gg_maplegend,width=6.25,height=5.25,dpi="retina",device=cairo_ps)
+
+
+
+## seasonal grayscale scheme
+fourseasons_bw <- colorRampPalette(colors=c("gray80","gray70","gray50","gray40","gray60","gray80"),interpolate="spline")
+
+fourseasons_bw <- fourseasons_bw(13)[c(13,2:12)]
+
+bw_map <- ggplot(data = southeastasia) +
+  geom_sf(color="gray",fill=NA,linewidth=.25)+
+  geom_point(data=cal_dt,aes(x=longitude,y=latitude,size=area_spam,color=month))+
+  geom_point(data=cal_dt,aes(x=longitude,y=latitude,alpha=prop_i,size=area_spam),shape=21,color="dimgray",fill=NA,size=3.2,na.rm=T)+
+  scale_size(range=c(.2,2.6),guide="none")+
+  scale_alpha(breaks=c(0,.5,1),limits=c(0,1))+
+  scale_color_manual(values=fourseasons_bw,breaks=month.abb,guide="none")+
+  theme_void()+
+  theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title = element_blank(),axis.text = element_blank(),legend.position = c(.87,.43),plot.background=element_rect(fill="white",color=NA))+
+  guides(alpha=guide_legend(title="irrigated"))
+
+# the map legend
+bw_legend <- ggplot(calsum_dt,aes(x=month,y=Cells,fill=month)) +
+  geom_bar(stat="identity") +
+  scale_fill_manual(values=fourseasons_bw,guide="none") +
+  ylim(0,140)+
+  coord_polar() +
+  theme_void() +
+  theme(axis.line.x=element_blank(),axis.line.y=element_blank(),axis.title = element_blank(),axis.text.x = element_text(size=10),axis.text.y = element_blank())
+
+aligned <- align_plots(bw_map,bw_legend,align="hv", axis="tblr")
+bw_maplegend <- ggdraw(aligned[[1]]) + draw_plot(aligned[[2]],x=.63,y=.60,width=.35,height=.35)
+
+
+ggsave("Figures/map_harvest_bw.png",bw_maplegend,width=6.25,height=5.25,dpi=350,device="png")
+ggsave("Figures/map_harvest_bw.eps",bw_maplegend,width=6.25,height=5.25,dpi=350,device=cairo_ps)
+
 
 
 
@@ -269,8 +349,8 @@ gg_rain <- ggplot(sub1_dt,aes(x=rain/100))+
   theme_paper()
 
 
-ggsave("Figures/appendix_rainfall.png",gg_rain,width=6.25,height=6.25*9/16,dpi="retina")
-ggsave("Figures/appendix_rainfall.eps",gg_rain,width=6.25,height=6.25*9/16,dpi="retina",device="eps")
+ggsave("Figures/appendix_rainfall.png",gg_rain,width=6.25,height=6.25*9/16,dpi=350)
+ggsave("Figures/appendix_rainfall.eps",gg_rain,width=6.25,height=6.25*9/16,dpi=350,device="eps")
 
 # Fig A2: Irrigation ----
 
@@ -281,8 +361,8 @@ gg_irri <- ggplot(sub2_dt,aes(x=irri))+
   labs(x="Proportion of irrigated land",y="",subtitle="Count (cells)")+
   theme_paper()
 
-ggsave("Figures/appendix_irrigation.png",gg_irri,width=6.25,height=6.25*9/16,dpi="retina")
-ggsave("Figures/appendix_irrigation.eps",gg_rain,width=6.25,height=6.25*9/16,dpi="retina",device="eps")
+ggsave("Figures/appendix_irrigation.png",gg_irri,width=6.25,height=6.25*9/16,dpi=350)
+ggsave("Figures/appendix_irrigation.eps",gg_rain,width=6.25,height=6.25*9/16,dpi=350,device="eps")
 
 
 

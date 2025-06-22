@@ -1,6 +1,6 @@
 # Replication Material
 
-This repository hosts data and R scripts for the paper "Agricultural Roots of Social Conflict in Southeast Asia," co-authored with Justin Hastings, forthcoming in the Journal of Peace Research.
+This repository hosts data and R scripts for the paper "[Agricultural Roots of Social Conflict in Southeast Asia](https://doi.org/10.1177/00223433241305990)," co-authored with Justin Hastings, published in the Journal of Peace Research.
 
 
 ## Data
